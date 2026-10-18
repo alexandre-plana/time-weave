@@ -16,6 +16,7 @@ Une première vue indépendante des frameworks avec adaptateur React a été env
 - Modèle générique d'événements, de périodes et de lignes hiérarchiques.
 - État temporel et règles de lecture : position, vitesse, pause, navigation.
 - Calculs de temps, de fenêtre visible et de limites.
+- Prise en charge des deux modes confirmés : calendrier et relatif, avec une représentation interne à définir.
 - Interface permettant à la vue et à l'application d'observer et de contrôler cet état.
 
 Le moteur serait indépendant de React et du DOM. L'avancement dépendant de l'horloge du navigateur serait raccordé par l'intégration, avec une source de temps contrôlable pour vérifier les règles de lecture.

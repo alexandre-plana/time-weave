@@ -22,8 +22,11 @@ Point clarifié : le flux source peut atteindre des centaines de communications 
 
 ### 3. Contrat temporel et synchronisation
 
-- Uniquement des dates de calendrier, ou aussi des durées relatives à un départ ?
+Décision prise : les dates de calendrier et le temps relatif à un départ sont tous deux pris en charge dans les besoins.
+
 - Quel format de temps accepte l'API et comment distinguer instants et durées ?
+- Quelles règles de graduation et de libellés pour chacun des deux modes ?
+- Faut-il permettre de convertir entre les modes à partir d'une origine datée ?
 - Quelle convention de fuseau horaire, de localisation et de changement d'heure ?
 - Quels signaux transmettre à l'application pendant la lecture et lors d'un saut ?
 - Comment distinguer restitution d'un état à une date et exécution d'actions ponctuelles ?

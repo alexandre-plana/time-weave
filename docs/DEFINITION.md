@@ -35,6 +35,7 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 ### Temps et navigation
 
 - Couvrir des échelles de la milliseconde aux années et aux décennies.
+- Prendre en charge les dates de calendrier et le temps relatif à un point de départ, sans date obligatoire.
 - Permettre le zoom et le déplacement libres, avec des limites configurables par le développeur.
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Proposer lecture automatique, pause, arrêt et changement de vitesse.
@@ -42,6 +43,13 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
 
 Les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
+
+Deux modes temporels sont confirmés :
+
+- **Calendrier** : des instants datés, pour une journée d'opérations ou l'histoire d'une entreprise.
+- **Relatif** : des positions mesurées depuis une origine choisie, par exemple `0 ms`, `250 ms`, puis `1 s`, sans date de calendrier.
+
+Le format accepté par l'API, les règles de libellés et de graduation et la possibilité éventuelle de convertir entre les deux modes restent à définir. Cette décision n'impose pas de les afficher simultanément sur une même timeline.
 
 ### Hiérarchie de lignes
 

@@ -17,6 +17,7 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 
 - Interface React dès la première version, avec du code TypeScript.
 - Échelles allant de la milliseconde aux décennies.
+- Temps de calendrier et temps relatif à un point de départ, par exemple une séquence commençant à `0 ms`.
 - Zoom et déplacement libres, avec des limites configurables.
 - Lignes dépliables sur plusieurs niveaux.
 - Lecture, pause, arrêt, changement de vitesse et navigation par points d'intérêt parmi les besoins exprimés.
