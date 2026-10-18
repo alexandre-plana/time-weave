@@ -21,6 +21,8 @@ Une première vue indépendante des frameworks avec adaptateur React a été env
 
 Le pilotage par l'application et la transmission du temps courant vers elle sont des besoins confirmés. Utiliser les mêmes transitions temporelles pour les commandes internes et externes est une proposition pour maintenir un état cohérent ; la forme de l'API reste ouverte.
 
+Besoin confirmé après la revue : la lecture attend que l'application soit prête lorsqu'elle doit reconstruire ses éléments synchronisés. Le mécanisme de disponibilité doit être distingué de la pause demandée par l'utilisateur. Une proposition de préparation puis confirmation d'une position est détaillée dans la [revue Astra](REVUE-V1.md) ; ce contrat n'est pas encore une API validée.
+
 Le moteur serait indépendant de React et du DOM. L'avancement dépendant de l'horloge du navigateur serait raccordé par l'intégration, avec une source de temps contrôlable pour vérifier les règles de lecture.
 
 Le moteur doit rester générique : les notions de connecteur, de capteur ou d'entreprise appartiennent aux données de l'application.
@@ -53,7 +55,7 @@ Ces composants seraient utilisables ou remplaçables selon les besoins de l'appl
 
 La façon de reconstruire un état à un instant donné reste propre à l'application dans ce découpage. Le contrat de synchronisation doit expliciter le comportement lors d'un saut, d'une lecture et d'un rewind.
 
-Le cas de référence peut atteindre des centaines de communications par seconde en entrée de l'application. La timeline recevrait les éléments choisis par cette application. Exposer la fenêtre visible et ses changements est une proposition pour permettre l'adaptation des groupes au zoom ; le format de ces échanges reste à définir. Les optimisations de rendu des éléments visibles relèvent de l'affichage et ne changent pas la décision de laisser le regroupement à l'application.
+Le cas de référence peut atteindre des centaines de communications par seconde en entrée de l'application. La timeline reçoit les éléments choisis par cette application. Le remplacement des données par fenêtre temporelle au zoom ou au déplacement est retenu dès la V1 ; le format des échanges reste à définir. La période complète doit être distincte du lot chargé pour que les limites de lecture et de boucle restent stables. Les optimisations de rendu des éléments visibles relèvent de l'affichage et ne changent pas la décision de laisser le regroupement à l'application.
 
 ## Sens des dépendances
 

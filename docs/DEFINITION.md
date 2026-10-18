@@ -4,9 +4,9 @@ Dernière mise à jour : 18 octobre 2026.
 
 ## Statut
 
-Le projet est en phase de définition. Le choix de React est arrêté ; le périmètre de la première version et la conception détaillée ne le sont pas. Aucun code produit n'est encore implémenté.
+Le projet est en phase de définition. React est retenu et l'utilisateur accepte la vision fonctionnelle décrite comme base pour la V1. Une [revue extérieure Astra](REVUE-V1.md) a été réalisée pour préparer la conception détaillée et le plan. Aucun code produit n'est encore implémenté.
 
-Les mentions ci-dessous distinguent les besoins exprimés, les décisions prises et les recommandations encore à discuter. Un besoin confirmé n'est pas automatiquement un engagement pour la première version.
+Les mentions ci-dessous distinguent les besoins exprimés, les décisions prises et les recommandations encore à discuter. Les options, comportements détaillés et éventuels reports proposés lors de la revue devront être formalisés ; l'acceptation de la vision ne fixe pas encore chaque règle d'API ou d'interface.
 
 ## Intention
 
@@ -39,6 +39,7 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Permettre le zoom et le déplacement libres, avec des limites configurables par le développeur.
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
+- Attendre que l'application soit prête avant de poursuivre la lecture lorsqu'elle doit reconstruire ou mettre à jour ses éléments synchronisés. Le contrat précis de disponibilité reste à formaliser.
 - Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle sur la période complète.
 - Naviguer entre des clés, fournies dans les données comme des repères temporels, avec des commandes « clé suivante » et « clé précédente ».
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
@@ -86,7 +87,9 @@ Décision de l'utilisateur : le regroupement incombe au développeur qui utilise
 
 La timeline affiche les éléments fournis et relaie les interactions personnalisées. Le format des groupes et de leurs métadonnées reste à définir. La correspondance avec les communications sources et leur utilisation pour reconstruire un état métier relèvent de l'application.
 
-Proposition de l'assistant : exposer la fenêtre visible et son évolution pour permettre à l'application d'adapter ses données et ses regroupements au zoom. Le mécanisme de mise à jour reste ouvert. Limiter le rendu aux éléments visibles est une optimisation d'affichage distincte du regroupement.
+Besoin confirmé après la revue : dès la V1, l'application peut fournir seulement les données de la fenêtre temporelle visible et les remplacer au zoom ou au déplacement. Le chargement et le regroupement restent externes à la librairie. Le contrat de notification de fenêtre et de remplacement des données reste à formaliser.
+
+Proposition de conception : conserver la période complète indépendamment des données actuellement chargées et préserver le curseur, l'état de lecture et le dépliage lors d'un remplacement. Limiter le rendu aux éléments visibles est une optimisation d'affichage distincte du regroupement.
 
 ### Interactions
 
@@ -107,7 +110,9 @@ La distinction entre un clic sur un élément et un clic sur le fond temporel es
 | Vue indépendante des frameworks | Écartée de la direction initiale au profit d'une première vue React |
 | Moteur temporel indépendant de React | Recommandation de l'assistant, à confirmer dans la conception |
 | Technique de rendu, dépendances et API | À définir |
-| Périmètre de la première version | À définir |
+| Vision fonctionnelle de la première version | Acceptée comme base ; critères et règles détaillés à formaliser |
+| Données par fenêtre temporelle | Retenues dès la V1, chargement par l'application |
+| Disponibilité de l'application | La lecture doit attendre lorsqu'une mise à jour n'est pas prête |
 | Licence et publication npm | À définir |
 
 ## Responsabilités envisagées
@@ -122,8 +127,8 @@ L'ingestion des capteurs et le rendu de l'application complète ne font pas part
 
 ## Volumétrie
 
-Le cas de référence peut produire des centaines de communications par seconde avant regroupement. Le nombre de connecteurs, le volume transmis après regroupement et le nombre de marqueurs simultanément visibles restent à préciser. Ce débit source n'est pas une exigence de rendu individuel de tous les événements de la journée ; aucun objectif chiffré de performance d'affichage n'est encore fixé.
+Le cas de référence peut produire des centaines de communications par seconde avant regroupement. Ce débit source n'est pas une exigence de rendu individuel de tous les événements de la journée. L'utilisateur délègue à l'assistant la proposition d'un [jeu de référence après regroupement](JEU-REFERENCE.md) pour évaluer le rendu. Ce jeu constitue une cible de mesure, sans garantie de performance annoncée avant validation.
 
 ## Suite
 
-Clarifier les [questions ouvertes](QUESTIONS-OUVERTES.md), arrêter le périmètre initial, puis produire une conception et un plan de réalisation. Aucun outil de construction ni squelette de package n'a encore été choisi.
+Formaliser les contrats identifiés par la revue et les réponses aux [questions ouvertes](QUESTIONS-OUVERTES.md), puis produire une conception et un plan de réalisation. Aucun outil de construction ni squelette de package n'a encore été choisi.

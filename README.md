@@ -6,7 +6,7 @@ Projet de bibliothèque TypeScript et React pour créer des timelines interactiv
 
 **18 octobre 2026 — Définition et brainstorming en cours.**
 
-Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune fonctionnalité n'est encore implémentée, aucun package npm n'est publié et le périmètre de la première version n'est pas arrêté. Les fonctionnalités décrites sont des objectifs de conception, pas des fonctionnalités déjà disponibles.
+Le dépôt contient la synthèse des besoins et les pistes de conception. La vision fonctionnelle décrite est retenue comme base pour la V1 et a fait l'objet d'une revue extérieure par un sous-agent Astra. Les règles détaillées, l'API et le plan de réalisation restent à formaliser. Aucune fonctionnalité n'est encore implémentée et aucun package npm n'est publié.
 
 ## Premiers usages
 
@@ -25,6 +25,8 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 - Actions au clic personnalisables par l'application.
 - Pilotage temporel dans les deux sens : la timeline informe l'application, et l'application peut déplacer le curseur ou lancer la lecture.
 - Regroupement des communications géré par l'application consommatrice ; la timeline affiche les éléments individuels ou groupés qu'elle reçoit.
+- Données fournies par fenêtre temporelle et remplaçables au zoom ou au déplacement.
+- Lecture suspendue lorsque l'application doit se mettre à jour, jusqu'à ce qu'elle soit prête.
 
 La séparation d'un moteur temporel indépendant de React et de la vue React est proposée ; le détail de cette architecture reste à valider.
 
@@ -33,6 +35,8 @@ La séparation d'un moteur temporel indépendant de React et de la vue React est
 - [Définition et statut du brainstorming](docs/DEFINITION.md) : besoins confirmés, propositions et limites de responsabilité.
 - [Architecture proposée](docs/ARCHITECTURE.md) : séparation du moteur, de la vue React et des aides facultatives.
 - [Questions ouvertes](docs/QUESTIONS-OUVERTES.md) : décisions restantes, par priorité.
+- [Revue extérieure Astra](docs/REVUE-V1.md) : regard critique, recommandations et réponses de l'utilisateur.
+- [Jeu de référence proposé](docs/JEU-REFERENCE.md) : volumes et scénarios pour mesurer la future implémentation.
 
 Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le volume réellement transmis et affiché reste à préciser, ainsi que le modèle temporel, les comportements de lecture et le périmètre de la première version.
 

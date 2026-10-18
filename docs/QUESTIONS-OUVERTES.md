@@ -4,21 +4,23 @@ Dernière mise à jour : 18 octobre 2026.
 
 Cette liste rassemble les décisions restantes. Elle distingue les besoins à préciser des sujets ajoutés par l'assistant pour préparer une bibliothèque utilisable et publiable. Elle ne constitue ni un engagement de fonctionnalités ni un plan d'implémentation validé.
 
-## À trancher avant le premier plan de réalisation
+Les trois questions de produit prioritaires de la revue Astra ont reçu une réponse. Les points restants servent à préparer une proposition de conception ; ils ne constituent pas tous des questions à soumettre à l'utilisateur.
+
+## À formaliser pour le premier plan de réalisation
 
 ### 1. Volumétrie de référence
 
-Point clarifié : le flux source peut atteindre des centaines de communications par seconde. L'application consommatrice gère le regroupement.
+Points clarifiés : le flux source peut atteindre des centaines de communications par seconde. L'application consommatrice gère le regroupement. L'utilisateur délègue à l'assistant la proposition d'un [jeu de référence](JEU-REFERENCE.md) pour les mesures après regroupement.
 
-- Combien de lignes sont présentes et dépliées simultanément ?
-- Quel volume après regroupement doit être transmis à la timeline, et quelle densité doit être visible ?
-- Quels objectifs simples de fluidité et de temps de chargement vérifier sur un jeu représentatif ?
+Une première référence de lignes, d'éléments transmis et d'éléments visibles est proposée dans le jeu lié ci-dessus. Les objectifs de fluidité et de temps de mise à jour restent à déterminer à partir de mesures sur un environnement documenté.
 
 ### 2. Périmètre de la première version
 
+La vision fonctionnelle discutée est acceptée par l'utilisateur comme base V1. La [revue extérieure Astra](REVUE-V1.md) a été réalisée ; les simplifications qu'elle recommande restent des propositions de conception.
+
 - Quel cas de référence sert à la première démonstration ?
-- Quelles fonctions entrent dans cette version, et lesquelles sont reportées ?
-- Quelle place donner immédiatement au rewind, aux clés suivante/précédente, à la boucle, à l'affichage de groupes fournis et aux aides de détail ?
+- Comment traduire cette vision en critères de réalisation vérifiables ?
+- Quels ajustements de périmètre la revue recommande-t-elle, et lesquels seront retenus ?
 
 ### 3. Contrat temporel et synchronisation
 
@@ -30,12 +32,15 @@ Définition confirmée : une clé est un repère temporel défini par l'utilisat
 
 Décision prise : la boucle porte sur la période complète de la timeline. La boucle sur une sous-période est reportée pour le moment.
 
+Décision prise après la revue : la lecture doit attendre que l'application soit prête lorsque les éléments synchronisés mettent du temps à se mettre à jour.
+
 - Quel format de temps accepte l'API et comment distinguer instants et durées ?
 - Quelles règles de graduation et de libellés pour chacun des deux modes ?
 - Faut-il permettre de convertir entre les modes à partir d'une origine datée ?
 - Quelle convention de fuseau horaire, de localisation et de changement d'heure ?
 - Quels signaux transmettre à l'application pendant la lecture et lors d'un saut ?
 - Quelle API de contrôle externe proposer, et comment synchroniser les commandes de la timeline et celles de l'application ?
+- Comment signaler la disponibilité de l'application, distinguer attente et pause manuelle, et invalider une mise à jour dépassée par une nouvelle commande ?
 - Comment distinguer restitution d'un état à une date et exécution d'actions ponctuelles ?
 - Que se passe-t-il à la fin, pendant un arrêt, après un rewind et lors d'un changement de vitesse ?
 - Valider ou modifier les comportements de pause, stop et fin de période avec ou sans boucle proposés dans la définition.
@@ -75,8 +80,10 @@ Décision prise : l'application consommatrice calcule les regroupements. La prop
 
 ### 7. Mise à jour des données
 
-- Les données sont-elles uniquement chargées au départ, ou modifiables ensuite ?
-- Faut-il charger par fenêtre temporelle ?
+Décision prise : l'application peut fournir seulement les données de la fenêtre visible et les remplacer au zoom ou au déplacement, dès la V1.
+
+- Quel contrat de demande de fenêtre et de remplacement des données proposer ?
+- Comment conserver l'état d'interface et distinguer la période complète du lot actuellement chargé ?
 - Quels comportements pendant un chargement, une absence de données ou une modification en cours de lecture ?
 - Le temps courant et l'état des lignes sont-ils gérés par la librairie, contrôlés par l'application, ou les deux selon l'intégration ?
 
@@ -107,4 +114,4 @@ Décision prise : l'application consommatrice calcule les regroupements. La prop
 
 ## Prochaine étape proposée
 
-Préciser le volume à afficher après regroupement, puis arrêter un petit périmètre initial et les règles essentielles de temps et de lecture. Ces réponses permettront d'écrire la conception et le plan de réalisation sans choisir prématurément une technique de rendu.
+Formaliser la conception V1 : règles essentielles de temps et de lecture, données par fenêtre et disponibilité de l'application. La technique de rendu pourra être évaluée sur le jeu de référence plutôt que déduite du débit brut des capteurs.
