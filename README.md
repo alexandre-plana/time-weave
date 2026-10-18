@@ -22,6 +22,7 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 - Lignes dépliables sur plusieurs niveaux.
 - Lecture, pause, arrêt, changement de vitesse et navigation par points d'intérêt parmi les besoins exprimés.
 - Actions au clic personnalisables par l'application.
+- Pilotage temporel dans les deux sens : la timeline informe l'application, et l'application peut déplacer le curseur ou lancer la lecture.
 - Regroupement des communications géré par l'application consommatrice ; la timeline affiche les éléments individuels ou groupés qu'elle reçoit.
 
 La séparation d'un moteur temporel indépendant de React et de la vue React est proposée ; le détail de cette architecture reste à valider.

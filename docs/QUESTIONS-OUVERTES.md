@@ -24,13 +24,17 @@ Point clarifié : le flux source peut atteindre des centaines de communications 
 
 Décision prise : les dates de calendrier et le temps relatif à un départ sont tous deux pris en charge dans les besoins.
 
+Décision prise : le pilotage temporel fonctionne dans les deux sens, de la timeline vers l'application et de l'application vers la timeline.
+
 - Quel format de temps accepte l'API et comment distinguer instants et durées ?
 - Quelles règles de graduation et de libellés pour chacun des deux modes ?
 - Faut-il permettre de convertir entre les modes à partir d'une origine datée ?
 - Quelle convention de fuseau horaire, de localisation et de changement d'heure ?
 - Quels signaux transmettre à l'application pendant la lecture et lors d'un saut ?
+- Quelle API de contrôle externe proposer, et comment synchroniser les commandes de la timeline et celles de l'application ?
 - Comment distinguer restitution d'un état à une date et exécution d'actions ponctuelles ?
 - Que se passe-t-il à la fin, pendant un arrêt, après un rewind et lors d'un changement de vitesse ?
+- Valider ou modifier les comportements de pause, stop et fin de période proposés dans la définition.
 - Comment le curseur et la fenêtre visible se comportent-ils lorsque le temps courant sort de l'écran ?
 
 ### 4. Modèle de données

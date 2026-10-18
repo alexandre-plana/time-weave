@@ -38,11 +38,18 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Prendre en charge les dates de calendrier et le temps relatif à un point de départ, sans date obligatoire.
 - Permettre le zoom et le déplacement libres, avec des limites configurables par le développeur.
 - Disposer d'une position temporelle courante pour synchroniser l'application.
+- Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
 - Proposer lecture automatique, pause, arrêt et changement de vitesse.
 - Naviguer par points d'intérêt.
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
 
 Les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
+
+Proposition de comportements par défaut par l'assistant, à valider :
+
+- **Pause** : interrompre la lecture en conservant la position.
+- **Stop** : interrompre la lecture et revenir au début de la période de lecture configurée, indépendamment du zoom.
+- **Fin de période** : terminer la lecture en conservant le curseur à la fin, sans reprise automatique.
 
 Deux modes temporels sont confirmés :
 
@@ -103,6 +110,8 @@ La distinction entre un clic sur un élément et un clic sur le fond temporel es
 ## Responsabilités envisagées
 
 La timeline expose et contrôle le temps, affiche les données temporelles et permet les interactions.
+
+Le pilotage temporel est confirmé dans les deux sens : la timeline communique le temps courant à l'application, et l'application peut commander la timeline. Cette décision porte sur la capacité de contrôle ; elle ne fixe pas le choix entre propriétés React, hooks, références ou contrôleur externe.
 
 L'application consommatrice fournit les données, les regroupements, leur sens métier et les actions personnalisées. La restitution de ses propres états à un instant donné lui revient dans le découpage proposé. Le protocole précis de synchronisation reste à définir, en particulier pour distinguer un saut direct d'un parcours continu des événements.
 

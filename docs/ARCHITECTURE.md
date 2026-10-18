@@ -19,6 +19,8 @@ Une première vue indépendante des frameworks avec adaptateur React a été env
 - Prise en charge des deux modes confirmés : calendrier et relatif, avec une représentation interne à définir.
 - Interface permettant à la vue et à l'application d'observer et de contrôler cet état.
 
+Le pilotage par l'application et la transmission du temps courant vers elle sont des besoins confirmés. Utiliser les mêmes transitions temporelles pour les commandes internes et externes est une proposition pour maintenir un état cohérent ; la forme de l'API reste ouverte.
+
 Le moteur serait indépendant de React et du DOM. L'avancement dépendant de l'horloge du navigateur serait raccordé par l'intégration, avec une source de temps contrôlable pour vérifier les règles de lecture.
 
 Le moteur doit rester générique : les notions de connecteur, de capteur ou d'entreprise appartiennent aux données de l'application.
