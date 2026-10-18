@@ -3,6 +3,8 @@
 Date : 18 octobre 2026.
 Statut : React est retenu ; le découpage détaillé ci-dessous est une proposition à valider.
 
+La [conception V1 consolidée](CONCEPTION-V1.md) développe ce découpage, les contrats et les comportements proposés. Relue par Astra, elle constitue le document à valider avant le plan. La présente page conserve la synthèse architecturale initiale.
+
 ## Objectif
 
 Utiliser React pour construire l'interface, tout en séparant les règles temporelles et le modèle de données de leur affichage. Cette séparation vise à faciliter les tests, la maintenance et une éventuelle autre vue ultérieure.
@@ -15,6 +17,7 @@ Une première vue indépendante des frameworks avec adaptateur React a été env
 
 - Modèle générique d'événements, de périodes, de lignes hiérarchiques et de clés fournies dans les données comme des repères temporels.
 - État temporel et règles de lecture : position, vitesse, pause, navigation clé suivante/précédente et boucle sur la période complète. Le format des clés et les règles détaillées de transition restent ouverts ; la boucle sur une sous-période est reportée.
+- Mise à jour des collections et suivi d'une frontière du direct fournie par l'application, avec extension explicite de la fin de période.
 - Calculs de temps, de fenêtre visible et de limites.
 - Prise en charge des deux modes confirmés : calendrier et relatif, avec une représentation interne à définir.
 - Interface permettant à la vue et à l'application d'observer et de contrôler cet état.
@@ -23,7 +26,7 @@ Le pilotage par l'application et la transmission du temps courant vers elle sont
 
 Besoin confirmé après la revue : la lecture attend que l'application soit prête lorsqu'elle doit reconstruire ses éléments synchronisés. Le mécanisme de disponibilité doit être distingué de la pause demandée par l'utilisateur. Une proposition de préparation puis confirmation d'une position est détaillée dans la [revue Astra](REVUE-V1.md) ; ce contrat n'est pas encore une API validée.
 
-Le moteur serait indépendant de React et du DOM. L'avancement dépendant de l'horloge du navigateur serait raccordé par l'intégration, avec une source de temps contrôlable pour vérifier les règles de lecture.
+Le moteur serait indépendant de React et du DOM. L'avancement du rejeu dépendant de l'horloge du navigateur serait raccordé par l'intégration, avec une source de temps contrôlable pour vérifier les règles de lecture. Le Direct suit les positions déclarées par l'application ; il n'introduit pas de seconde horloge dans le navigateur.
 
 Le moteur doit rester générique : les notions de connecteur, de capteur ou d'entreprise appartiennent aux données de l'application.
 
@@ -52,10 +55,13 @@ Ces composants seraient utilisables ou remplaçables selon les besoins de l'appl
 - Définir les actions métier.
 - Actualiser ses graphiques, cartes ou autres éléments à l'instant choisi.
 - Préparer les regroupements nécessaires, selon ses règles métier ou la densité visuelle souhaitée.
+- Se connecter au flux éventuel, modifier ses collections, fournir la frontière du direct et conserver sa politique de rétention.
 
 La façon de reconstruire un état à un instant donné reste propre à l'application dans ce découpage. Le contrat de synchronisation doit expliciter le comportement lors d'un saut, d'une lecture et d'un rewind.
 
 Le cas de référence peut atteindre des centaines de communications par seconde en entrée de l'application. La timeline reçoit les éléments choisis par cette application. Le remplacement des données par fenêtre temporelle au zoom ou au déplacement est retenu dès la V1 ; le format des échanges reste à définir. La période complète doit être distincte du lot chargé pour que les limites de lecture et de boucle restent stables. Les optimisations de rendu des éléments visibles relèvent de l'affichage et ne changent pas la décision de laisser le regroupement à l'application.
+
+Les mises à jour dynamiques et le mode Direct sont également retenus. La conception détaille l'arbitrage entre cibles temporelles et chargements : un flux continu ne doit annuler indéfiniment ni les préparations ni les demandes utiles de données. La navigation explicite conserve la priorité sur le suivi automatique.
 
 ## Sens des dépendances
 

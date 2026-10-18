@@ -6,6 +6,10 @@ Cette liste rassemble les décisions restantes. Elle distingue les besoins à pr
 
 Les trois questions de produit prioritaires de la revue Astra ont reçu une réponse. Les points restants servent à préparer une proposition de conception ; ils ne constituent pas tous des questions à soumettre à l'utilisateur.
 
+Depuis, la [conception V1](CONCEPTION-V1.md) propose les réponses aux sujets ci-dessous et a été relue par Astra, sans question indispensable manquante pour planifier. Cet inventaire conserve la trace du cadrage : il ne constitue plus une liste de questions bloquant la rédaction du plan. Les conventions proposées attendent la validation de l'utilisateur ; outils, versions, licence et publication seront réglés aux étapes correspondantes.
+
+Ajout confirmé pendant cette formalisation : collections dynamiques et suivi du Direct activable. Une relecture Astra ciblée a identifié puis vérifié la correction d'un risque d'annulations perpétuelles des chargements. Les règles correspondantes sont incluses dans la conception ; aucune nouvelle question de produit n'est nécessaire avant sa validation.
+
 ## À formaliser pour le premier plan de réalisation
 
 ### 1. Volumétrie de référence
@@ -82,6 +86,8 @@ Décision prise : l'application consommatrice calcule les regroupements. La prop
 
 Décision prise : l'application peut fournir seulement les données de la fenêtre visible et les remplacer au zoom ou au déplacement, dès la V1.
 
+Décisions complémentaires : les collections peuvent recevoir des ajouts, modifications et suppressions ; un mode Direct activable suit les dernières données et peut être quitté pour l'historique. La source du flux et sa politique de rétention appartiennent à l'application.
+
 - Quel contrat de demande de fenêtre et de remplacement des données proposer ?
 - Comment conserver l'état d'interface et distinguer la période complète du lot actuellement chargé ?
 - Quels comportements pendant un chargement, une absence de données ou une modification en cours de lecture ?
@@ -114,4 +120,4 @@ Décision prise : l'application peut fournir seulement les données de la fenêt
 
 ## Prochaine étape proposée
 
-Formaliser la conception V1 : règles essentielles de temps et de lecture, données par fenêtre et disponibilité de l'application. La technique de rendu pourra être évaluée sur le jeu de référence plutôt que déduite du débit brut des capteurs.
+Valider la conception V1, puis écrire son plan de réalisation. Les mesures sur le jeu de référence permettront ensuite de vérifier les choix de rendu.

@@ -6,6 +6,8 @@ Dernière mise à jour : 18 octobre 2026.
 
 Le projet est en phase de définition. React est retenu et l'utilisateur accepte la vision fonctionnelle décrite comme base pour la V1. Une [revue extérieure Astra](REVUE-V1.md) a été réalisée pour préparer la conception détaillée et le plan. Aucun code produit n'est encore implémenté.
 
+Une [conception V1 détaillée](CONCEPTION-V1.md), relue par Astra, rassemble désormais les réponses proposées aux choix techniques et aux comportements restants. Elle doit être validée avant le plan. Ce document conserve la distinction entre les besoins confirmés et les propositions ; les détails présentés comme ouverts ci-dessous sont traités dans cette conception proposée, sans devenir des décisions de l'utilisateur.
+
 Les mentions ci-dessous distinguent les besoins exprimés, les décisions prises et les recommandations encore à discuter. Les options, comportements détaillés et éventuels reports proposés lors de la revue devront être formalisés ; l'acceptation de la vision ne fixe pas encore chaque règle d'API ou d'interface.
 
 ## Intention
@@ -24,6 +26,14 @@ Lors d'un saut vers un instant passé, les éléments pilotés doivent retrouver
 
 Les éléments pilotés ne sont pas encore définis. Graphiques, valeurs et cartes ont été évoqués par l'assistant comme illustrations possibles, sans être des composants demandés à la librairie.
 
+### Surveillance d'un flux
+
+Besoin ajouté par l'utilisateur pendant la rédaction de la conception : les collections sont dynamiques, avec ajouts, modifications et suppressions pendant l'utilisation. Cela doit permettre de surveiller un flux en temps réel.
+
+L'utilisateur confirme un mode Direct activable, qui suit les dernières données et peut être quitté pour explorer l'historique. L'application reste responsable de la connexion au flux, du chargement et du regroupement ; la librairie ne fournit pas de client réseau ou de protocole de capteurs.
+
+La conception propose une frontière du direct explicite, une fin de période extensible et une coalescence des demandes pour attendre l'application sans accumuler toutes les positions reçues.
+
 ### Histoire d'une entreprise
 
 Présenter l'histoire d'une entreprise sur plusieurs années ou décennies, avec des événements et des périodes répartis sur plusieurs lignes.
@@ -40,6 +50,7 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
 - Attendre que l'application soit prête avant de poursuivre la lecture lorsqu'elle doit reconstruire ou mettre à jour ses éléments synchronisés. Le contrat précis de disponibilité reste à formaliser.
+- Suivre les dernières données dans un mode Direct activable, distinct du rejeu à vitesse choisie.
 - Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle sur la période complète.
 - Naviguer entre des clés, fournies dans les données comme des repères temporels, avec des commandes « clé suivante » et « clé précédente ».
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
@@ -91,6 +102,8 @@ Besoin confirmé après la revue : dès la V1, l'application peut fournir seulem
 
 Proposition de conception : conserver la période complète indépendamment des données actuellement chargées et préserver le curseur, l'état de lecture et le dépliage lors d'un remplacement. Limiter le rendu aux éléments visibles est une optimisation d'affichage distincte du regroupement.
 
+La période complète peut aussi être étendue explicitement par l'application pour suivre un flux ; elle n'est jamais recalculée implicitement à partir du lot reçu. Les collections de lignes, éléments et clés peuvent être mises à jour pendant la pause, le rejeu ou le Direct. Les conventions de remplacement et de modification groupée sont détaillées dans la conception proposée.
+
 ### Interactions
 
 L'application choisit librement l'action déclenchée par un clic sur un élément ou un groupe.
@@ -113,6 +126,8 @@ La distinction entre un clic sur un élément et un clic sur le fond temporel es
 | Vision fonctionnelle de la première version | Acceptée comme base ; critères et règles détaillés à formaliser |
 | Données par fenêtre temporelle | Retenues dès la V1, chargement par l'application |
 | Disponibilité de l'application | La lecture doit attendre lorsqu'une mise à jour n'est pas prête |
+| Collections dynamiques | Ajouts, modifications et suppressions retenus dans la V1 |
+| Direct activable | Confirmé ; possibilité de quitter le suivi pour explorer l'historique |
 | Licence et publication npm | À définir |
 
 ## Responsabilités envisagées
@@ -131,4 +146,4 @@ Le cas de référence peut produire des centaines de communications par seconde 
 
 ## Suite
 
-Formaliser les contrats identifiés par la revue et les réponses aux [questions ouvertes](QUESTIONS-OUVERTES.md), puis produire une conception et un plan de réalisation. Aucun outil de construction ni squelette de package n'a encore été choisi.
+Valider la [conception V1](CONCEPTION-V1.md), puis produire le plan de réalisation. Les outils et versions exactes seront proposés dans le plan. Aucun squelette de package n'a encore été créé.

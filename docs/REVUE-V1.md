@@ -7,6 +7,8 @@ Cette synthèse restitue une revue indépendante de la définition, de l'archite
 
 Les recommandations ci-dessous préparent la conception ; elles ne constituent pas une API ni un plan d'implémentation validés.
 
+Depuis cette première revue, l'utilisateur a ajouté les collections dynamiques et un mode Direct activable. La [conception V1](CONCEPTION-V1.md) inclut ces besoins et le résultat de leurs relectures complémentaires ; le compte rendu ci-dessous conserve le contexte de la revue initiale.
+
 ## Avis général
 
 La vision est cohérente et peut servir de base V1. La séparation entre navigation temporelle, affichage React et logique métier est pertinente. La V1 est ambitieuse pour une première bibliothèque : la difficulté principale sera la cohérence des interactions et des mises à jour.

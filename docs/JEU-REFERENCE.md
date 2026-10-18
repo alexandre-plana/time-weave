@@ -25,7 +25,7 @@ Ces nombres décrivent des charges distinctes et ne s'additionnent pas. Les grou
 - Répartition irrégulière, avec quelques zones très denses et des chevauchements.
 - Clés temporelles fournies dans les données.
 - Identifiants stables permettant le remplacement d'une fenêtre de données.
-- Une période complète fixe, indépendante de la fenêtre et du lot chargé.
+- Une période complète explicitement déclarée, indépendante de la fenêtre et du lot chargé ; fixe pour le cas de rejeu initial, extensible pour le scénario de Direct.
 
 Le débit brut des capteurs n'est pas simulé comme une obligation d'afficher chaque communication. Les mêmes volumes affichés peuvent représenter un historique beaucoup plus dense regroupé par l'application.
 
@@ -38,8 +38,13 @@ Le débit brut des capteurs n'est pas simulé comme une obligation d'afficher ch
 5. Préparation de positions avec disponibilités immédiates, puis délais simulés de 50 et 200 ms.
 6. Réponses reçues dans le désordre et commandes de pause, saut ou stop pendant une attente.
 7. Rewind et gestion d'une préparation échouée, selon les règles définies pour la V1.
+8. Collections dynamiques : lots proposés de 5 modifications toutes les 50 ms, avec ajouts, corrections tardives et suppressions ; conserver environ 5 000 éléments fournis en remplaçant les plus anciens dans l'exemple.
+9. Direct actif avec fin de période extensible, préparations immédiates puis retardées, et fournisseur de fenêtre lent ; vérifier que des lots aboutissent malgré les nouvelles données et le déplacement automatique continu.
+10. Exploration de l'historique pendant que les données arrivent, puis retour au Direct ; aucune file de positions accumulées, aucune réponse ancienne qui réactive le suivi.
 
 Les valeurs de délai sont des cas d'essai proposés, pas des délais autorisés ou imposés à l'application consommatrice.
+
+Le rythme des modifications est lui aussi un scénario de mesure après regroupement, pas une capacité annoncée. Les mises à jour sont simulées par l'application d'exemple ; la bibliothèque ne génère ni ne reçoit directement le protocole du flux.
 
 ## Résultats à relever
 

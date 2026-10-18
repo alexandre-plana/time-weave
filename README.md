@@ -6,11 +6,12 @@ Projet de bibliothèque TypeScript et React pour créer des timelines interactiv
 
 **18 octobre 2026 — Définition et brainstorming en cours.**
 
-Le dépôt contient la synthèse des besoins et les pistes de conception. La vision fonctionnelle décrite est retenue comme base pour la V1 et a fait l'objet d'une revue extérieure par un sous-agent Astra. Les règles détaillées, l'API et le plan de réalisation restent à formaliser. Aucune fonctionnalité n'est encore implémentée et aucun package npm n'est publié.
+Le dépôt contient la synthèse des besoins et une proposition de conception V1, enrichie du temps réel et d'un mode Direct activable. La vision fonctionnelle est acceptée comme base ; la conception détaillée et cet ajout ont été relus par Astra. Les conventions restent à valider avant le plan de réalisation. Aucune fonctionnalité n'est encore implémentée et aucun package npm n'est publié.
 
 ## Premiers usages
 
 - **Rejouer une journée d'opérations** : parcourir des communications de capteurs et piloter les autres éléments d'une application à partir du temps de lecture.
+- **Surveiller un flux** : mettre à jour les collections pendant l'utilisation et suivre le Direct, avec possibilité de revenir à l'historique.
 - **Présenter l'histoire d'une entreprise** : explorer des événements et des périodes sur plusieurs années ou décennies.
 
 ## Directions retenues
@@ -27,18 +28,21 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. La vis
 - Regroupement des communications géré par l'application consommatrice ; la timeline affiche les éléments individuels ou groupés qu'elle reçoit.
 - Données fournies par fenêtre temporelle et remplaçables au zoom ou au déplacement.
 - Lecture suspendue lorsque l'application doit se mettre à jour, jusqu'à ce qu'elle soit prête.
+- Collections dynamiques : ajout, modification et suppression pendant l'utilisation.
+- Mode Direct activable suivant la dernière position fournie par l'application ; chargement et connexion au flux restent externes.
 
 La séparation d'un moteur temporel indépendant de React et de la vue React est proposée ; le détail de cette architecture reste à valider.
 
 ## Documents de conception
 
+- [Conception V1 à valider](docs/CONCEPTION-V1.md) : lecture rapide, comportements, données, synchronisation et critères de réalisation.
 - [Définition et statut du brainstorming](docs/DEFINITION.md) : besoins confirmés, propositions et limites de responsabilité.
 - [Architecture proposée](docs/ARCHITECTURE.md) : séparation du moteur, de la vue React et des aides facultatives.
 - [Questions ouvertes](docs/QUESTIONS-OUVERTES.md) : décisions restantes, par priorité.
 - [Revue extérieure Astra](docs/REVUE-V1.md) : regard critique, recommandations et réponses de l'utilisateur.
 - [Jeu de référence proposé](docs/JEU-REFERENCE.md) : volumes et scénarios pour mesurer la future implémentation.
 
-Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le volume réellement transmis et affiché reste à préciser, ainsi que le modèle temporel, les comportements de lecture et le périmètre de la première version.
+Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le jeu de référence propose les volumes à mesurer après regroupement. La prochaine étape est de valider la conception, puis de préparer le plan de réalisation.
 
 ## Publication
 
