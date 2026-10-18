@@ -1,0 +1,93 @@
+# Questions ouvertes
+
+Dernière mise à jour : 18 octobre 2026.
+
+Cette liste rassemble les décisions restantes. Elle distingue les besoins à préciser des sujets ajoutés par l'assistant pour préparer une bibliothèque utilisable et publiable. Elle ne constitue ni un engagement de fonctionnalités ni un plan d'implémentation validé.
+
+## À trancher avant le premier plan de réalisation
+
+### 1. Volumétrie de référence
+
+- Que désignent les « centaines » : connecteurs, communications totales ou débit ?
+- Combien de lignes sont présentes et dépliées simultanément ?
+- Quel volume total doit pouvoir être chargé et quelle densité doit être visible ?
+- Quels objectifs simples de fluidité et de temps de chargement vérifier sur un jeu représentatif ?
+
+### 2. Périmètre de la première version
+
+- Quel cas de référence sert à la première démonstration ?
+- Quelles fonctions entrent dans cette version, et lesquelles sont reportées ?
+- Quelle place donner immédiatement au rewind, aux points d'intérêt, au regroupement et aux aides de détail ?
+
+### 3. Contrat temporel et synchronisation
+
+- Uniquement des dates de calendrier, ou aussi des durées relatives à un départ ?
+- Quel format de temps accepte l'API et comment distinguer instants et durées ?
+- Quelle convention de fuseau horaire, de localisation et de changement d'heure ?
+- Quels signaux transmettre à l'application pendant la lecture et lors d'un saut ?
+- Comment distinguer restitution d'un état à une date et exécution d'actions ponctuelles ?
+- Que se passe-t-il à la fin, pendant un arrêt, après un rewind et lors d'un changement de vitesse ?
+- Comment le curseur et la fenêtre visible se comportent-ils lorsque le temps courant sort de l'écran ?
+
+### 4. Modèle de données
+
+- Quels champs minimaux pour une ligne, un événement, une période et un point d'intérêt ?
+- Comment identifier les objets et transporter leurs métadonnées métier ?
+- Une communication est-elle un instant, une période, ou les deux selon les données ?
+- Comment traiter les événements simultanés, les chevauchements et les bornes des périodes ?
+- Quelle règle applique une ligne parente repliée à chacun des niveaux de la hiérarchie ?
+- Quels contrôles appliquer aux identifiants, aux périodes invalides ou aux hiérarchies cycliques ?
+
+## À préciser pendant la conception de l'interface et de l'API
+
+### 5. Personnalisation
+
+- Quelles zones peuvent recevoir un composant React personnalisé ?
+- Quel contrôle offrir sur les couleurs, tailles, icônes, libellés et styles ?
+- Comment exposer les éléments ou les membres d'un groupe aux actions personnalisées ?
+- Comment activer, remplacer ou désactiver les infobulles et modales proposées ?
+- Comment distinguer le clic d'action et le clic de navigation temporelle ?
+
+### 6. Regroupement et rendu
+
+- Confirmer ou modifier la proposition de regroupement mixte : métier dans l'application, visuel facultatif dans la librairie.
+- Qui calcule les groupes et comment les transmettre à la vue ?
+- Comment les groupes évoluent-ils au zoom, et que montrent-ils au survol ?
+- Quelle technique de rendu est adaptée au jeu de données de référence ?
+- Faut-il rendre uniquement les lignes et événements visibles ?
+
+### 7. Mise à jour des données
+
+- Les données sont-elles uniquement chargées au départ, ou modifiables ensuite ?
+- Faut-il charger par fenêtre temporelle ?
+- Quels comportements pendant un chargement, une absence de données ou une modification en cours de lecture ?
+- Le temps courant et l'état des lignes sont-ils gérés par la librairie, contrôlés par l'application, ou les deux selon l'intégration ?
+
+### 8. Navigation et accessibilité
+
+- Quels gestes de zoom, déplacement, sélection et déplacement du curseur ?
+- Quels équivalents au clavier et sur écran tactile ?
+- Comment exposer la hiérarchie et les événements aux technologies d'assistance ?
+- Comment gérer le focus dans les aides de détail et adapter les animations aux préférences de l'utilisateur ?
+
+## À fixer pour préparer la publication
+
+### 9. Compatibilité et distribution
+
+- Quelles versions de React et quels navigateurs prendre en charge ?
+- Les applications avec rendu côté serveur font-elles partie de la première cible ?
+- Quels points d'entrée, fichiers de types et styles distribuer ?
+- Un package unique suffit-il pour la première version ?
+- Comment vérifier le package installé dans une application consommatrice distincte ?
+
+### 10. Projet et maintenance
+
+- Quel nom npm disponible et quelle licence ?
+- Quel outillage de compilation et de validation ?
+- Quelles règles de version, de compatibilité et de documentation de l'API publique ?
+- Quelles démonstrations et quels exemples fournir ?
+- Quelles vérifications automatiser avant une version ?
+
+## Prochaine étape proposée
+
+Clarifier d'abord la volumétrie, puis arrêter un petit périmètre initial et les règles essentielles de temps et de lecture. Ces réponses permettront d'écrire la conception et le plan de réalisation sans choisir prématurément une technique de rendu.
