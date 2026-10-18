@@ -21,6 +21,7 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 - Lignes dépliables sur plusieurs niveaux.
 - Lecture, pause, arrêt, changement de vitesse et navigation par points d'intérêt parmi les besoins exprimés.
 - Actions au clic personnalisables par l'application.
+- Regroupement des communications géré par l'application consommatrice ; la timeline affiche les éléments individuels ou groupés qu'elle reçoit.
 
 La séparation d'un moteur temporel indépendant de React et de la vue React est proposée ; le détail de cette architecture reste à valider.
 
@@ -30,7 +31,7 @@ La séparation d'un moteur temporel indépendant de React et de la vue React est
 - [Architecture proposée](docs/ARCHITECTURE.md) : séparation du moteur, de la vue React et des aides facultatives.
 - [Questions ouvertes](docs/QUESTIONS-OUVERTES.md) : décisions restantes, par priorité.
 
-La prochaine étape consiste à préciser la volumétrie, le modèle temporel et les comportements de lecture, puis à définir une première version réalisable.
+Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le volume réellement transmis et affiché reste à préciser, ainsi que le modèle temporel, les comportements de lecture et le périmètre de la première version.
 
 ## Publication
 

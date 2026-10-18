@@ -29,6 +29,7 @@ Le moteur doit rester générique : les notions de connecteur, de capteur ou d'e
 - Dépliage, zoom, déplacement et interactions au pointeur ou au clavier.
 - Zones de contenu personnalisables avec React.
 - Transmission des actions et changements de temps à l'application.
+- Affichage des éléments individuels ou groupés fournis par l'application, sans calcul de regroupement automatique retenu à ce stade.
 
 Le niveau exact de personnalisation reste ouvert. La répartition entre rendu HTML, SVG et Canvas doit être évaluée selon les volumes et les interactions attendues ; React ne détermine pas à lui seul cette répartition.
 
@@ -45,9 +46,11 @@ Ces composants seraient utilisables ou remplaçables selon les besoins de l'appl
 - Fournir les données et leurs métadonnées.
 - Définir les actions métier.
 - Actualiser ses graphiques, cartes ou autres éléments à l'instant choisi.
-- Fournir les regroupements métier lorsqu'ils sont nécessaires.
+- Préparer les regroupements nécessaires, selon ses règles métier ou la densité visuelle souhaitée.
 
 La façon de reconstruire un état à un instant donné reste propre à l'application dans ce découpage. Le contrat de synchronisation doit expliciter le comportement lors d'un saut, d'une lecture et d'un rewind.
+
+Le cas de référence peut atteindre des centaines de communications par seconde en entrée de l'application. La timeline recevrait les éléments choisis par cette application. Exposer la fenêtre visible et ses changements est une proposition pour permettre l'adaptation des groupes au zoom ; le format de ces échanges reste à définir. Les optimisations de rendu des éléments visibles relèvent de l'affichage et ne changent pas la décision de laisser le regroupement à l'application.
 
 ## Sens des dépendances
 

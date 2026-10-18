@@ -58,18 +58,17 @@ Connecteurs
 
 Les noms sont illustratifs. Les communications sont le contenu temporel des lignes individuelles, pas un niveau supplémentaire de sous-lignes imposé.
 
-Lorsqu'un type est replié, sa ligne doit représenter les communications de ses connecteurs par des marqueurs. La règle exacte pour les autres niveaux parents reste à préciser.
+Lorsqu'un type est replié, sa ligne doit représenter les communications de ses connecteurs par des marqueurs, ou les groupes préparés par l'application. La règle exacte de représentation pour les autres niveaux parents reste à préciser.
 
 ### Densité et regroupement
 
-Les communications peuvent être très denses. Un moyen de regroupement est donc nécessaire. Le développeur doit conserver la liberté d'appliquer ses propres règles.
+Le flux source peut atteindre des centaines de communications par seconde.
 
-La répartition des responsabilités reste à décider. La proposition de l'assistant distingue :
+Décision de l'utilisateur : le regroupement incombe au développeur qui utilise la librairie. L'application prépare les communications individuelles ou groupées à afficher et choisit ses règles, qu'elles soient métier ou adaptées à la densité visuelle. Aucun regroupement automatique interne n'est retenu à ce stade ; cette décision remplace la proposition mixte antérieure de l'assistant.
 
-- Le regroupement métier, défini par l'application : sessions, incidents ou catégories, par exemple.
-- Le regroupement visuel facultatif, fourni par la librairie selon la proximité des marqueurs et le zoom.
+La timeline affiche les éléments fournis et relaie les interactions personnalisées. Le format des groupes et de leurs métadonnées reste à définir. La correspondance avec les communications sources et leur utilisation pour reconstruire un état métier relèvent de l'application.
 
-Cette approche mixte n'est pas encore validée. Préserver les événements sources pendant le regroupement visuel est une recommandation de conception.
+Proposition de l'assistant : exposer la fenêtre visible et son évolution pour permettre à l'application d'adapter ses données et ses regroupements au zoom. Le mécanisme de mise à jour reste ouvert. Limiter le rendu aux éléments visibles est une optimisation d'affichage distincte du regroupement.
 
 ### Interactions
 
@@ -85,6 +84,7 @@ La distinction entre un clic sur un élément et un clic sur le fond temporel es
 | --- | --- |
 | TypeScript | Langage demandé |
 | React | Retenu pour l'interface dès la première version |
+| Regroupement des communications | Géré par l'application consommatrice |
 | Séparation architecturale | Souhait exprimé ; découpage détaillé proposé dans `ARCHITECTURE.md` |
 | Vue indépendante des frameworks | Écartée de la direction initiale au profit d'une première vue React |
 | Moteur temporel indépendant de React | Recommandation de l'assistant, à confirmer dans la conception |
@@ -96,13 +96,13 @@ La distinction entre un clic sur un élément et un clic sur le fond temporel es
 
 La timeline expose et contrôle le temps, affiche les données temporelles et permet les interactions.
 
-L'application consommatrice fournit les données, leur sens métier et les actions personnalisées. La restitution de ses propres états à un instant donné lui revient dans le découpage proposé. Le protocole précis de synchronisation reste à définir, en particulier pour distinguer un saut direct d'un parcours continu des événements.
+L'application consommatrice fournit les données, les regroupements, leur sens métier et les actions personnalisées. La restitution de ses propres états à un instant donné lui revient dans le découpage proposé. Le protocole précis de synchronisation reste à définir, en particulier pour distinguer un saut direct d'un parcours continu des événements.
 
 L'ingestion des capteurs et le rendu de l'application complète ne font pas partie des fonctionnalités demandées à la timeline.
 
 ## Volumétrie
 
-L'estimation actuelle est « potentiellement des centaines ». L'unité reste inconnue : connecteurs, communications sur une journée ou communications par seconde. Aucun objectif de performance n'est donc encore fixé.
+Le cas de référence peut produire des centaines de communications par seconde avant regroupement. Le nombre de connecteurs, le volume transmis après regroupement et le nombre de marqueurs simultanément visibles restent à préciser. Ce débit source n'est pas une exigence de rendu individuel de tous les événements de la journée ; aucun objectif chiffré de performance d'affichage n'est encore fixé.
 
 ## Suite
 

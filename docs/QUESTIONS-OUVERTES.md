@@ -8,16 +8,17 @@ Cette liste rassemble les décisions restantes. Elle distingue les besoins à pr
 
 ### 1. Volumétrie de référence
 
-- Que désignent les « centaines » : connecteurs, communications totales ou débit ?
+Point clarifié : le flux source peut atteindre des centaines de communications par seconde. L'application consommatrice gère le regroupement.
+
 - Combien de lignes sont présentes et dépliées simultanément ?
-- Quel volume total doit pouvoir être chargé et quelle densité doit être visible ?
+- Quel volume après regroupement doit être transmis à la timeline, et quelle densité doit être visible ?
 - Quels objectifs simples de fluidité et de temps de chargement vérifier sur un jeu représentatif ?
 
 ### 2. Périmètre de la première version
 
 - Quel cas de référence sert à la première démonstration ?
 - Quelles fonctions entrent dans cette version, et lesquelles sont reportées ?
-- Quelle place donner immédiatement au rewind, aux points d'intérêt, au regroupement et aux aides de détail ?
+- Quelle place donner immédiatement au rewind, aux points d'intérêt, à l'affichage de groupes fournis et aux aides de détail ?
 
 ### 3. Contrat temporel et synchronisation
 
@@ -50,9 +51,11 @@ Cette liste rassemble les décisions restantes. Elle distingue les besoins à pr
 
 ### 6. Regroupement et rendu
 
-- Confirmer ou modifier la proposition de regroupement mixte : métier dans l'application, visuel facultatif dans la librairie.
-- Qui calcule les groupes et comment les transmettre à la vue ?
-- Comment les groupes évoluent-ils au zoom, et que montrent-ils au survol ?
+Décision prise : l'application consommatrice calcule les regroupements. La proposition de regroupement mixte antérieure n'est pas retenue.
+
+- Quel format permet de fournir des éléments groupés et leurs métadonnées à la vue ?
+- Quels changements de fenêtre ou de zoom exposer pour permettre à l'application d'adapter ses groupes ?
+- Que montrent les groupes au survol selon le contenu fourni par l'application ?
 - Quelle technique de rendu est adaptée au jeu de données de référence ?
 - Faut-il rendre uniquement les lignes et événements visibles ?
 
@@ -90,4 +93,4 @@ Cette liste rassemble les décisions restantes. Elle distingue les besoins à pr
 
 ## Prochaine étape proposée
 
-Clarifier d'abord la volumétrie, puis arrêter un petit périmètre initial et les règles essentielles de temps et de lecture. Ces réponses permettront d'écrire la conception et le plan de réalisation sans choisir prématurément une technique de rendu.
+Préciser le volume à afficher après regroupement, puis arrêter un petit périmètre initial et les règles essentielles de temps et de lecture. Ces réponses permettront d'écrire la conception et le plan de réalisation sans choisir prématurément une technique de rendu.
