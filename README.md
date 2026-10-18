@@ -21,6 +21,7 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 - Zoom et déplacement libres, avec des limites configurables.
 - Lignes dépliables sur plusieurs niveaux.
 - Lecture, pause, arrêt, vitesse réglable, clé suivante/précédente et lecture en boucle parmi les besoins exprimés.
+- Clés définies par l'utilisateur comme des repères temporels pour la navigation.
 - Actions au clic personnalisables par l'application.
 - Pilotage temporel dans les deux sens : la timeline informe l'application, et l'application peut déplacer le curseur ou lancer la lecture.
 - Regroupement des communications géré par l'application consommatrice ; la timeline affiche les éléments individuels ou groupés qu'elle reçoit.

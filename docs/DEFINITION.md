@@ -40,10 +40,10 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
 - Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle.
-- Naviguer par points d'intérêt et disposer de commandes « clé suivante » et « clé précédente » ; le sens précis des clés reste à définir.
+- Naviguer entre des clés, définies par l'utilisateur comme des repères temporels, avec des commandes « clé suivante » et « clé précédente ».
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
 
-La vitesse réglable, les commandes clé suivante/précédente et la boucle sont explicitement demandées. Les vitesses proposées, la définition des clés, les bornes de boucle et les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
+La vitesse réglable, les commandes clé suivante/précédente et la boucle sont explicitement demandées. Les vitesses proposées, les modalités de définition des clés, les bornes de boucle et les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
 
 Proposition de comportements par défaut par l'assistant, à valider :
 
@@ -52,7 +52,7 @@ Proposition de comportements par défaut par l'assistant, à valider :
 - **Fin de période sans boucle** : terminer la lecture en conservant le curseur à la fin, sans reprise automatique.
 - **Boucle activée** : revenir au début de la période de lecture configurée et continuer la lecture. Cette règle et la possibilité de boucler sur une sous-période restent à valider.
 
-Interprétation proposée par l'assistant : les clés pourraient être des points d'intérêt fournis par l'application, plutôt que toutes les communications. Ce choix n'est pas confirmé ; le comportement aux bornes, en cours de lecture et en présence de plusieurs clés au même instant reste à définir.
+Définition confirmée par l'utilisateur : une clé est un repère temporel qu'il peut définir. Les commandes précédente/suivante servent à naviguer entre ces repères. La manière de les créer ou de les fournir reste à préciser : aucune interface d'édition ni aucun format d'API n'est encore retenu. Le comportement aux bornes, en cours de lecture et en présence de plusieurs clés au même instant reste à définir.
 
 Deux modes temporels sont confirmés :
 

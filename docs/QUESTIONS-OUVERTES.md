@@ -26,6 +26,8 @@ Décision prise : les dates de calendrier et le temps relatif à un départ sont
 
 Décision prise : le pilotage temporel fonctionne dans les deux sens, de la timeline vers l'application et de l'application vers la timeline.
 
+Définition confirmée : une clé est un repère temporel que peut définir l'utilisateur.
+
 - Quel format de temps accepte l'API et comment distinguer instants et durées ?
 - Quelles règles de graduation et de libellés pour chacun des deux modes ?
 - Faut-il permettre de convertir entre les modes à partir d'une origine datée ?
@@ -36,7 +38,7 @@ Décision prise : le pilotage temporel fonctionne dans les deux sens, de la time
 - Que se passe-t-il à la fin, pendant un arrêt, après un rewind et lors d'un changement de vitesse ?
 - Valider ou modifier les comportements de pause, stop et fin de période avec ou sans boucle proposés dans la définition.
 - Quelles vitesses proposer et comment les configurer ?
-- Une clé correspond-elle à un point d'intérêt explicite, à un événement, à une borne de période ou à une autre notion ?
+- Comment les clés sont-elles définies et transmises : par l'application, par une interface d'édition, ou les deux ?
 - Quelles clés prendre en compte selon les lignes, et quel comportement aux bornes ou en cas de clés simultanées ?
 - La boucle porte-t-elle sur la période complète ou peut-elle cibler une sous-période ?
 - Comment le curseur et la fenêtre visible se comportent-ils lorsque le temps courant sort de l'écran ?
