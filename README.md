@@ -4,9 +4,9 @@ Projet de bibliothèque TypeScript et React pour créer des timelines interactiv
 
 ## État du projet
 
-**18 octobre 2026 — Définition et brainstorming en cours.**
+**18 octobre 2026 — Conception V1 validée ; reprise au plan de réalisation.**
 
-Le dépôt contient la synthèse des besoins et une proposition de conception V1, enrichie du temps réel et d'un mode Direct activable. La vision fonctionnelle est acceptée comme base ; la conception détaillée et cet ajout ont été relus par Astra. Les conventions restent à valider avant le plan de réalisation. Aucune fonctionnalité n'est encore implémentée et aucun package npm n'est publié.
+Le dépôt contient la synthèse des besoins et la conception V1, enrichie du temps réel et d'un mode Direct activable. La conception a été relue par Astra et validée par l'utilisateur. Le plan de réalisation sera rédigé lors de la prochaine séance. Aucune fonctionnalité n'est encore implémentée et aucun package npm n'est publié.
 
 ## Premiers usages
 
@@ -35,14 +35,18 @@ La séparation d'un moteur temporel indépendant de React et de la vue React est
 
 ## Documents de conception
 
-- [Conception V1 à valider](docs/CONCEPTION-V1.md) : lecture rapide, comportements, données, synchronisation et critères de réalisation.
+- [Conception V1 validée](docs/CONCEPTION-V1.md) : lecture rapide, comportements, données, synchronisation et critères de réalisation.
 - [Définition et statut du brainstorming](docs/DEFINITION.md) : besoins confirmés, propositions et limites de responsabilité.
 - [Architecture proposée](docs/ARCHITECTURE.md) : séparation du moteur, de la vue React et des aides facultatives.
 - [Questions ouvertes](docs/QUESTIONS-OUVERTES.md) : décisions restantes, par priorité.
 - [Revue extérieure Astra](docs/REVUE-V1.md) : regard critique, recommandations et réponses de l'utilisateur.
 - [Jeu de référence proposé](docs/JEU-REFERENCE.md) : volumes et scénarios pour mesurer la future implémentation.
 
-Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le jeu de référence propose les volumes à mesurer après regroupement. La prochaine étape est de valider la conception, puis de préparer le plan de réalisation.
+Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le jeu de référence propose les volumes à mesurer après regroupement.
+
+## Point de reprise
+
+Commencer par rédiger le plan de réalisation à partir de la conception V1 validée. Les choix d'outillage et de versions exactes seront fixés dans ce plan. Aucun squelette de package, dépendance ou code produit n'a encore été créé ; aucune publication npm n'a été effectuée.
 
 ## Publication
 

@@ -6,9 +6,9 @@ Cette liste rassemble les décisions restantes. Elle distingue les besoins à pr
 
 Les trois questions de produit prioritaires de la revue Astra ont reçu une réponse. Les points restants servent à préparer une proposition de conception ; ils ne constituent pas tous des questions à soumettre à l'utilisateur.
 
-Depuis, la [conception V1](CONCEPTION-V1.md) propose les réponses aux sujets ci-dessous et a été relue par Astra, sans question indispensable manquante pour planifier. Cet inventaire conserve la trace du cadrage : il ne constitue plus une liste de questions bloquant la rédaction du plan. Les conventions proposées attendent la validation de l'utilisateur ; outils, versions, licence et publication seront réglés aux étapes correspondantes.
+Depuis, la [conception V1](CONCEPTION-V1.md) répond aux sujets ci-dessous, a été relue par Astra et a été validée par l'utilisateur le 18 octobre 2026. Cet inventaire conserve la trace du cadrage : il ne constitue plus une liste de questions bloquant la rédaction du plan. Outils, versions, licence et publication seront réglés aux étapes correspondantes.
 
-Ajout confirmé pendant cette formalisation : collections dynamiques et suivi du Direct activable. Une relecture Astra ciblée a identifié puis vérifié la correction d'un risque d'annulations perpétuelles des chargements. Les règles correspondantes sont incluses dans la conception ; aucune nouvelle question de produit n'est nécessaire avant sa validation.
+Ajout confirmé pendant cette formalisation : collections dynamiques et suivi du Direct activable. Une relecture Astra ciblée a identifié puis vérifié la correction d'un risque d'annulations perpétuelles des chargements. Les règles correspondantes sont incluses dans la conception validée.
 
 ## À formaliser pour le premier plan de réalisation
 
@@ -120,4 +120,4 @@ Décisions complémentaires : les collections peuvent recevoir des ajouts, modif
 
 ## Prochaine étape proposée
 
-Valider la conception V1, puis écrire son plan de réalisation. Les mesures sur le jeu de référence permettront ensuite de vérifier les choix de rendu.
+Écrire le plan de réalisation lors de la reprise. Les mesures sur le jeu de référence permettront ensuite de vérifier les choix de rendu.

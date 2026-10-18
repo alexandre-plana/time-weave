@@ -1,9 +1,9 @@
 # Conception V1 — Time Weave
 
 Date : 18 octobre 2026.
-Statut : proposition de conception enrichie du temps réel et du mode Direct, relue par Astra ; à valider avant le plan.
+Statut : conception enrichie du temps réel et du mode Direct, relue par Astra et validée par l'utilisateur le 18 octobre 2026. Plan à rédiger lors de la reprise.
 
-Ce document consolide la [définition](DEFINITION.md) et les réponses à la [revue Astra](REVUE-V1.md). Les décisions fonctionnelles de l'utilisateur sont conservées. Les conventions détaillées ci-dessous sont des choix proposés par l'assistant, pas des décisions précédemment exprimées par l'utilisateur. Aucune implémentation n'est encore réalisée.
+Ce document consolide la [définition](DEFINITION.md) et les réponses à la [revue Astra](REVUE-V1.md). Les décisions fonctionnelles de l'utilisateur sont conservées. Les conventions détaillées ci-dessous ont été proposées par l'assistant puis retenues avec la validation du document ; les formulations « proposé » en conservent la provenance. Aucune implémentation n'est encore réalisée.
 
 ## Lecture rapide : conventions proposées
 
@@ -20,7 +20,7 @@ Ce document consolide la [définition](DEFINITION.md) et les réponses à la [re
 | Direct | Suivi activable de la dernière position fournie, avec attente de l'application et retour possible à l'historique |
 | Affichage | HTML/CSS et axe SVG comme première approche, avec limitation au visible et mesures avant toute capacité annoncée |
 
-Ces choix complètent les besoins retenus et sont soumis à validation avec le document. Les sections suivantes précisent les règles et les critères de réalisation.
+Ces choix complètent les besoins retenus et ont été validés avec le document. Les sections suivantes précisent les règles et les critères de réalisation.
 
 ## 1. Intention et réussite
 

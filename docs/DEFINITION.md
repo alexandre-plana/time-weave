@@ -6,7 +6,7 @@ Dernière mise à jour : 18 octobre 2026.
 
 Le projet est en phase de définition. React est retenu et l'utilisateur accepte la vision fonctionnelle décrite comme base pour la V1. Une [revue extérieure Astra](REVUE-V1.md) a été réalisée pour préparer la conception détaillée et le plan. Aucun code produit n'est encore implémenté.
 
-Une [conception V1 détaillée](CONCEPTION-V1.md), relue par Astra, rassemble désormais les réponses proposées aux choix techniques et aux comportements restants. Elle doit être validée avant le plan. Ce document conserve la distinction entre les besoins confirmés et les propositions ; les détails présentés comme ouverts ci-dessous sont traités dans cette conception proposée, sans devenir des décisions de l'utilisateur.
+La [conception V1 détaillée](CONCEPTION-V1.md), relue par Astra, a été validée par l'utilisateur le 18 octobre 2026. Elle rassemble les réponses aux choix techniques et aux comportements restants. La présente définition conserve la provenance du brainstorming ; les détails encore présentés comme ouverts ci-dessous ont reçu des conventions retenues dans la conception. Le plan sera rédigé à la reprise.
 
 Les mentions ci-dessous distinguent les besoins exprimés, les décisions prises et les recommandations encore à discuter. Les options, comportements détaillés et éventuels reports proposés lors de la revue devront être formalisés ; l'acceptation de la vision ne fixe pas encore chaque règle d'API ou d'interface.
 
@@ -146,4 +146,4 @@ Le cas de référence peut produire des centaines de communications par seconde 
 
 ## Suite
 
-Valider la [conception V1](CONCEPTION-V1.md), puis produire le plan de réalisation. Les outils et versions exactes seront proposés dans le plan. Aucun squelette de package n'a encore été créé.
+Produire le plan de réalisation à partir de la [conception V1 validée](CONCEPTION-V1.md). Les outils et versions exactes seront proposés dans le plan. Aucun squelette de package n'a encore été créé.

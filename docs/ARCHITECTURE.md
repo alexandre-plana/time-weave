@@ -1,9 +1,9 @@
 # Architecture proposée
 
 Date : 18 octobre 2026.
-Statut : React est retenu ; le découpage détaillé ci-dessous est une proposition à valider.
+Statut : synthèse initiale ; le découpage consolidé est retenu dans la conception V1 validée le 18 octobre 2026.
 
-La [conception V1 consolidée](CONCEPTION-V1.md) développe ce découpage, les contrats et les comportements proposés. Relue par Astra, elle constitue le document à valider avant le plan. La présente page conserve la synthèse architecturale initiale.
+La [conception V1 consolidée](CONCEPTION-V1.md) développe ce découpage, les contrats et les comportements. Relue par Astra et validée par l'utilisateur, elle constitue la référence pour le prochain plan. La présente page conserve la synthèse architecturale initiale.
 
 ## Objectif
 
