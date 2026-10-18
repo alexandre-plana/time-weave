@@ -39,18 +39,18 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Permettre le zoom et le déplacement libres, avec des limites configurables par le développeur.
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
-- Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle.
+- Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle sur la période complète.
 - Naviguer entre des clés, fournies dans les données comme des repères temporels, avec des commandes « clé suivante » et « clé précédente ».
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
 
-La vitesse réglable, les commandes clé suivante/précédente et la boucle sont explicitement demandées. Les vitesses proposées, le format des clés, les bornes de boucle et les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouverts.
+La vitesse réglable, les commandes clé suivante/précédente et la boucle sont explicitement demandées. La boucle porte sur la période complète de la timeline ; la boucle sur une sous-période est reportée pour le moment. Le zoom ne définit pas une nouvelle plage de boucle. Les vitesses proposées, le format des clés et les règles détaillées de fin de lecture, d'arrêt, de reprise et de navigation restent ouverts.
 
 Proposition de comportements par défaut par l'assistant, à valider :
 
 - **Pause** : interrompre la lecture en conservant la position.
 - **Stop** : interrompre la lecture et revenir au début de la période de lecture configurée, indépendamment du zoom.
 - **Fin de période sans boucle** : terminer la lecture en conservant le curseur à la fin, sans reprise automatique.
-- **Boucle activée** : revenir au début de la période de lecture configurée et continuer la lecture. Cette règle et la possibilité de boucler sur une sous-période restent à valider.
+- **Boucle activée** : revenir au début de la période complète et continuer la lecture. La portée de la boucle est confirmée ; les règles détaillées de transition restent à préciser.
 
 Définition confirmée par l'utilisateur : une clé est un repère temporel qu'il définit et fournit dans les données. Les commandes précédente/suivante servent à naviguer entre ces repères. Une interface de création ou d'édition de clés dans la timeline ne fait pas partie du besoin retenu. Le format des données, le comportement aux bornes, en cours de lecture et en présence de plusieurs clés au même instant restent à définir.
 

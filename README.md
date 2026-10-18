@@ -20,7 +20,7 @@ Le dépôt contient la synthèse des besoins et les pistes de conception. Aucune
 - Temps de calendrier et temps relatif à un point de départ, par exemple une séquence commençant à `0 ms`.
 - Zoom et déplacement libres, avec des limites configurables.
 - Lignes dépliables sur plusieurs niveaux.
-- Lecture, pause, arrêt, vitesse réglable, clé suivante/précédente et lecture en boucle parmi les besoins exprimés.
+- Lecture, pause, arrêt, vitesse réglable, clé suivante/précédente et boucle sur la période complète parmi les besoins exprimés.
 - Clés fournies dans les données comme des repères temporels pour la navigation.
 - Actions au clic personnalisables par l'application.
 - Pilotage temporel dans les deux sens : la timeline informe l'application, et l'application peut déplacer le curseur ou lancer la lecture.

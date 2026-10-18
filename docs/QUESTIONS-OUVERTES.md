@@ -28,6 +28,8 @@ Décision prise : le pilotage temporel fonctionne dans les deux sens, de la time
 
 Définition confirmée : une clé est un repère temporel défini par l'utilisateur et fourni dans les données. Aucune interface de création ou d'édition de clés n'est demandée.
 
+Décision prise : la boucle porte sur la période complète de la timeline. La boucle sur une sous-période est reportée pour le moment.
+
 - Quel format de temps accepte l'API et comment distinguer instants et durées ?
 - Quelles règles de graduation et de libellés pour chacun des deux modes ?
 - Faut-il permettre de convertir entre les modes à partir d'une origine datée ?
@@ -40,7 +42,6 @@ Définition confirmée : une clé est un repère temporel défini par l'utilisat
 - Quelles vitesses proposer et comment les configurer ?
 - Quel format de données prévoir pour les clés et leurs éventuelles métadonnées ?
 - Quelles clés prendre en compte selon les lignes, et quel comportement aux bornes ou en cas de clés simultanées ?
-- La boucle porte-t-elle sur la période complète ou peut-elle cibler une sous-période ?
 - Comment le curseur et la fenêtre visible se comportent-ils lorsque le temps courant sort de l'écran ?
 
 ### 4. Modèle de données
