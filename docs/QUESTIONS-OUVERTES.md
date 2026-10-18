@@ -18,7 +18,7 @@ Point clarifié : le flux source peut atteindre des centaines de communications 
 
 - Quel cas de référence sert à la première démonstration ?
 - Quelles fonctions entrent dans cette version, et lesquelles sont reportées ?
-- Quelle place donner immédiatement au rewind, aux points d'intérêt, à l'affichage de groupes fournis et aux aides de détail ?
+- Quelle place donner immédiatement au rewind, aux clés suivante/précédente, à la boucle, à l'affichage de groupes fournis et aux aides de détail ?
 
 ### 3. Contrat temporel et synchronisation
 
@@ -34,7 +34,11 @@ Décision prise : le pilotage temporel fonctionne dans les deux sens, de la time
 - Quelle API de contrôle externe proposer, et comment synchroniser les commandes de la timeline et celles de l'application ?
 - Comment distinguer restitution d'un état à une date et exécution d'actions ponctuelles ?
 - Que se passe-t-il à la fin, pendant un arrêt, après un rewind et lors d'un changement de vitesse ?
-- Valider ou modifier les comportements de pause, stop et fin de période proposés dans la définition.
+- Valider ou modifier les comportements de pause, stop et fin de période avec ou sans boucle proposés dans la définition.
+- Quelles vitesses proposer et comment les configurer ?
+- Une clé correspond-elle à un point d'intérêt explicite, à un événement, à une borne de période ou à une autre notion ?
+- Quelles clés prendre en compte selon les lignes, et quel comportement aux bornes ou en cas de clés simultanées ?
+- La boucle porte-t-elle sur la période complète ou peut-elle cibler une sous-période ?
 - Comment le curseur et la fenêtre visible se comportent-ils lorsque le temps courant sort de l'écran ?
 
 ### 4. Modèle de données

@@ -14,7 +14,7 @@ Une première vue indépendante des frameworks avec adaptateur React a été env
 ### Moteur TypeScript
 
 - Modèle générique d'événements, de périodes et de lignes hiérarchiques.
-- État temporel et règles de lecture : position, vitesse, pause, navigation.
+- État temporel et règles de lecture : position, vitesse, pause, navigation clé suivante/précédente et boucle. La définition des clés et les bornes de boucle restent ouvertes.
 - Calculs de temps, de fenêtre visible et de limites.
 - Prise en charge des deux modes confirmés : calendrier et relatif, avec une représentation interne à définir.
 - Interface permettant à la vue et à l'application d'observer et de contrôler cet état.

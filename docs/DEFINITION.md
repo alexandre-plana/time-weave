@@ -39,17 +39,20 @@ La référence visuelle initiale associe un axe horizontal à des lignes d'entre
 - Permettre le zoom et le déplacement libres, avec des limites configurables par le développeur.
 - Disposer d'une position temporelle courante pour synchroniser l'application.
 - Permettre aussi à l'application de piloter la timeline, notamment de déplacer le curseur et de lancer la lecture depuis ses propres commandes.
-- Proposer lecture automatique, pause, arrêt et changement de vitesse.
-- Naviguer par points d'intérêt.
+- Proposer lecture automatique, pause, arrêt, vitesse réglable et lecture en boucle.
+- Naviguer par points d'intérêt et disposer de commandes « clé suivante » et « clé précédente » ; le sens précis des clés reste à définir.
 - Rejoindre immédiatement un instant choisi et permettre un rewind optionnel jusqu'à une cible passée.
 
-Les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
+La vitesse réglable, les commandes clé suivante/précédente et la boucle sont explicitement demandées. Les vitesses proposées, la définition des clés, les bornes de boucle et les règles de fin de lecture, d'arrêt, de reprise et de navigation restent ouvertes.
 
 Proposition de comportements par défaut par l'assistant, à valider :
 
 - **Pause** : interrompre la lecture en conservant la position.
 - **Stop** : interrompre la lecture et revenir au début de la période de lecture configurée, indépendamment du zoom.
-- **Fin de période** : terminer la lecture en conservant le curseur à la fin, sans reprise automatique.
+- **Fin de période sans boucle** : terminer la lecture en conservant le curseur à la fin, sans reprise automatique.
+- **Boucle activée** : revenir au début de la période de lecture configurée et continuer la lecture. Cette règle et la possibilité de boucler sur une sous-période restent à valider.
+
+Interprétation proposée par l'assistant : les clés pourraient être des points d'intérêt fournis par l'application, plutôt que toutes les communications. Ce choix n'est pas confirmé ; le comportement aux bornes, en cours de lecture et en présence de plusieurs clés au même instant reste à définir.
 
 Deux modes temporels sont confirmés :
 
