@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Weave — Vue d’ensemble de la maquette</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef0f4;font:12px system-ui,sans-serif;color:#687486}header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #dde2e9;background:#fff}header span{font:10px Consolas,monospace}a{color:#536c9b;text-decoration:none;font-size:11px}main{margin:22px auto;width:calc(100% - 32px);max-width:1440px;overflow:hidden;border:1px solid #dfe3e9;border-radius:8px;box-shadow:0 8px 30px #2533440a}iframe{border:0;width:1440px;height:1460px;transform-origin:top left;display:block;background:#f7f8fa}
+</style>
+</head>
+<body><header><span>TIME WEAVE / MAQUETTE 01 / DESKTOP 1440 PX</span><a href="index.html">Ouvrir la maquette interactive ↗</a></header><main><iframe src="index.html" title="Maquette Time Weave au format desktop"></iframe></main><script>const frame=document.querySelector('iframe'),board=document.querySelector('main');function fit(){const scale=board.clientWidth/1440;frame.style.transform=`scale(${scale})`;board.style.height=`${1460*scale}px`;}new ResizeObserver(fit).observe(board);fit();</script></body>
+</html>

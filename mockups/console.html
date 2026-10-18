@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr" class="variant-console">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fa">
+  <title>Time Weave — Console</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="variants.css">
+  <script src="app.js" defer></script>
+  <script src="variants.js" defer></script>
+</head>
+<body data-density="compact" data-variant="console">
+  <header class="app-header">
+    <a class="brand" href="./" aria-label="Time Weave, accueil"><span class="brand-mark" data-icon="weave"></span><span>time<span class="brand-light">weave</span></span><span class="version">LAB / 01</span></a>
+    <nav aria-label="Navigation principale"><a class="active" href="#atelier">Atelier</a><a href="#anatomie">Anatomie</a></nav>
+    <span class="header-note"><span class="status-dot"></span> Prototype interactif <span class="header-divider"></span><span data-icon="sun"></span> Thème clair</span>
+  </header>
+
+  <main id="atelier">
+    <div class="breadcrumb">Espace de conception <span>/</span> Composants <span>/</span> <strong>Timeline</strong></div>
+    <section class="page-heading">
+      <div><div class="eyebrow">EXPLORATION D’INTERFACE <span>001</span></div><h1>Une lecture du temps.</h1><p>Explorer les événements. Relier les séquences. Rejouer l’essentiel.</p></div>
+      <div class="density-control"><span data-icon="density"></span><span>Densité</span><div class="segmented" role="group" aria-label="Densité d’affichage"><button data-density="compact" title="Densité compacte" aria-pressed="false" aria-label="Compacte"><span data-icon="compact"></span></button><button data-density="standard" title="Densité standard" aria-pressed="true" aria-label="Standard"><span data-icon="standard"></span></button><button data-density="comfortable" title="Densité confortable" aria-pressed="false" aria-label="Confortable"><span data-icon="comfortable"></span></button></div><span id="density-label">Standard</span></div>
+    </section>
+
+    <section class="workspace" aria-label="Explorateur temporel">
+      <div class="workspace-heading"><div class="scenario-tabs" role="group" aria-label="Scénario"><button class="selected" data-scenario="operations" aria-pressed="true"><span data-icon="activity"></span> Journée d’opérations</button><button data-scenario="history" aria-pressed="false"><span data-icon="building"></span> Histoire d’entreprise</button></div><span class="sample-badge"><span class="status-dot"></span> Données de démonstration</span></div>
+      <div class="context-bar"><div><span class="context-icon" data-icon="layers"></span><div><strong id="scenario-title">Station Nord · Rejeu opérationnel</strong><span id="scenario-subtitle">18 octobre 2026 <b>·</b> Temps calendrier <b>·</b> UTC</span></div></div><div class="context-meta"><span class="chip neutral" id="row-count">9 lignes</span><span class="chip neutral" id="event-count">32 éléments</span><button class="icon-button" id="reset" title="Réinitialiser la vue" aria-label="Réinitialiser la vue"><span data-icon="reset"></span></button></div></div>
+      <div class="timeline-toolbar"><div class="playback"><button class="icon-button" id="stop" aria-label="Arrêter" title="Arrêter"><span data-icon="stop"></span></button><button class="icon-button" id="previous" aria-label="Clé précédente" title="Clé précédente"><span data-icon="previous"></span></button><button class="play-button" id="play" aria-label="Lire" title="Lire ou mettre en pause (Espace)"><span data-icon="play"></span></button><button class="icon-button" id="next" aria-label="Clé suivante" title="Clé suivante"><span data-icon="next"></span></button><span class="toolbar-divider"></span><select id="speed" aria-label="Vitesse de lecture"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select><button class="icon-button" id="loop" aria-label="Lecture en boucle" aria-pressed="false" title="Lecture en boucle"><span data-icon="loop"></span></button><span class="time-readout" id="time-readout">13:24:00<span>.000</span></span><span class="paused-badge" id="play-status">En pause</span></div><div class="zoom-controls"><button class="icon-button" id="zoom-out" aria-label="Dézoomer" title="Dézoomer"><span data-icon="minus"></span></button><span id="zoom-label">60 min</span><button class="icon-button" id="zoom-in" aria-label="Zoomer" title="Zoomer"><span data-icon="plus"></span></button><span class="toolbar-divider"></span><button class="text-button" id="fit"><span data-icon="fit"></span> Ajuster</button></div></div>
+
+      <div class="editor-layout">
+        <div class="timeline-side">
+          <div class="timeline-scroll"><div class="timeline" id="timeline"><div class="ruler-label"><span>STRUCTURE</span><button id="collapse-all" class="icon-button" aria-label="Replier toutes les lignes" title="Replier / déplier les lignes"><span data-icon="fold"></span></button></div><div class="ruler" id="ruler"></div><div id="rows" class="rows"></div><div id="playhead" class="playhead" role="slider" tabindex="0" aria-label="Position temporelle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40"><div class="playhead-handle"></div><span id="playhead-label">13:24</span></div></div></div>
+          <div class="overview-wrap"><span id="domain-start">13:00</span><div id="overview" class="overview" aria-label="Vue d’ensemble"><div class="overview-bars" id="overview-bars"></div><div id="overview-window" class="overview-window"></div><div id="overview-cursor" class="overview-cursor"></div></div><span id="domain-end">14:00</span></div>
+          <div class="timeline-footer"><span><span class="status-dot"></span> <span id="visible-count">9 lignes visibles</span><b>·</b><span id="key-count">4 clés</span></span><span><kbd>←</kbd><kbd>→</kbd> naviguer <span class="footer-separator"></span><kbd>espace</kbd> lecture</span></div>
+        </div>
+        <aside class="inspector" aria-label="Détail de l’élément sélectionné"><div class="inspector-heading"><span><span data-icon="panel"></span> Inspecteur</span><span class="tiny-label">ÉLÉMENT</span></div><div id="inspector-content"></div></aside>
+      </div>
+      <div class="legend"><span class="legend-title">LÉGENDE</span><button data-color="teal" aria-pressed="true"><i class="dot teal"></i> Communication</button><button data-color="blue" aria-pressed="true"><i class="dot blue"></i> Acquisition</button><button data-color="amber" aria-pressed="true"><i class="dot amber"></i> Alerte</button><button data-color="purple" aria-pressed="true"><i class="dot purple"></i> Séquence</button><span class="legend-end"><span class="key-symbol">◇</span> Repère de navigation</span></div>
+    </section>
+
+    <section class="anatomy" id="anatomie" aria-label="Principes visuels"><div class="anatomy-intro"><span class="eyebrow">UNE INTERFACE, PLUSIEURS ÉCHELLES</span><h2>Le détail à la bonne distance.</h2><p>Une structure stable, du signal au récit.</p></div><div class="principle"><span class="principle-icon" data-icon="tree"></span><h3>Hiérarchie lisible</h3><p>Du connecteur à la communication,<br>chaque niveau garde son contexte.</p><div class="micro-tree"><span>Connecteurs</span><span>└ <i class="dot teal"></i> MQTT <small>03</small></span></div></div><div class="principle"><span class="principle-icon" data-icon="density"></span><h3>Densité maîtrisée</h3><p>Trois rythmes d’affichage,<br>une même précision de lecture.</p><div class="density-preview"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="principle"><span class="principle-icon" data-icon="crosshair"></span><h3>Temps partagé</h3><p>Un curseur, des repères,<br>une lecture synchronisée.</p><div class="micro-time"><span>13:20</span><i></i><span>13:30</span></div></div></section>
+    <footer class="page-footer"><span class="footer-brand">timeweave <span>/</span> Atelier de conception</span><span>Maquette 01 <span>·</span> Octobre 2026</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>

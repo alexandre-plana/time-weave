@@ -44,6 +44,12 @@ La séparation d'un moteur temporel indépendant de React et de la vue React est
 
 Le cas opérationnel peut produire des centaines de communications par seconde avant regroupement. Le jeu de référence propose les volumes à mesurer après regroupement.
 
+## Maquettes interactives
+
+Le dossier [mockups/](mockups/README.md) contient quatre explorations visuelles autonomes : l'Atelier original, Console, Horizon et Studio. Ouvrir [le comparateur](mockups/propositions.html) pour parcourir les directions, ou [l'originale](mockups/index.html) pour retrouver la première maquette conservée à l'identique.
+
+Ces prototypes HTML/CSS/JavaScript illustrent la présentation et les interactions ; l'implémentation de la bibliothèque TypeScript/React reste à réaliser.
+
 ## Point de reprise
 
 Commencer par rédiger le plan de réalisation à partir de la conception V1 validée. Les choix d'outillage et de versions exactes seront fixés dans ce plan. Aucun squelette de package, dépendance ou code produit n'a encore été créé ; aucune publication npm n'a été effectuée.
