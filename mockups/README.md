@@ -27,3 +27,9 @@ Thème clair, neutre et technique : bordures de 1 px, ombres discrètes, typogra
 - Flèches et Espace lorsque le curseur temporel a le focus.
 
 Les données sont illustratives. La lecture est accélérée pour explorer les scénarios. Ce prototype visuel ne constitue pas l’implémentation du moteur TypeScript/React décrit dans `../librairie/docs/`.
+
+## Autres propositions
+
+Ouvrir `propositions.html` pour comparer sept géométries de timeline : Originale, Signaux, Jalons, Pistes, Matrice, Arches et Loupe. Le comparateur affiche le composant seul, avec scénario et densité communs. Les quatre premières études sont conservées.
+
+Les nouvelles recherches du 19 octobre 2026 sont expliquées dans [RECHERCHES.md](RECHERCHES.md). Les pages autonomes correspondantes sont `matrix.html`, `arcs.html` et `lens.html` ; aucune dépendance supplémentaire n’est nécessaire.

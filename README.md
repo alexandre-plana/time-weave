@@ -46,7 +46,7 @@ Le cas opérationnel peut produire des centaines de communications par seconde a
 
 ## Maquettes interactives
 
-Le dossier [mockups/](mockups/README.md) contient quatre explorations visuelles autonomes : l'Atelier original, Console, Horizon et Studio. Ouvrir [le comparateur](mockups/propositions.html) pour parcourir les directions, ou [l'originale](mockups/index.html) pour retrouver la première maquette conservée à l'identique.
+Le dossier [mockups/](mockups/README.md) contient sept explorations visuelles autonomes : l'Atelier original, Signaux, Jalons, Pistes, Matrice, Arches et Loupe. Ouvrir [le comparateur](mockups/propositions.html) pour parcourir les directions, ou [l'originale](mockups/index.html) pour retrouver la première maquette conservée à l'identique. Les dernières pistes et leurs références sont documentées dans [les notes de recherche](mockups/RECHERCHES.md).
 
 Ces prototypes HTML/CSS/JavaScript illustrent la présentation et les interactions ; l'implémentation de la bibliothèque TypeScript/React reste à réaliser.
 
