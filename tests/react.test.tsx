@@ -262,3 +262,36 @@ describe('announcements', () => {
     expect(slider.getAttribute('aria-valuenow')).toBe('2000');
   });
 });
+
+describe('axis', () => {
+  it('key markers jump to their key and expose an accessible name', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} />);
+    fireEvent.click(screen.getByRole('button', { name: /Key Alerte/ }));
+    expect(controller.getSnapshot().time).toBe(4000);
+    expect(controller.getSnapshot().lastCause).toBe('key');
+  });
+
+  it('shows the pending target separately from the confirmed cursor', async () => {
+    let release!: () => void;
+    const { controller } = makeController({
+      prepareTime: (request) => (request.cause === 'seek' ? new Promise<void>((resolve) => (release = resolve)) : undefined),
+    });
+    const { container } = render(<Timeline controller={controller} />);
+    act(() => controller.seek(6000));
+    expect(container.querySelector('.tw-pending-line')).not.toBeNull();
+    expect(screen.getByRole('status').textContent).toMatch(/Preparing/);
+    await act(async () => release());
+    expect(container.querySelector('.tw-pending-line')).toBeNull();
+  });
+
+  it('zoom buttons are always available', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    const zoomed = controller.getSnapshot().viewport;
+    expect(zoomed.end - zoomed.start).toBeLessThan(10_000);
+    fireEvent.click(screen.getByRole('button', { name: 'Show the whole period' }));
+    expect(controller.getSnapshot().viewport).toEqual({ start: 0, end: 10_000 });
+  });
+});
