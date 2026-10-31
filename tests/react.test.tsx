@@ -577,3 +577,75 @@ describe('final review regressions', () => {
     expect(document.activeElement?.closest('[data-row-id]')?.getAttribute('data-row-id')).toBe('b');
   });
 });
+
+describe('review fixes: keyboard, announcements, dialog, live', () => {
+  it('keeps a tab stop on the nearest item when none intersects the viewport', () => {
+    const { controller } = makeController();
+    act(() => controller.setViewport({ start: 8000, end: 10_000 }));
+    const { container } = render(<Timeline controller={controller} />);
+    const tabbable = container.querySelectorAll<HTMLElement>('.tw-item[tabindex="0"]');
+    expect(tabbable).toHaveLength(1);
+    // i3 ends at 6000: the closest item in time to the viewport.
+    expect(tabbable[0]!.getAttribute('data-item-id')).toBe('i3');
+    act(() => tabbable[0]!.focus());
+    const viewport = controller.getSnapshot().viewport;
+    expect(viewport.start).toBeLessThanOrEqual(6000);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(['i1', 'i2']).toContain(document.activeElement?.getAttribute('data-item-id'));
+  });
+
+  it('a new controller does not inherit the delayed announcement of the previous one', async () => {
+    const slow = () => makeController({ prepareTime: (r) => (r.cause === 'seek' ? new Promise<void>(() => {}) : undefined) });
+    const first = slow().controller;
+    const { rerender } = render(<Timeline controller={first} />);
+    act(() => first.seek(6000));
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 450)));
+    expect(screen.getByRole('status').textContent).toMatch(/Preparing/);
+    const second = slow().controller;
+    rerender(<Timeline controller={second} />);
+    act(() => second.seek(7000));
+    expect(second.getSnapshot().pending?.id).toBe(first.getSnapshot().pending?.id);
+    expect(screen.getByRole('status').textContent).toBe('');
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 450)));
+    expect(screen.getByRole('status').textContent).toMatch(/Preparing/);
+  });
+
+  it('DetailModal moves inert to a new inertRoot while open', async () => {
+    const { DetailModal } = await import('../src/react/index.js');
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    document.body.append(a, b);
+    const { rerender, unmount } = render(<DetailModal title="T" onClose={() => {}} inertRoot={a} />);
+    expect(a.hasAttribute('inert')).toBe(true);
+    rerender(<DetailModal title="T" onClose={() => {}} inertRoot={b} />);
+    expect(a.hasAttribute('inert')).toBe(false);
+    expect(b.hasAttribute('inert')).toBe(true);
+    unmount();
+    expect(b.hasAttribute('inert')).toBe(false);
+    a.remove();
+    b.remove();
+  });
+
+  it('PlaybackControls show Pause in live mode', () => {
+    const { controller } = makeController();
+    render(<PlaybackControls controller={controller} showLive />);
+    act(() => controller.goLive());
+    expect(controller.getSnapshot().transport).toBe('live');
+    expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
+    expect(controller.getSnapshot().transport).toBe('paused');
+  });
+
+  it('Space activates an item exactly once', () => {
+    const { controller } = makeController();
+    const onItemClick = vi.fn();
+    render(<Timeline controller={controller} onItemClick={onItemClick} />);
+    const button = screen.getByRole('button', { name: /Mesure 2/ });
+    act(() => button.focus());
+    // A browser fires keydown, keyup, then the native click of the button.
+    fireEvent.keyDown(button, { key: ' ', code: 'Space' });
+    fireEvent.keyUp(button, { key: ' ', code: 'Space' });
+    fireEvent.click(button);
+    expect(onItemClick).toHaveBeenCalledTimes(1);
+  });
+});

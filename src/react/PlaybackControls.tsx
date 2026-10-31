@@ -48,7 +48,8 @@ export function PlaybackControls(props: PlaybackControlsProps): ReactNode {
   const snapshot = useTimelineSnapshot(controller);
   const format = props.formatTime ?? ((time: number, mode: TimeMode) => formatTimeReadout(time, mode, locale));
   const formatSpeed = props.formatSpeed ?? ((speed: number) => `${speed.toLocaleString(locale)}×`);
-  const playing = snapshot.transport === 'playing' && !snapshot.rewinding;
+  // Live mode already progresses: the main button offers Pause (Play stays available through the API).
+  const playing = (snapshot.transport === 'playing' && !snapshot.rewinding) || snapshot.transport === 'live';
   const options = speeds.includes(snapshot.speed) ? speeds : [...speeds, snapshot.speed].sort((a, b) => a - b);
   const live = snapshot.transport === 'live';
 

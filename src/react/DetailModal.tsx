@@ -46,17 +46,21 @@ export function DetailModal(props: DetailModalProps): ReactNode {
   useLayoutEffect(() => setInheritedTheme(readTheme()));
   const theme = props.theme ?? inheritedTheme;
 
+  // The content behind the dialog leaves the accessibility tree and focus order.
+  // Declared before the focus effect: on close, its cleanup runs first, and an
+  // inert element cannot take focus back. A new root takes the attribute over.
+  useEffect(() => {
+    if (!inertRoot || inertRoot.hasAttribute('inert')) return;
+    inertRoot.setAttribute('inert', '');
+    return () => inertRoot.removeAttribute('inert');
+  }, [inertRoot]);
+
   useEffect(() => {
     returnTo.current = props.returnFocus ?? (document.activeElement as HTMLElement | null);
-    // The content behind the dialog leaves the accessibility tree and focus order.
-    const wasInert = inertRoot?.hasAttribute('inert') ?? false;
-    if (inertRoot && !wasInert) inertRoot.setAttribute('inert', '');
     const dialog = dialogRef.current;
     const first = dialog?.querySelector<HTMLElement>(FOCUSABLE);
     (first ?? dialog)?.focus();
     return () => {
-      // Restored before returning focus: an inert element cannot take focus.
-      if (inertRoot && !wasInert) inertRoot.removeAttribute('inert');
       const target = returnTo.current;
       if (target && target.isConnected) target.focus();
     };

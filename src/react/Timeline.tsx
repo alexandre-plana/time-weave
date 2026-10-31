@@ -761,8 +761,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
       case 'ArrowUp':
         moveFocusTo(nearestIn(findRow(-1)));
         break;
+      // Space is left to the native button click (fired on keyup): handling it
+      // here too would activate the item twice.
       case 'Enter':
-      case ' ':
         activateItem(item, layout.visible, event);
         break;
       default:
@@ -774,27 +775,40 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     }
   };
 
-  // The roving tab stop: the focused item, or the first rendered one.
+  // The roving tab stop: the focused item, or the first rendered one in the
+  // viewport, or else the rendered rows' item nearest in time to the viewport
+  // (focusing it reveals it), so the items stay reachable with Tab.
   const tabStopId = useMemo(() => {
     const focused = focusedId ? itemIndex.get(focusedId)?.item : undefined;
     if (focused && (itemHasFocus.current || (itemEnd(focused) >= viewport.start && itemStart(focused) <= viewport.end))) return focused.id;
+    let nearest: string | null = null;
+    let best = Infinity;
     for (const layout of visibleRowSlice) {
-      const first = layout.items.find((item) => itemEnd(item) >= viewport.start && itemStart(item) <= viewport.end);
-      if (first) return first.id;
+      for (const item of layout.items) {
+        if (itemEnd(item) < domain.start || itemStart(item) > domain.end) continue;
+        const distance = Math.max(0, viewport.start - itemEnd(item), itemStart(item) - viewport.end);
+        if (distance === 0) return item.id;
+        if (distance < best) {
+          best = distance;
+          nearest = item.id;
+        }
+      }
     }
-    return null;
-  }, [focusedId, itemIndex, visibleRowSlice, viewport]);
+    return nearest;
+  }, [focusedId, itemIndex, visibleRowSlice, viewport, domain]);
 
   // ------------------------------------------------------------------ status
   // A wait is announced only if it lasts: dragging the cursor or holding an
   // arrow key would otherwise announce every intermediate destination.
-  const [slowPendingId, setSlowPendingId] = useState<number | null>(null);
+  // Keyed on the controller too: another controller numbers its waits from 1 again.
+  const [slowPending, setSlowPending] = useState<{ controller: object; id: number } | null>(null);
   const pendingId = snapshot.pending?.id ?? null;
   useEffect(() => {
     if (pendingId === null) return;
-    const timer = setTimeout(() => setSlowPendingId(pendingId), ANNOUNCE_DELAY);
+    const timer = setTimeout(() => setSlowPending({ controller, id: pendingId }), ANNOUNCE_DELAY);
     return () => clearTimeout(timer);
-  }, [pendingId]);
+  }, [pendingId, controller]);
+  const slowPendingId = slowPending?.controller === controller ? slowPending.id : null;
 
   const statusMessage = useMemo(() => {
     if (snapshot.status === 'initializing') return labels.initializing;
@@ -1157,19 +1171,22 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
   const viewportEnd = viewportStart + duration;
   const active = useMemo(() => new Set(props.activeKey.split('\u0000').filter(Boolean)), [props.activeKey]);
 
-  // Items crossing the viewport (with a small margin), plus the focused item so focus is never lost.
+  // Items crossing the viewport (with a small margin), plus the focused item so
+  // focus is never lost and the tab stop so the row stays reachable with Tab.
   const margin = duration * 0.05 + POINT_SIZE * msPerPixel;
   const rendered: TimelineItem<ItemMeta>[] = [];
+  const kept = (id: string): boolean => id === props.focusedId || id === props.tabStopId;
   const firstIndex = lowerBound(layout.starts, viewportStart - margin);
   for (let i = 0; i < firstIndex; i++) {
     const item = layout.items[i]!;
-    if (itemEnd(item) >= viewportStart || item.id === props.focusedId) rendered.push(item);
+    if (itemEnd(item) >= viewportStart || kept(item.id)) rendered.push(item);
   }
   for (let i = firstIndex; i < layout.items.length; i++) {
     const item = layout.items[i]!;
     if (itemStart(item) > viewportEnd + margin) {
-      const focused = props.focusedId ? layout.items.slice(i).find((rest) => rest.id === props.focusedId) : undefined;
-      if (focused) rendered.push(focused);
+      if (props.focusedId || props.tabStopId) {
+        for (let j = i; j < layout.items.length; j++) if (kept(layout.items[j]!.id)) rendered.push(layout.items[j]!);
+      }
       break;
     }
     rendered.push(item);
