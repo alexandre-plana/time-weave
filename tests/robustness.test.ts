@@ -110,13 +110,16 @@ describe('robustness: long live stream on a static source', () => {
       end += 50;
       controller.extendDomain(end);
       controller.setLiveTime(end - Math.floor(random() * 10));
-      const added = makeItem(end - 20);
-      const removed = live.shift()!;
-      live.push(added.id);
-      const upsert = [added];
-      // Modify an existing item now and then.
-      if (cycle % 7 === 0) upsert.push({ id: live[live.length - 2]!, rowId: 'r1', at: end - 30 });
-      controller.update({ items: { upsert, remove: [removed] } });
+      // The stream is applied every other cycle, two items at a time, to keep the test fast;
+      // `update()` validates only the changed items (see tests/update-perf.test.ts).
+      if (cycle % 2 === 0) {
+        const upsert = [makeItem(end - 20), makeItem(end - 10)];
+        const remove = live.splice(0, 2);
+        for (const item of upsert) live.push(item.id);
+        // Modify an existing item now and then.
+        if (cycle % 14 === 0) upsert.push({ id: live[live.length - 3]!, rowId: 'r1', at: end - 30 });
+        controller.update({ items: { upsert, remove } });
+      }
 
       // Transient observers.
       if (cycle % 5 === 0) {
@@ -159,9 +162,11 @@ describe('robustness: long live stream on a static source', () => {
     await flush();
 
     expect(controller.getSnapshot().items).toHaveLength(2000);
-    expect(maxPreps).toBeLessThanOrEqual(1);
-    expect(maxFrames).toBeLessThanOrEqual(1);
+    // The scenario really exercised pending preparations and frames: bounded at exactly one.
+    expect(maxPreps).toBe(1);
+    expect(maxFrames).toBe(1);
     // Domain growth may have covered some waiters; at most the 21 latest remain.
+    expect(maxWaiters).toBeGreaterThan(0);
     expect(maxWaiters).toBeLessThanOrEqual(21);
     expect(notifications.count).toBeGreaterThan(CYCLES);
 
@@ -276,8 +281,9 @@ describe('robustness: windowed source answering out of order', () => {
     await Promise.all(settled.splice(0));
 
     // A replaced request is always aborted: at most one request is alive at a time.
-    expect(maxUnsettledAlive).toBeLessThanOrEqual(1);
-    expect(maxCurrent).toBeLessThanOrEqual(1);
+    expect(maxUnsettledAlive).toBe(1);
+    expect(maxCurrent).toBe(1);
+    expect(maxWaiters).toBeGreaterThan(0);
     expect(maxWaiters).toBeLessThanOrEqual(11);
     expect(maxFrames).toBeLessThanOrEqual(1);
     expect(internals(controller).waiters).toBe(0);
@@ -303,7 +309,7 @@ describe('robustness: windowed source answering out of order', () => {
     expect(controller.getSnapshot().data.loading).toBe(false);
   }, 20_000);
 
-  it('aborted waitForData signals release their abort listener', async () => {
+  it('aborted or satisfied waitForData calls leave no waiter nor abort listener', async () => {
     const controller = createTimelineController({
       mode: 'relative',
       domain: { start: 0, end: 1000 },
@@ -311,16 +317,21 @@ describe('robustness: windowed source answering out of order', () => {
       source: { kind: 'windowed', load: () => new Promise<ItemBatch>(() => {}) },
     });
     controller.start();
-    const all: ReturnType<typeof countedAbort>[] = [];
     for (let i = 0; i < 5000; i++) {
-      const counted = countedAbort();
-      controller.waitForData(500, counted.signal).catch(() => {});
-      counted.abort.abort();
-      all.push(counted);
+      const abort = new AbortController();
+      const waiting = controller.waitForData(500, abort.signal);
+      abort.abort();
+      await expect(waiting).rejects.toMatchObject({ name: 'AbortError' });
     }
-    await flush();
     expect(internals(controller).waiters).toBe(0);
-    // `once: true` removes the listener when it fires.
+    // Waiters resolved by coverage release their abort listener too.
+    const counted = Array.from({ length: 100 }, () => countedAbort());
+    const pending = counted.map((c) => controller.waitForData(500, c.signal));
+    expect(internals(controller).waiters).toBe(100);
+    controller.setSource([]);
+    await Promise.all(pending);
+    expect(internals(controller).waiters).toBe(0);
+    expect(counted.every((c) => c.listeners() === 0)).toBe(true);
     controller.dispose();
   });
 });

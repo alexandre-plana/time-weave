@@ -1,4 +1,4 @@
-import type { TimelineItem, TimelineKey, TimelineRow } from 'time-weave';
+import type { TimelineItem, TimelineKey, TimelineRow } from '@time-weave/react';
 
 /** Deterministic pseudo-random generator so every run shows the same day. */
 export function random(seed: number): () => number {

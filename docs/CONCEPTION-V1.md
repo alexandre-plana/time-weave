@@ -161,7 +161,7 @@ Au départ, le temps est celui demandé par la configuration, ou le début de la
 | Action | Comportement proposé |
 | --- | --- |
 | Lecture | Active l'intention de lecture ; reprend depuis la position confirmée après les éventuelles préparations |
-| Lecture à la fin | Demande le début de la période puis démarre, même sans boucle |
+| Lecture à la fin | Depuis la pause : demande le début de la période puis démarre, même sans boucle. Depuis le Direct : aucun retour au début (voir « Décisions complémentaires du 31 octobre 2026 ») |
 | Pause | Désactive l'intention de lecture ; conserve la position confirmée ; une préparation déjà engagée peut se terminer sans relancer la lecture |
 | Stop | Désactive l'intention, annule les demandes temporelles précédentes et prépare le début de la période complète |
 | Vitesse | Facteur strictement positif et fini ; appliqué à la progression suivante ; aucun déplacement à lui seul |
@@ -326,3 +326,13 @@ Un autre relecteur Astra indépendant a ensuite contrôlé l'ajout des collectio
 Le relecteur a vérifié la correction et confirmé que ce point est résolu, sans contradiction indispensable restante dans les sections relues.
 
 La relecture ne remplace pas la validation de la conception par l'utilisateur ni les vérifications de la future implémentation.
+
+## Décisions complémentaires du 31 octobre 2026
+
+Cinq choix d'implémentation, que la conception ne tranchait pas explicitement, ont été validés par l'utilisateur le 31 octobre 2026 :
+
+1. **Lecture depuis le Direct** : Lecture démarre un rejeu depuis la position courante, sans retour au début, même lorsque la frontière du Direct est la fin de période. À la fin, la lecture se termine aussitôt en pause à la fin ; avec la boucle, la règle normale de fin de lecture s'applique. « Lecture à la fin » ne concerne que la Lecture demandée depuis la pause.
+2. **Pause pendant un retour de boucle, puis extension de la période** : le retour engagé se termine.
+3. **Navigation manuelle de la fenêtre** : une nouvelle génération est créée au plus une fois par tâche, afin de regrouper les déplacements d'un même geste.
+4. **Lot de fenêtre citant une ligne supprimée pendant son chargement** : les éléments de cette ligne sont écartés silencieusement. Le lot n'est refusé, avec l'erreur structurée `unknown-row`, que s'il cite une ligne inconnue, absente aussi lors de l'émission de la demande.
+5. **Clés hors de la période complète** : ignorées par la navigation ; elles redeviennent des destinations si la période s'étend.

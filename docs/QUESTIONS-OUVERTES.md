@@ -2,7 +2,7 @@
 
 Dernière mise à jour : 31 octobre 2026.
 
-**31 octobre 2026** : la V1 est implémentée. Les choix techniques laissés au plan (outillage, versions) sont fixés dans le [plan de réalisation](PLAN-REALISATION.md). Les comportements que l'implémentation a dû trancher sans décision explicite sont listés dans la section « Choix d'implémentation à valider » du [guide](GUIDE.md). Restent ouverts avant publication : nom npm, licence, versions de React prises en charge et mesures sur un poste réel.
+**31 octobre 2026** : la V1 est implémentée. Les choix techniques laissés au plan (outillage, versions) sont fixés dans le [plan de réalisation](PLAN-REALISATION.md). Les comportements que l'implémentation a dû trancher sans décision explicite sont listés dans la section « Choix d'implémentation à valider » du [guide](GUIDE.md). Décidé le même jour : package `@time-weave/react`, licence MIT, React 18.3 et 19, versions `0.x`, démonstration publiée sur GitHub Pages ; les cinq choix d'implémentation sont validés (voir la [conception](CONCEPTION-V1.md)). Reste ouvert : mesures sur un poste réel.
 
 Cette liste rassemble les décisions restantes. Elle distingue les besoins à préciser des sujets ajoutés par l'assistant pour préparer une bibliothèque utilisable et publiable. Elle ne constitue ni un engagement de fonctionnalités ni un plan d'implémentation validé.
 

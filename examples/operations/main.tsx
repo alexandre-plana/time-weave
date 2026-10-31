@@ -8,9 +8,9 @@ import {
   rangeContainsTime,
   useTimelineController,
   useTimelineSnapshot,
-} from 'time-weave';
-import type { TimeRequest, TimelineController, TimelineItem, VisibleRow, WindowRequest } from 'time-weave';
-import 'time-weave/styles.css';
+} from '@time-weave/react';
+import type { TimeRequest, TimelineController, TimelineItem, VisibleRow, WindowRequest } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 import '../shared.css';
 import './operations.css';
 import {

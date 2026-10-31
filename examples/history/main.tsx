@@ -1,8 +1,8 @@
 import { StrictMode, useCallback, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PlaybackControls, Timeline, frenchLabels, isSpan, useTimelineController, useTimelineSnapshot } from 'time-weave';
-import type { TimeRequest, TimelineItem, TimelineKey, TimelineRow, VisibleRow } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, frenchLabels, isSpan, useTimelineController, useTimelineSnapshot } from '@time-weave/react';
+import type { TimeRequest, TimelineItem, TimelineKey, TimelineRow, VisibleRow } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 import '../shared.css';
 import './history.css';
 

@@ -1,8 +1,8 @@
 import { Profiler, StrictMode, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from 'time-weave';
-import type { TimeRequest, TimelineController, TimelineItem, TimelineRow, WindowRequest } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
+import type { TimeRequest, TimelineController, TimelineItem, TimelineRow, WindowRequest } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 import '../shared.css';
 
 /* Reference set (docs/JEU-REFERENCE.md): 211 rows, 51 visible at start, ~5 000 items per window with margin. */
@@ -240,7 +240,7 @@ async function liveScenario(push: (scenario: string, value: string) => void) {
   // 9. Live with extendable domain, slow provider (200 ms) and continuous refreshes.
   let batches = 0;
   let requests = 0;
-  const controller = new (await import('time-weave')).TimelineController({
+  const controller = new (await import('@time-weave/react')).TimelineController({
     mode: 'calendar',
     domain: { start: START, end: START + HOUR },
     rows,

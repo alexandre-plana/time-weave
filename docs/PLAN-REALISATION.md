@@ -15,15 +15,15 @@ Ce plan séquence les livraisons vérifiables. Chaque étape se termine par des 
 | Tests React | Vitest + jsdom + Testing Library | Cycle de vie, abonnements, interactions clavier |
 | Exemples | Vite, application séparée dans `examples/` | Démonstration et essais en navigateur |
 | React | Dépendance `peer` : `^18.3.0 \|\| ^19.0.0` | Fournie par l'application ; `useSyncExternalStore` disponible dans les deux |
-| Styles | Feuille CSS livrée telle quelle, variables CSS `--tw-*` | Import explicite `time-weave/styles.css` |
+| Styles | Feuille CSS livrée telle quelle, variables CSS `--tw-*` | Import explicite `@time-weave/react/styles.css` |
 
 ## Points d'entrée
 
-- `time-weave/core` : moteur seul, sans React ni DOM. Importable côté serveur et dans les tests.
-- `time-weave` : vue React, hook, aides, et réexport du moteur.
-- `time-weave/styles.css` : styles par défaut.
+- `@time-weave/react/core` : moteur seul, sans React ni DOM. Importable côté serveur et dans les tests.
+- `@time-weave/react` : vue React, hook, aides, et réexport du moteur.
+- `@time-weave/react/styles.css` : styles par défaut.
 
-Le nom `time-weave` est provisoire ; sa disponibilité et la licence seront réglées avant toute publication.
+Nom retenu le 31 octobre 2026 : `@time-weave/react`, sous licence MIT. Le nom non préfixé `time-weave` risquait d'être refusé par npm, trop proche du paquet existant `timeweave`.
 
 ## Organisation du code
 

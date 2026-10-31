@@ -93,3 +93,14 @@ Avant / après, relevés le même jour, dans le même environnement, trois passa
 - Même série sur un poste de travail réel (navigateur avec écran) et sur un navigateur WebKit ou Firefox.
 - Mémoire : non mesurée dans cette série.
 - Profilage du remplacement de lot (50 ms en production en série 2, 50 ms en développement en série 3), pour séparer génération du lot, validation, pistes et rendu ; série 3 en build de production.
+
+## Mise à jour groupée des collections (hors navigateur)
+
+Mesure Node.js du coût d'un appel `update()` (2 suppressions, 2 ajouts, 1 modification) sur une source en mémoire, avant et après la validation incrémentale (`tests/update-perf.test.ts` vérifie l'équivalence avec la validation complète).
+
+| Éléments | Validation complète | Validation des seuls éléments modifiés |
+| --- | --- | --- |
+| 2 000 | 206 µs | 15 µs |
+| 20 000 | 3,4 ms | 0,11 ms |
+
+Le coût restant est surtout la copie du tableau immuable exposé dans l'instantané.

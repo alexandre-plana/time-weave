@@ -8,9 +8,9 @@ import {
   frenchLabels,
   useTimelineController,
   useTimelineSnapshot,
-} from 'time-weave';
-import type { TimeMode, TimeRequest, TimelineItem, TimelineKey, TimelineRow } from 'time-weave';
-import 'time-weave/styles.css';
+} from '@time-weave/react';
+import type { TimeMode, TimeRequest, TimelineItem, TimelineKey, TimelineRow } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 import '../shared.css';
 import './relative.css';
 

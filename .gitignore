@@ -4,6 +4,7 @@ examples/dist/
 *.tgz
 .DS_Store
 coverage/
+tests/__scratch/
 motion/out/*.wav
 motion/out/cues.json
 motion/out/img/
