@@ -6,7 +6,7 @@ The project's design documents are written in French; this page and the [English
 
 ## Status
 
-Version **0.1.0, not published**. The V1 design is implemented: a TypeScript engine independent of React (`time-weave/core`), a React view, playback controls, examples and a benchmark page. The npm name, licence and supported React versions are still to be decided before any release.
+Version **0.1.0, not published**. The V1 design is implemented: a TypeScript engine independent of React (`@time-weave/react/core`), a React view, playback controls, examples and a benchmark page. The package will be published as `@time-weave/react` under the MIT licence, supporting React 18.3 and 19, with `0.x` versions until first real-world feedback.
 
 ## Installation
 
@@ -15,17 +15,17 @@ The package is not on npm yet. Build an archive from this repository and install
 ```bash
 # in this repository
 npm install
-npm pack                     # builds dist/ and creates time-weave-0.1.0.tgz
+npm pack                     # builds dist/ and creates time-weave-react-0.1.0.tgz
 
 # in your application (React 18.3 or 19 required)
-npm install path/to/time-weave-0.1.0.tgz
+npm install path/to/time-weave-react-0.1.0.tgz
 ```
 
 ## Minimal example
 
 ```tsx
-import { PlaybackControls, Timeline, useTimelineController } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, useTimelineController } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 
 const day = Date.UTC(2026, 9, 18);
 const hour = 3_600_000;

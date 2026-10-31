@@ -1,6 +1,6 @@
 # Exemples
 
-Applications consommatrices de la bibliothèque, servies par Vite. Elles importent `time-weave` depuis les sources du dépôt (alias dans `vite.config.ts`).
+Applications consommatrices de la bibliothèque, servies par Vite. Elles importent `@time-weave/react` depuis les sources du dépôt (alias dans `vite.config.ts`).
 
 ```bash
 npm run dev:examples     # http://localhost:5173/

@@ -5,21 +5,21 @@ Statut : décrit l'API implémentée dans ce dépôt (version 0.1.0, non publié
 
 ## Installation et points d'entrée
 
-Le package n'est pas encore publié. Pour l'essayer dans une autre application : `npm pack` dans ce dépôt, puis `npm install chemin/vers/time-weave-0.1.0.tgz`.
+Le package n'est pas encore publié. Pour l'essayer dans une autre application : `npm pack` dans ce dépôt, puis `npm install chemin/vers/time-weave-react-0.1.0.tgz`.
 
 | Import | Contenu |
 | --- | --- |
-| `time-weave` | Vue React, hooks, aides, et réexport du moteur |
-| `time-weave/core` | Moteur seul, sans React ni DOM |
-| `time-weave/styles.css` | Styles par défaut, à importer explicitement |
+| `@time-weave/react` | Vue React, hooks, aides, et réexport du moteur |
+| `@time-weave/react/core` | Moteur seul, sans React ni DOM |
+| `@time-weave/react/styles.css` | Styles par défaut, à importer explicitement |
 
 React 18.3 ou 19 est une dépendance fournie par l'application.
 
 ## Exemple minimal
 
 ```tsx
-import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 
 export function Replay() {
   const controller = useTimelineController({
@@ -185,7 +185,7 @@ Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la 
 
 ## Styles
 
-Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et la prop `theme` de `Timeline` (`'light' | 'dark' | 'auto'`, `'auto'` par défaut) force un thème quelle que soit la préférence du système : elle pose `data-theme="light"` ou `"dark"` sur l'élément `.tw-timeline` et sur la fenêtre de détail (`'auto'` n'en pose pas). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
+Importer `@time-weave/react/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et la prop `theme` de `Timeline` (`'light' | 'dark' | 'auto'`, `'auto'` par défaut) force un thème quelle que soit la préférence du système : elle pose `data-theme="light"` ou `"dark"` sur l'élément `.tw-timeline` et sur la fenêtre de détail (`'auto'` n'en pose pas). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
 
 ## Choix d'implémentation à valider
 

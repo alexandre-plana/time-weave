@@ -19,10 +19,10 @@
     "skipLibCheck": true,
     "types": [],
     "paths": {
-      "time-weave": [
+      "@time-weave/react": [
         "./src/react/index.ts"
       ],
-      "time-weave/core": [
+      "@time-weave/react/core": [
         "./src/core/index.ts"
       ]
     }

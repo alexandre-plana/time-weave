@@ -26,9 +26,9 @@ try {
 
   writeFileSync(
     join(app, 'app.tsx'),
-    `import { Timeline, PlaybackControls, useTimelineController, frenchLabels } from 'time-weave';
-import { createTimelineController, type TimelineItem } from 'time-weave/core';
-import 'time-weave/styles.css';
+    `import { Timeline, PlaybackControls, useTimelineController, frenchLabels } from '@time-weave/react';
+import { createTimelineController, type TimelineItem } from '@time-weave/react/core';
+import '@time-weave/react/styles.css';
 
 const items: TimelineItem<{ value: number }>[] = [{ id: 'a', rowId: 'r', at: 5, meta: { value: 1 } }];
 const controller = createTimelineController({ mode: 'relative', domain: { start: 0, end: 10 }, rows: [{ id: 'r', label: 'R' }], source: items });
@@ -54,20 +54,20 @@ export { time };
 
   writeFileSync(
     join(app, 'check.mjs'),
-    `import { createTimelineController } from 'time-weave/core';
-import * as main from 'time-weave';
+    `import { createTimelineController } from '@time-weave/react/core';
+import * as main from '@time-weave/react';
 import { createRequire } from 'node:module';
 const c = createTimelineController({ mode: 'relative', domain: { start: 0, end: 10 } });
 c.seek(3);
 if (c.getSnapshot().time !== 3) throw new Error('engine does not work');
 if (typeof main.Timeline !== 'function') throw new Error('Timeline missing');
 const require = createRequire(import.meta.url);
-const css = require.resolve('time-weave/styles.css');
+const css = require.resolve('@time-weave/react/styles.css');
 console.log('styles at', css);
 `,
   );
   console.log(run('node', ['check.mjs'], app).trim());
-  if (!existsSync(join(app, 'node_modules/time-weave/dist/styles.css'))) throw new Error('styles missing');
+  if (!existsSync(join(app, 'node_modules/@time-weave/react/dist/styles.css'))) throw new Error('styles missing');
   console.log('package check: ok');
 } finally {
   rmSync(app, { recursive: true, force: true });

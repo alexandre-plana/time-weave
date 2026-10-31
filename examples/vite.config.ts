@@ -10,9 +10,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: [
-      { find: 'time-weave/styles.css', replacement: src('styles.css') },
-      { find: 'time-weave/core', replacement: src('core/index.ts') },
-      { find: /^time-weave$/, replacement: src('react/index.ts') },
+      { find: '@time-weave/react/styles.css', replacement: src('styles.css') },
+      { find: '@time-weave/react/core', replacement: src('core/index.ts') },
+      { find: /^@time-weave\/react$/, replacement: src('react/index.ts') },
     ],
   },
   build: {

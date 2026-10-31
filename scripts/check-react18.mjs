@@ -48,10 +48,10 @@ try {
   writeFileSync(
     join(app, 'app.tsx'),
     `import { useState } from 'react';
-import { Timeline, PlaybackControls, DetailModal, useTimelineController, useTimelineSnapshot } from 'time-weave';
-import type { TimelineProps } from 'time-weave';
-import { createManualScheduler, type TimelineItem } from 'time-weave/core';
-import 'time-weave/styles.css';
+import { Timeline, PlaybackControls, DetailModal, useTimelineController, useTimelineSnapshot } from '@time-weave/react';
+import type { TimelineProps } from '@time-weave/react';
+import { createManualScheduler, type TimelineItem } from '@time-weave/react/core';
+import '@time-weave/react/styles.css';
 
 type Meta = { value: number };
 const items: TimelineItem<Meta>[] = [{ id: 'a', rowId: 'r', at: 5, label: 'A', meta: { value: 1 } }];
@@ -113,8 +113,8 @@ export function App() {
     `import { StrictMode, useState, version } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PlaybackControls, Timeline, DetailModal, useTimelineController } from 'time-weave';
-import { createManualScheduler, createTimelineController } from 'time-weave/core';
+import { PlaybackControls, Timeline, DetailModal, useTimelineController } from '@time-weave/react';
+import { createManualScheduler, createTimelineController } from '@time-weave/react/core';
 
 // Any React warning (act, unknown DOM attribute, invalid prop...) fails the test.
 let errors;

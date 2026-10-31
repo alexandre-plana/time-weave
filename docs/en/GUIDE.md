@@ -4,22 +4,22 @@ Status: describes the API implemented in this repository (version 0.1.0, not yet
 
 ## Installation and entry points
 
-The package is not published yet. To try it in another application, run `npm pack` in this repository, then `npm install path/to/time-weave-0.1.0.tgz` in your application.
+The package is not published yet. To try it in another application, run `npm pack` in this repository, then `npm install path/to/time-weave-react-0.1.0.tgz` in your application.
 
 | Import | Contents |
 | --- | --- |
-| `time-weave` | React view, hooks, helpers, and a re-export of the engine |
-| `time-weave/core` | Engine only, with no React and no DOM |
-| `time-weave/styles.css` | Default styles, to be imported explicitly |
+| `@time-weave/react` | React view, hooks, helpers, and a re-export of the engine |
+| `@time-weave/react/core` | Engine only, with no React and no DOM |
+| `@time-weave/react/styles.css` | Default styles, to be imported explicitly |
 
 React 18.3 or 19 (and the matching `react-dom`) is a peer dependency supplied by your application.
 
 ## Minimal example
 
 ```tsx
-import { PlaybackControls, Timeline, useTimelineController } from 'time-weave';
-import type { TimelineItem, VisibleRow } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, useTimelineController } from '@time-weave/react';
+import type { TimelineItem, VisibleRow } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 
 // Provided by your application.
 declare const myApp: { showStateAt(time: number, signal: AbortSignal): Promise<void> };
@@ -87,8 +87,8 @@ Pass an array as `source` (or `{ kind: 'static', items }`), then change it with:
 - `controller.update({ rows, keys, items })`: additions, modifications and removals by id (`{ upsert, remove }` for each collection), validated first and then applied atomically.
 
 ```ts
-import { TimelineValidationError } from 'time-weave/core';
-import type { TimelineController } from 'time-weave/core';
+import { TimelineValidationError } from '@time-weave/react/core';
+import type { TimelineController } from '@time-weave/react/core';
 
 declare const controller: TimelineController;
 
@@ -112,8 +112,8 @@ try {
 ### Windowed source
 
 ```ts
-import { createTimelineController } from 'time-weave/core';
-import type { TimeRange, TimelineItem } from 'time-weave/core';
+import { createTimelineController } from '@time-weave/react/core';
+import type { TimeRange, TimelineItem } from '@time-weave/react/core';
 
 declare const api: { messages(range: TimeRange, options: { signal: AbortSignal }): Promise<TimelineItem[]> };
 
@@ -159,8 +159,8 @@ While waiting, `snapshot.time` stays at the confirmed position and `snapshot.pen
 To wait for data covering the target: `await controller.waitForData(request.target, request.signal)`.
 
 ```ts
-import { createTimelineController } from 'time-weave/core';
-import type { TimeRequest } from 'time-weave/core';
+import { createTimelineController } from '@time-weave/react/core';
+import type { TimeRequest } from '@time-weave/react/core';
 
 declare const dashboard: { render(time: number): void };
 
@@ -254,7 +254,7 @@ import {
   createTimelineController,
   useTimelineHost,
   useTimelineSnapshot,
-} from 'time-weave';
+} from '@time-weave/react';
 
 export function OwnedController() {
   const [controller] = useState(() =>
@@ -308,8 +308,8 @@ When `renderItem` displays text, the accessible name returned by `getItemAriaLab
 
 ```tsx
 import { useRef, useState } from 'react';
-import { DetailModal, Timeline, isSpan } from 'time-weave';
-import type { TimelineController, TimelineItem } from 'time-weave';
+import { DetailModal, Timeline, isSpan } from '@time-weave/react';
+import type { TimelineController, TimelineItem } from '@time-weave/react';
 
 interface Message {
   readonly topic: string;
@@ -380,8 +380,8 @@ A simple dialog usable on its own, rendered into `document.body` (portal). It mo
 `defaultLabels` (English) and `frenchLabels` provide every text used by the components (`TimelineLabels`); each entry can be replaced, and the `labels` props accept a partial object.
 
 ```tsx
-import { PlaybackControls, Timeline, frenchLabels } from 'time-weave';
-import type { TimelineController } from 'time-weave';
+import { PlaybackControls, Timeline, frenchLabels } from '@time-weave/react';
+import type { TimelineController } from '@time-weave/react';
 
 declare const controller: TimelineController;
 
@@ -426,7 +426,7 @@ Items form a single tab stop. The arrow keys move within the row (← →) or to
 
 ## Styles
 
-Import `time-weave/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). A dark theme follows `prefers-color-scheme`; a `data-theme="light"` or `"dark"` attribute on the `.tw-timeline` element itself forces a theme, whatever the system preference. Use the `theme` prop (`'light' | 'dark' | 'auto'`, default `'auto'`) to set it: it is applied to the frame and to the detail dialog. The variables can also be overridden through `className` / `style`.
+Import `@time-weave/react/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). A dark theme follows `prefers-color-scheme`; a `data-theme="light"` or `"dark"` attribute on the `.tw-timeline` element itself forces a theme, whatever the system preference. Use the `theme` prop (`'light' | 'dark' | 'auto'`, default `'auto'`) to set it: it is applied to the frame and to the detail dialog. The variables can also be overridden through `className` / `style`.
 
 The classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` and `tw-item--active` (item under the confirmed cursor) let you adapt the display; `getItemClassName` adds classes per item. The frame also exposes `data-status` and `data-transport` attributes.
 

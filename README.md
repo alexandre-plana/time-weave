@@ -18,8 +18,8 @@ npm run check         # typage, tests, build, isolation du moteur, archive insta
 ```
 
 ```tsx
-import { PlaybackControls, Timeline, useTimelineController } from 'time-weave';
-import 'time-weave/styles.css';
+import { PlaybackControls, Timeline, useTimelineController } from '@time-weave/react';
+import '@time-weave/react/styles.css';
 
 const controller = useTimelineController({
   mode: 'calendar',
@@ -91,8 +91,8 @@ Ces prototypes HTML/CSS/JavaScript ont guidé la présentation ; la bibliothèqu
 
 ## Point de reprise
 
-Prochaines étapes proposées : mesures sur un poste réel en build de production, relecture de l'API par l'utilisateur, puis choix du nom npm, de la licence et des versions de React prises en charge avant toute publication.
+Prochaines étapes proposées : mesures sur un poste réel (`npm run bench -- --headed`), utilisation dans une première application, puis création de l'organisation npm `time-weave` et publication en `0.x`.
 
 ## Publication
 
-Le nom du package npm, sa disponibilité, la licence, les versions de React prises en charge et l'outillage de distribution restent à choisir. Ce dépôt sera la racine du projet destiné à être public ; les documents de méthode et l'historique de travail sont conservés dans un espace local séparé.
+Décisions du 31 octobre 2026 : package `@time-weave/react` (organisation npm `time-weave` à créer), licence [MIT](LICENSE), React 18.3 et 19 pris en charge (vérifiés en CI), versions `0.x` jusqu'au premier retour d'usage. Aucune publication npm n'a encore été faite. Ce dépôt sera la racine du projet destiné à être public ; les documents de méthode et l'historique de travail sont conservés dans un espace local séparé.

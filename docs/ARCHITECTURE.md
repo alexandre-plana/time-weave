@@ -11,7 +11,7 @@ Le découpage proposé ci-dessous est implémenté dans un package unique à deu
 
 | Partie | Emplacement | Points notables |
 | --- | --- | --- |
-| Moteur | `src/core/` (`time-weave/core`) | `TimelineController` unique propriétaire de l'état ; instantanés immuables et abonnement compatibles `useSyncExternalStore` ; ordonnanceur injecté (`FrameScheduler`) pour des tests sur horloge manuelle ; aucune dépendance à React ni au DOM, vérifiée par `npm run check:core` |
+| Moteur | `src/core/` (`@time-weave/react/core`) | `TimelineController` unique propriétaire de l'état ; instantanés immuables et abonnement compatibles `useSyncExternalStore` ; ordonnanceur injecté (`FrameScheduler`) pour des tests sur horloge manuelle ; aucune dépendance à React ni au DOM, vérifiée par `npm run check:core` |
 | Intégration React | `src/react/useTimelineController.ts` | Instance stable, démarrage, suspension à la page masquée, `prefers-reduced-motion`, ordonnanceur `requestAnimationFrame` |
 | Vue | `src/react/Timeline.tsx` | Axe SVG, lignes et marqueurs HTML, lignes mémorisées et réutilisées entre lots, pistes déterministes (`src/core/layout.ts`), limitation au visible |
 | Aides | `PlaybackControls.tsx`, `DetailModal.tsx`, `labels.ts` | Remplaçables ; textes anglais et français |
