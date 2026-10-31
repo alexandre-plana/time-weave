@@ -7,8 +7,19 @@
   --tw-radius: 4px;
 }
 
-/* Thème sombre : suit prefers-color-scheme, ou la prop theme="dark". */
+/* Thème sombre : préférence du système (sauf theme="light")… */
+@media (prefers-color-scheme: dark) {
+  .tw-timeline.planning:not([data-theme='light']) {
+    --tw-accent: #3fb950;
+    --tw-item-bg: #0f2a1a;
+    --tw-item-border: #2ea043;
+    --tw-item-ink: #56d364;
+  }
+}
+
+/* … ou thème forcé par la prop theme="dark". */
 .tw-timeline.planning[data-theme='dark'] {
+  --tw-accent: #3fb950;
   --tw-item-bg: #0f2a1a;
   --tw-item-border: #2ea043;
   --tw-item-ink: #56d364;

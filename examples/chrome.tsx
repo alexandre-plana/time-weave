@@ -6,13 +6,14 @@ export const REPOSITORY = 'https://github.com/alexandre-plana/time-weave';
 
 export type Tone = 'blue' | 'green' | 'purple' | 'yellow' | 'red' | 'gray';
 
-export type PageId = 'home' | 'operations' | 'history' | 'relative' | 'docs';
+export type PageId = 'home' | 'operations' | 'history' | 'relative' | 'surveillance' | 'docs';
 
 const PAGES: { id: PageId; href: string; icon: string; label: string }[] = [
   { id: 'home', href: 'index.html', icon: '📋', label: 'Aperçu' },
   { id: 'operations', href: 'operations/index.html', icon: '🛰️', label: 'Opérations' },
   { id: 'history', href: 'history/index.html', icon: '🏛️', label: 'Histoire' },
   { id: 'relative', href: 'relative/index.html', icon: '⏱️', label: 'Temps relatif' },
+  { id: 'surveillance', href: 'surveillance/index.html', icon: '🎥', label: 'Surveillance' },
   { id: 'docs', href: 'docs/index.html', icon: '📖', label: 'Documentation' },
 ];
 

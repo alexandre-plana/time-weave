@@ -244,6 +244,20 @@ const examples: readonly Example[] = [
     facts: '8 lignes · T−2 s → T+12 s',
   },
   {
+    href: './surveillance/index.html',
+    slug: 'surveillance',
+    tag: 'Exemple 04',
+    title: 'Surveillance de site — poste de nuit',
+    text: 'Carte d’un terminal portuaire avec mobiles, caméras et mosaïque vidéo synchronisées sur la timeline, alarmes et flux en direct.',
+    pills: [
+      ['carte', 'blue'],
+      ['vidéo', 'purple'],
+      ['direct', 'red'],
+    ],
+    lang: ['calendaire', 'blue'],
+    facts: '20:00 → 06:00 · 8 caméras · 6 mobiles',
+  },
+  {
     href: './bench/index.html',
     slug: 'bench',
     tag: 'Banc',

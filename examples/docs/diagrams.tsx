@@ -140,7 +140,7 @@ export function RangesDiagram() {
       </defs>
       <rect x="0.5" y="0.5" width="759" height="235" rx="8" className="dg-panel" />
       {/* domain */}
-      <text x="40" y="32" className="dg-label dg-halo">
+      <text x="40" y="28" className="dg-label">
         <tspan className="dg-mono dg-strong">domain</tspan> — période complète : lecture, boucle, Stop et fin s’y rapportent
       </text>
       <rect x="40" y="42" width="680" height="22" rx="5" className="dg-domain" />
@@ -149,7 +149,7 @@ export function RangesDiagram() {
       <line x1="480" y1="64" x2="480" y2="180" className="dg-guide" />
       <rect x="300" y="42" width="180" height="22" className="dg-domain-window" />
       {/* viewport */}
-      <text x="300" y="98" className="dg-label dg-halo">
+      <text x="290" y="122" textAnchor="end" className="dg-label">
         <tspan className="dg-mono dg-strong">viewport</tspan> — fenêtre visible
       </text>
       <rect x="300" y="106" width="180" height="24" rx="5" className="dg-viewport" />
