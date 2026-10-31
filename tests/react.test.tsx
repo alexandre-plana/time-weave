@@ -428,6 +428,31 @@ describe('accessibility audit', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
+  it('theme sets data-theme on the frame only when forced', () => {
+    const { controller } = makeController();
+    const { container, rerender } = render(<Timeline controller={controller} />);
+    const frame = () => container.querySelector<HTMLElement>('.tw-timeline')!;
+    expect(frame().hasAttribute('data-theme')).toBe(false);
+    rerender(<Timeline controller={controller} theme="auto" />);
+    expect(frame().hasAttribute('data-theme')).toBe(false);
+    rerender(<Timeline controller={controller} theme="light" />);
+    expect(frame().getAttribute('data-theme')).toBe('light');
+    rerender(<Timeline controller={controller} theme="dark" />);
+    expect(frame().getAttribute('data-theme')).toBe('dark');
+  });
+
+  it('the detail dialog follows the theme prop, including when it changes while open', () => {
+    const { controller } = makeController();
+    const { rerender } = render(<Timeline controller={controller} detail theme="light" />);
+    fireEvent.click(screen.getByRole('button', { name: /Cycle/ }));
+    const backdrop = () => screen.getByRole('dialog').closest('.tw-modal-backdrop')!;
+    expect(backdrop().getAttribute('data-theme')).toBe('light');
+    rerender(<Timeline controller={controller} detail theme="dark" />);
+    expect(backdrop().getAttribute('data-theme')).toBe('dark');
+    rerender(<Timeline controller={controller} detail />);
+    expect(backdrop().hasAttribute('data-theme')).toBe(false);
+  });
+
   it('keeps a compact "whole period" button on narrow screens', () => {
     const { controller } = makeController();
     const { container } = render(<Timeline controller={controller} initialTrackWidth={300} labelWidth={200} />);

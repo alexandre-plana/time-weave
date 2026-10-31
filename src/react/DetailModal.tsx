@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { defaultLabels } from './labels.js';
@@ -18,6 +18,8 @@ export interface DetailModalProps {
    * on the dialog, which is rendered in `document.body`.
    */
   inertRoot?: HTMLElement | null;
+  /** Forces the dialog theme; otherwise it is taken from `inertRoot` (see above). */
+  theme?: 'light' | 'dark';
 }
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -37,7 +39,11 @@ export function DetailModal(props: DetailModalProps): ReactNode {
   onCloseRef.current = onClose;
 
   const inertRoot = props.inertRoot ?? null;
-  const theme = inertRoot?.closest('[data-theme]')?.getAttribute('data-theme') ?? undefined;
+  const readTheme = () => inertRoot?.closest('[data-theme]')?.getAttribute('data-theme') ?? undefined;
+  const [inheritedTheme, setInheritedTheme] = useState(readTheme);
+  // Read again after each commit: during render, the attribute of the parent may not be updated yet.
+  useLayoutEffect(() => setInheritedTheme(readTheme()));
+  const theme = props.theme ?? inheritedTheme;
 
   useEffect(() => {
     returnTo.current = props.returnFocus ?? (document.activeElement as HTMLElement | null);

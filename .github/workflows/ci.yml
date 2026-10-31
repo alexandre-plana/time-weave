@@ -20,6 +20,7 @@ jobs:
       - run: npm run build
       - run: npm run check:core
       - run: npm run check:package
+      - run: npm run check:react18
       - run: npm run build:examples
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

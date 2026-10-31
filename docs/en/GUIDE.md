@@ -301,6 +301,7 @@ export function OwnedController() {
 | `showZoomControls` | `true` | Zoom out, zoom in, show whole period |
 | `toolbar` | none | Content placed in the toolbar, e.g. `<PlaybackControls />` |
 | `rowsHeader` | `labels.rows` | Header of the row column |
+| `theme` | `'auto'` | `'auto'` follows `prefers-color-scheme`; `'light'` or `'dark'` forces the theme (sets `data-theme` on the frame and on the detail dialog) |
 | `className`, `style` | none | Applied to the `.tw-timeline` frame |
 
 When `renderItem` displays text, the accessible name returned by `getItemAriaLabel` must contain that visible text (WCAG 2.5.3, "Label in Name"). Without this prop the default name is kept.
@@ -371,6 +372,7 @@ A simple dialog usable on its own, rendered into `document.body` (portal). It mo
 | `onClose()` | Required |
 | `returnFocus` | Element focused on close; defaults to the element focused at opening |
 | `inertRoot` | Element made `inert` while open (`Timeline` passes its frame); its `data-theme` (or that of its nearest ancestor) is copied onto the dialog |
+| `theme` | `'light'` or `'dark'` forces the dialog theme instead (`Timeline` passes its `theme`) |
 | `labels`, `className` | `labels.close` names the close button |
 
 ### Texts and localisation
@@ -424,7 +426,7 @@ Items form a single tab stop. The arrow keys move within the row (← →) or to
 
 ## Styles
 
-Import `time-weave/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). A dark theme follows `prefers-color-scheme`; a `data-theme="light"` or `"dark"` attribute on the `.tw-timeline` element itself forces a theme. `Timeline` does not forward arbitrary attributes, so for now this attribute has to be set on the rendered element (for example from an effect), or the variables overridden through `className` / `style`.
+Import `time-weave/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). A dark theme follows `prefers-color-scheme`; a `data-theme="light"` or `"dark"` attribute on the `.tw-timeline` element itself forces a theme, whatever the system preference. Use the `theme` prop (`'light' | 'dark' | 'auto'`, default `'auto'`) to set it: it is applied to the frame and to the detail dialog. The variables can also be overridden through `className` / `style`.
 
 The classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` and `tw-item--active` (item under the confirmed cursor) let you adapt the display; `getItemClassName` adds classes per item. The frame also exposes `data-status` and `data-transport` attributes.
 

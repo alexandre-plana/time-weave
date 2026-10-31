@@ -31,7 +31,8 @@
     "dev:examples": "vite --config examples/vite.config.ts",
     "build:examples": "vite build --config examples/vite.config.ts",
     "check:package": "node scripts/check-package.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run build:examples && npm run test:e2e",
+    "check:react18": "node scripts/check-react18.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run check:react18 && npm run build:examples && npm run test:e2e",
     "prepack": "npm run build",
     "test:coverage": "vitest run --coverage --coverage.include='src/**'"
   },

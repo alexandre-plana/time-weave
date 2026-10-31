@@ -80,6 +80,11 @@ export interface TimelineProps<RowMeta = unknown, ItemMeta = unknown, KeyMeta = 
   toolbar?: ReactNode;
   /** Header of the row column. */
   rowsHeader?: ReactNode;
+  /**
+   * Colour theme. `'auto'` (default) follows `prefers-color-scheme`; `'light'`
+   * or `'dark'` sets `data-theme` on the frame and on the detail dialog.
+   */
+  theme?: 'light' | 'dark' | 'auto';
   className?: string;
   style?: CSSProperties;
 }
@@ -264,9 +269,11 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     showZoomControls = true,
     toolbar,
     rowsHeader,
+    theme = 'auto',
     className,
     style,
   } = props;
+  const forcedTheme = theme === 'auto' ? undefined : theme;
   const labels = useMemo(() => ({ ...defaultLabels, ...props.labels }), [props.labels]);
   const baseId = useId().replace(/:/g, '');
   const tooltipId = `tw-tooltip-${baseId}`;
@@ -875,6 +882,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
       data-status={snapshot.status}
       data-transport={snapshot.transport}
       data-narrow={narrow || undefined}
+      data-theme={forcedTheme}
     >
       {(toolbar || showZoomControls) && (
         <div className="tw-toolbar">
@@ -1071,6 +1079,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
           labels={labels}
           returnFocus={detailReturnFocus.current}
           inertRoot={frameRef.current}
+          theme={forcedTheme}
           onClose={() => setDetailItemId(null)}
         >
           {typeof detail === 'function' ? (

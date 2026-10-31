@@ -150,10 +150,10 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 - `useTimelineController(options)` crée une instance stable. Les options sont lues une fois, sauf `prepareTime` qui appelle toujours la dernière fonction fournie. Le hook démarre le contrôleur, suspend la progression quand la page est masquée et suit `prefers-reduced-motion` sauf si `reducedMotion` est donné.
 - `useTimelineHost(controller, { respectReducedMotion? })` raccorde une instance créée par l'application avec `createTimelineController` : démarrage et suspension quand la page est masquée. Contrairement au hook précédent, il ne remplace pas l'ordonnanceur (passer `scheduler: createAnimationFrameScheduler()` à la création) et ne suit `prefers-reduced-motion` qu'avec `respectReducedMotion: true`.
 - Aucun des deux hooks n'appelle `dispose()` au démontage : ils suspendent la progression (`setActive(false)`), ce qui reste compatible avec StrictMode et `<Activity>`. Le propriétaire d'une instance partagée appelle `dispose()` lui-même.
-- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`, `rowsHeader`, `initialTrackWidth` (largeur avant la première mesure), `className`, `style`.
+- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`, `rowsHeader`, `theme` (`'auto'` par défaut, voir Styles), `initialTrackWidth` (largeur avant la première mesure), `className`, `style`.
 - `getItemAriaLabel(item)` remplace le nom accessible des éléments (par défaut : libellé, ou « Groupe de N » pour un groupe sans libellé, puis l'heure). Avec un `renderItem` qui affiche du texte, le nom doit contenir ce texte visible (WCAG 2.5.3, « Étiquette dans le nom »). Sans cette prop, le comportement par défaut est conservé.
 - `PlaybackControls` : `speeds` (par défaut `0,25×` à `8×`), `showLive` (faux par défaut), `showLoop` et `showKeys` (vrais par défaut), `showReadout`, `locale`, `labels`, `formatTime`, `formatSpeed`, `className`.
-- `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` est recopié sur la fenêtre.
+- `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` (ou celui de l'ancêtre le plus proche) est recopié sur la fenêtre, sauf si `theme` (`'light'` ou `'dark'`) est donné.
 - `frenchLabels` et `defaultLabels` fournissent les textes ; chaque entrée est remplaçable.
 
 ## Interactions et clavier
@@ -185,7 +185,7 @@ Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la 
 
 ## Styles
 
-Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et `data-theme="light"` ou `"dark"` posé sur l'élément `.tw-timeline` lui-même force un thème (par exemple via un `ref` ou une règle CSS de l'application). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
+Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et la prop `theme` de `Timeline` (`'light' | 'dark' | 'auto'`, `'auto'` par défaut) force un thème quelle que soit la préférence du système : elle pose `data-theme="light"` ou `"dark"` sur l'élément `.tw-timeline` et sur la fenêtre de détail (`'auto'` n'en pose pas). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
 
 ## Choix d'implémentation à valider
 
