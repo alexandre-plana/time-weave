@@ -33,6 +33,12 @@ export interface TickOptions {
   readonly minSpacing?: number;
   /** Locale used for calendar labels. Defaults to the runtime locale. */
   readonly locale?: string | undefined;
+  /**
+   * Estimated advance of one label character, in pixels, used to keep labels
+   * from overlapping (a label starts 4 px right of its tick). Defaults to 6.5
+   * (10 px monospace). Set to 0 to disable the label-width check.
+   */
+  readonly charWidth?: number;
   /** Replaces the default label. */
   readonly format?: ((time: number, step: TickStep, mode: TimeMode) => string) | undefined;
 }
@@ -67,13 +73,36 @@ const calendarSteps: TickStep[] = [
   ...fixedSteps,
   ...steps('day', [1, 2, 7, 14]),
   ...steps('month', [1, 3, 6]),
-  ...steps('year', [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10_000, 100_000]),
+  ...steps('year', [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000]),
 ];
 
 const relativeSteps: TickStep[] = [
   ...fixedSteps,
-  ...steps('day', [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000, 1e6, 1e7, 1e8, 1e9]),
+  ...steps('day', [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000]),
 ];
+
+/** Smallest 1-2-5 × 10^k number not below `value` (`value` > 0). */
+function niceAbove(value: number): number {
+  const power = 10 ** Math.floor(Math.log10(value));
+  for (const factor of [1, 2, 5, 10]) {
+    if (factor * power >= value * (1 - 1e-12)) return factor * power;
+  }
+  return 10 * power;
+}
+
+/** Steps past the end of the list continue as 1-2-5 multiples of days (relative) or years (calendar). */
+function extendedStep(mode: TimeMode, count: number): TickStep {
+  const unit: TickUnit = mode === 'calendar' ? 'year' : 'day';
+  return { unit, count, duration: count * unitDuration[unit] };
+}
+
+/** The next coarser step after `step`. */
+function nextTickStep(mode: TimeMode, step: TickStep): TickStep {
+  const list = mode === 'calendar' ? calendarSteps : relativeSteps;
+  const index = list.indexOf(step);
+  if (index >= 0 && index < list.length - 1) return list[index + 1]!;
+  return extendedStep(mode, niceAbove(step.count * 1.5));
+}
 
 /** Picks the smallest step whose spacing is at least `minSpacing` pixels. */
 export function chooseTickStep(mode: TimeMode, range: TimeRange, width: number, minSpacing = 90): TickStep {
@@ -81,15 +110,57 @@ export function chooseTickStep(mode: TimeMode, range: TimeRange, width: number, 
   const duration = range.end - range.start;
   const msPerPixel = width > 0 ? duration / width : duration;
   const minimum = msPerPixel * minSpacing;
-  return list.find((step) => step.duration >= minimum) ?? list[list.length - 1]!;
+  const found = list.find((step) => step.duration >= minimum);
+  if (found) return found;
+  const last = list[list.length - 1]!;
+  const count = niceAbove(minimum / unitDuration[last.unit]);
+  return Number.isFinite(count) && count > last.count ? extendedStep(mode, count) : last;
 }
 
-function* fixedTickTimes(range: TimeRange, step: number): Generator<number> {
-  let time = Math.ceil(range.start / step) * step;
-  for (let i = 0; time <= range.end && i < 10_000; i++, time += step) yield time === 0 ? 0 : time;
+function* fixedTickTimes(range: TimeRange, step: number, offset = 0): Generator<number> {
+  const first = Math.ceil((range.start - offset) / step) * step + offset;
+  for (let i = 0; i < 10_000; i++) {
+    const time = first + i * step;
+    if (time > range.end) return;
+    yield time === 0 ? 0 : time;
+  }
 }
+
+/** 1970-01-05, the first Monday after the Unix epoch (a Thursday): weeks are ISO weeks. */
+const MONDAY_OFFSET = 4 * DAY;
+
+function daysInMonth(date: Date): number {
+  const end = new Date(date.getTime());
+  end.setUTCMonth(end.getUTCMonth() + 1, 0);
+  return end.getUTCDate();
+}
+
+/**
+ * Two-day steps restart on the 1st of each month: odd days 1, 3, 5…, keeping
+ * at least two days before the next 1st (gaps are 2 or 3 days, never 1).
+ * Depends on the date only, so labels stay put while panning.
+ */
+function* twoDayTickTimes(range: TimeRange): Generator<number> {
+  let time = Math.ceil(range.start / DAY) * DAY;
+  for (let i = 0; time <= range.end && i < 20_000; i++, time += DAY) {
+    const date = new Date(time);
+    const day = date.getUTCDate();
+    if (day % 2 === 1 && day < daysInMonth(date)) yield time;
+  }
+}
+
+/** Valid `Date` range: ±8.64e15 ms. */
+const MAX_DATE = 8.64e15;
 
 function* calendarTickTimes(range: TimeRange, step: TickStep): Generator<number> {
+  if (step.unit === 'day' && step.count === 2) {
+    yield* twoDayTickTimes(range);
+    return;
+  }
+  if (step.unit === 'day' && step.count % 7 === 0) {
+    yield* fixedTickTimes(range, step.duration, MONDAY_OFFSET);
+    return;
+  }
   if (step.unit !== 'month' && step.unit !== 'year') {
     yield* fixedTickTimes(range, step.duration);
     return;
@@ -143,7 +214,9 @@ function isMajorCalendar(time: number, step: TickStep): boolean {
     case 'hour':
       return date.getUTCHours() === 0 && date.getUTCMinutes() === 0;
     case 'day':
-      return date.getUTCDate() === 1;
+      // First tick of each month: the 1st for 1- and 2-day steps, the first
+      // Monday (weeks) or the first of the fortnightly Mondays.
+      return date.getUTCDate() <= step.count;
     case 'month':
       return date.getUTCMonth() === 0;
     case 'year':
@@ -203,21 +276,63 @@ export function formatRelative(time: number, resolution = 1): string {
   return sign + (parts.length ? parts.join(' ') : '0');
 }
 
-export function generateTicks(options: TickOptions): TickResult {
-  const { mode, range, width, locale, format } = options;
-  const step = chooseTickStep(mode, range, width, options.minSpacing ?? 90);
+/** Space around a label: 4 px from its tick line, 4 px before the next tick. */
+const LABEL_PADDING = 8;
+
+/**
+ * Builds the ticks for `step`, or returns null when there would be more than
+ * `maxTicks` of them or when a label would overlap the next tick.
+ */
+function buildTicks(options: TickOptions, range: TimeRange, step: TickStep, maxTicks: number, msPerPixel: number, charWidth: number): Tick[] | null {
+  const { mode, locale, format } = options;
   const times = mode === 'calendar' ? calendarTickTimes(range, step) : fixedTickTimes(range, step.duration);
+  const checkLabels = charWidth > 0 && msPerPixel > 0 && Number.isFinite(msPerPixel);
+  // Calendar majors carry longer labels (date + time): reserve room for one even
+  // when none is visible, so the step does not change while panning.
+  let reserved = 0;
+  if (checkLabels && mode === 'calendar' && !format) {
+    reserved = formatCalendarTick(Math.min(Math.max(range.start, -MAX_DATE), MAX_DATE), step, locale, true).length * charWidth + LABEL_PADDING;
+  }
   const ticks: Tick[] = [];
+  let previous: { time: number; width: number } | null = null;
   for (const time of times) {
+    if (ticks.length >= maxTicks) return null;
     const major = mode === 'calendar' ? isMajorCalendar(time, step) : time === 0;
     const label = format
       ? format(time, step, mode)
       : mode === 'calendar'
         ? formatCalendarTick(time, step, locale, major)
-        : formatRelative(time, step.duration >= unitDuration[step.unit] ? unitDuration[step.unit] : 1);
+        : formatRelative(time, unitDuration[step.unit]);
+    if (checkLabels) {
+      const width = Math.max(label.length * charWidth + LABEL_PADDING, reserved);
+      if (previous && (time - previous.time) / msPerPixel < previous.width) return null;
+      previous = { time, width };
+    }
     ticks.push({ time, label, major });
   }
-  return { step, ticks };
+  return ticks;
+}
+
+export function generateTicks(options: TickOptions): TickResult {
+  const { mode, width } = options;
+  const minSpacing = options.minSpacing ?? 90;
+  const charWidth = options.charWidth ?? 6.5;
+  let step = chooseTickStep(mode, options.range, width, minSpacing);
+  if (!Number.isFinite(options.range.start) || !Number.isFinite(options.range.end)) return { step, ticks: [] };
+  // Calendar labels need a valid Date.
+  const range =
+    mode === 'calendar'
+      ? { start: Math.max(options.range.start, -MAX_DATE), end: Math.min(options.range.end, MAX_DATE) }
+      : options.range;
+  // No more ticks than fit at `minSpacing`, plus one at each edge.
+  const maxTicks = width > 0 && minSpacing > 0 && Number.isFinite(width / minSpacing) ? Math.min(10_000, Math.floor(width / minSpacing) + 2) : width > 0 ? 10_000 : 2;
+  const msPerPixel = width > 0 ? (options.range.end - options.range.start) / width : NaN;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const ticks = buildTicks(options, range, step, maxTicks, msPerPixel, charWidth);
+    if (ticks) return { step, ticks };
+    step = nextTickStep(mode, step);
+  }
+  return { step, ticks: [] };
 }
 
 /** Full-precision readout for a position: UTC date and time, or a signed relative clock. */
