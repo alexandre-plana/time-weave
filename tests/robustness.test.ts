@@ -110,8 +110,8 @@ describe('robustness: long live stream on a static source', () => {
       end += 50;
       controller.extendDomain(end);
       controller.setLiveTime(end - Math.floor(random() * 10));
-      // `update()` revalidates the whole collection (O(n), ~0.2 ms at 2 000 items), so the
-      // stream is applied every other cycle, two items at a time, to keep the test fast.
+      // The stream is applied every other cycle, two items at a time, to keep the test fast;
+      // `update()` validates only the changed items (see tests/update-perf.test.ts).
       if (cycle % 2 === 0) {
         const upsert = [makeItem(end - 20), makeItem(end - 10)];
         const remove = live.splice(0, 2);

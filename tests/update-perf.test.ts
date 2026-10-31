@@ -1,6 +1,6 @@
 /**
  * `update({ items })` on a static source validates only the upserted items and
- * keeps an id -> index map instead of revalidating and re-indexing the whole
+ * keeps an id -> position index instead of revalidating and re-indexing the whole
  * collection. These tests check it against a reference (full `applyChanges` +
  * full `validateItems`, i.e. the original implementation) on randomized small
  * changes, and guard against a return to O(n) validation per update.
@@ -165,7 +165,7 @@ describe('incremental item updates', () => {
     const elapsed = performance.now() - started;
     if (process.env.TW_PERF_LOG) console.log(`1 000 stream updates on 20 000 items: ${elapsed.toFixed(1)} ms`);
     expect(snap().items).toHaveLength(20_000);
-    // Full revalidation took ~2.4 s here; the incremental path ~0.1 s. Generous bound.
+    // Full revalidation took ~3.5 s here; the incremental path ~0.13 s. Generous bound.
     expect(elapsed).toBeLessThan(1_200);
   });
 
