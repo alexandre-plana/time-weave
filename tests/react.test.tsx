@@ -184,3 +184,42 @@ describe('integration hooks', () => {
     expect(controller.getSnapshot().transport).toBe('live');
   });
 });
+
+describe('pointer gestures', () => {
+  function rect(element: Element) {
+    (element as HTMLElement).getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 800, bottom: 40, width: 800, height: 40, x: 0, y: 0, toJSON() {} }) as DOMRect;
+  }
+
+  it('click on the background seeks; dragging pans without seeking', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} />);
+    const axis = screen.getByRole('slider');
+    rect(axis);
+    fireEvent.pointerDown(axis, { pointerId: 1, button: 0, clientX: 400 });
+    fireEvent.pointerUp(axis, { pointerId: 1, button: 0, clientX: 400 });
+    expect(controller.getSnapshot().time).toBe(5000);
+    act(() => controller.zoomBy(2));
+    const before = controller.getSnapshot().viewport.start;
+    fireEvent.pointerDown(axis, { pointerId: 2, button: 0, clientX: 400 });
+    fireEvent.pointerMove(axis, { pointerId: 2, clientX: 300 });
+    fireEvent.pointerUp(axis, { pointerId: 2, button: 0, clientX: 300 });
+    expect(controller.getSnapshot().viewport.start).toBeGreaterThan(before);
+    expect(controller.getSnapshot().time).toBe(5000);
+  });
+
+  it('two-finger pinch zooms around the fingers', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} />);
+    const axis = screen.getByRole('slider');
+    rect(axis);
+    fireEvent.pointerDown(axis, { pointerId: 1, pointerType: 'touch', button: 0, clientX: 300 });
+    fireEvent.pointerDown(axis, { pointerId: 2, pointerType: 'touch', button: 0, clientX: 500 });
+    fireEvent.pointerMove(axis, { pointerId: 2, pointerType: 'touch', clientX: 700 });
+    const viewport = controller.getSnapshot().viewport;
+    expect(viewport.end - viewport.start).toBeCloseTo(5000);
+    fireEvent.pointerUp(axis, { pointerId: 2, pointerType: 'touch', clientX: 700 });
+    fireEvent.pointerUp(axis, { pointerId: 1, pointerType: 'touch', clientX: 300 });
+    expect(controller.getSnapshot().time).toBe(0);
+  });
+});

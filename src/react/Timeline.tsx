@@ -336,10 +336,37 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const drag = useRef<
     | { kind: 'pan'; pointerId: number; startX: number; startViewport: { start: number; end: number }; moved: boolean }
     | { kind: 'cursor'; pointerId: number }
+    | { kind: 'pinch'; startDistance: number; startViewport: { start: number; end: number }; anchor: number; ratio: number }
     | null
   >(null);
+  // Active touch pointers, for the two-finger pinch zoom.
+  const touches = useRef(new Map<number, number>());
+
+  const startPinch = (): void => {
+    const [a, b] = Array.from(touches.current.values());
+    if (a === undefined || b === undefined) return;
+    const rect = axisElement.current?.getBoundingClientRect();
+    const width = rect && rect.width > 0 ? rect.width : trackWidth;
+    const middle = (a + b) / 2;
+    const ratio = Math.min(1, Math.max(0, (middle - (rect?.left ?? 0)) / width));
+    drag.current = {
+      kind: 'pinch',
+      startDistance: Math.max(1, Math.abs(a - b)),
+      startViewport: viewport,
+      anchor: viewport.start + ratio * duration,
+      ratio,
+    };
+  };
 
   const onTrackPointerDown = (event: ReactPointerEvent<HTMLElement>): void => {
+    if (event.pointerType === 'touch') {
+      touches.current.set(event.pointerId, event.clientX);
+      if (touches.current.size === 2) {
+        startPinch();
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        return;
+      }
+    }
     if (event.button !== 0) return;
     const target = event.target as HTMLElement;
     if (target.closest('.tw-item, .tw-row-label, .tw-key, .tw-cursor-handle, button')) return;
@@ -355,8 +382,19 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>): void => {
+    if (touches.current.has(event.pointerId)) touches.current.set(event.pointerId, event.clientX);
     const state = drag.current;
-    if (!state || state.pointerId !== event.pointerId) return;
+    if (!state) return;
+    if (state.kind === 'pinch') {
+      const [a, b] = Array.from(touches.current.values());
+      if (a === undefined || b === undefined) return;
+      const factor = Math.max(1, Math.abs(a - b)) / state.startDistance;
+      const span = (state.startViewport.end - state.startViewport.start) / factor;
+      const start = state.anchor - span * state.ratio;
+      controller.setViewport({ start, end: start + span }, { origin: 'zoom' });
+      return;
+    }
+    if (state.pointerId !== event.pointerId) return;
     if (state.kind === 'cursor') {
       controller.seek(Math.min(domain.end, Math.max(domain.start, timeAtClientX(event.clientX))));
       return;
@@ -369,7 +407,13 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   };
 
   const onPointerUp = (event: ReactPointerEvent<HTMLElement>): void => {
+    const wasTouch = touches.current.delete(event.pointerId);
     const state = drag.current;
+    if (state?.kind === 'pinch') {
+      // Lifting one finger ends the pinch without a click navigation.
+      if (wasTouch) drag.current = null;
+      return;
+    }
     if (!state || state.pointerId !== event.pointerId) return;
     drag.current = null;
     event.currentTarget.releasePointerCapture?.(event.pointerId);
@@ -379,7 +423,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     }
   };
 
-  const onPointerCancel = (): void => {
+  const onPointerCancel = (event: ReactPointerEvent<HTMLElement>): void => {
+    touches.current.delete(event.pointerId);
     drag.current = null;
   };
 

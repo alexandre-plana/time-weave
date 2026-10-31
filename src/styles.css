@@ -342,6 +342,8 @@
   overflow-y: auto;
   scrollbar-gutter: stable;
   touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .tw-rows {
