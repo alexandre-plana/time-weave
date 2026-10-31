@@ -4,7 +4,7 @@ Film de motion design pour présenter Time Weave : 60 secondes, 1920 × 1080, 60
 
 ![Planche du film](out/storyboard.png)
 
-- Vidéo : [`out/time-weave-demo.mp4`](out/time-weave-demo.mp4)
+- Vidéo : [`out/time-weave-demo.mp4`](out/time-weave-demo.mp4) (17,8 Mo) · version web [`out/time-weave-demo-web.mp4`](out/time-weave-demo-web.mp4) (8,7 Mo, sous la limite d'envoi de GitHub)
 - Prévisualisation interactive : ouvrir `index.html` (Espace pour lire ou mettre en pause, curseur pour se déplacer)
 
 ## Note d'intention
