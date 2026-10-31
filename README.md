@@ -164,6 +164,7 @@ Toute l'apparence passe par des variables CSS `--tw-*`. Le clair et le sombre (p
 | Exemple | Ce qu'il montre |
 | --- | --- |
 | **Journée d'opérations** | 211 lignes, source par fenêtre, regroupement selon le zoom, `prepareTime` qui attend les données, flux simulé et Direct |
+| **Surveillance de site** | Plan de site portuaire : mobiles et leurs traces, caméras dont le champ se teinte à la détection, mosaïque vidéo, alarmes en clés et bandes, flux en direct |
 | **Histoire d'entreprise** | 75 ans de périodes et de jalons, contenu personnalisé, lecture à quatre ans par seconde |
 | **Temps relatif** | Séquence de −2 s à 12 s autour d'un déclenchement, mesures à la milliseconde |
 | **Banc de mesure** | Scénarios du [jeu de référence](docs/JEU-REFERENCE.md), résultats dans [MESURES.md](docs/MESURES.md) |
@@ -189,7 +190,7 @@ Lancez-les avec `npm run dev:examples`, ou ouvrez la [démo en ligne](https://al
 | `src/react/` | `Timeline`, `TimelineOverview`, `PlaybackControls`, `DetailModal`, hooks, textes anglais et français |
 | `src/styles.css` | Styles par défaut, variables `--tw-*`, thème sombre |
 | `tests/`, `e2e/` | Tests Vitest du moteur et des composants, tests de bout en bout Playwright |
-| `examples/` | Accueil, opérations, histoire d'entreprise, temps relatif, page de mesure |
+| `examples/` | Accueil, opérations, surveillance de site, histoire d'entreprise, temps relatif, page de mesure |
 | `scripts/` | Isolation du moteur, archive installée, vérification React 18.3, mesures |
 | `motion/` | Film et animations du README : scènes Canvas déterministes, bande-son synthétisée, logo |
 | `docs/assets/` | Logo (SVG), GIF du README |
