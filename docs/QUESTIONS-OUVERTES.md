@@ -1,6 +1,8 @@
 # Questions ouvertes
 
-Dernière mise à jour : 18 octobre 2026.
+Dernière mise à jour : 31 octobre 2026.
+
+**31 octobre 2026** : la V1 est implémentée. Les choix techniques laissés au plan (outillage, versions) sont fixés dans le [plan de réalisation](PLAN-REALISATION.md). Les comportements que l'implémentation a dû trancher sans décision explicite sont listés dans la section « Choix d'implémentation à valider » du [guide](GUIDE.md). Restent ouverts avant publication : nom npm, licence, versions de React prises en charge et mesures sur un poste réel.
 
 Cette liste rassemble les décisions restantes. Elle distingue les besoins à préciser des sujets ajoutés par l'assistant pour préparer une bibliothèque utilisable et publiable. Elle ne constitue ni un engagement de fonctionnalités ni un plan d'implémentation validé.
 
