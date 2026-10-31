@@ -836,8 +836,16 @@ dl.facts dd {
     display: none;
   }
 
+  .topbar__actions {
+    gap: 6px;
+  }
+
   .topbar__button {
-    padding: 0 9px;
+    padding: 0 7px;
+  }
+
+  .theme-switch__option {
+    padding: 0 6px;
   }
 
   .page-header__aside {
