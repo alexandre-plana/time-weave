@@ -38,7 +38,7 @@ Série 2 : après la mémorisation des lignes et les corrections de la relecture
 | 2. Zoom par pas, médiane / p95 | 34 / 64 ms | 33 / 56 ms |
 | 2. Déplacement horizontal, médiane / p95 | 34 / 53 ms | 34 / 50 ms |
 | 2. Défilement vertical, médiane | 46 ms | 33 ms |
-| 3. Remplacement des 5 000 éléments (source immédiate) | 33 ms | 83 ms |
+| 3. Remplacement des 5 000 éléments (source immédiate, génération du lot incluse) | 33 ms (1 essai) | médiane 67 ms, max 83 ms (5 essais) |
 | 4. Lecture 1×, 60×, 600× : images/s | 48 à 49 | 60 |
 | 4. Lecture : p95 de durée d'image, images > 50 ms sur 2 s | 50 ms, 1 à 3 | 16,7 ms, 0 |
 | 4. Rendu React de la timeline par mise à jour, médiane / p95 | 6,6 à 7,1 / 47 à 53 ms | 3,1 à 5,0 / 7 à 8,6 ms |
@@ -58,11 +58,11 @@ Série 2 : après la mémorisation des lignes et les corrections de la relecture
 - **Correction issue de la mesure** : la première série donnait 85 % d'avance avec une préparation immédiate. Le temps de rendu React pendant une confirmation synchrone était compté comme une attente. Le moteur garde désormais l'horodatage de l'image comme référence quand la confirmation arrive dans cette même image ; un test de règle couvre ce cas.
 - **Direct avec source lente** : les rafraîchissements continus sont regroupés derrière la demande active ; presque toutes les demandes aboutissent au lieu d'être annulées.
 - **Pics de rendu pendant la lecture (série 1)** : chaque image redessinait toutes les lignes. Depuis la série 2, une ligne n'est redessinée que si sa disposition, la fenêtre ou les éléments sous le curseur changent ; le p95 de rendu passe sous 9 ms.
-- **Remplacement des données (série 2)** : plus lent qu'en série 1 (83 ms contre 33 ms). Un nouveau lot invalide toutes les lignes mémorisées et ajoute leurs comparaisons ; la cause exacte reste à profiler.
+- **Remplacement des données (série 2)** : la série 1 ne reposait que sur un essai. Sur cinq essais, la médiane est de 67 ms. Le calcul des pistes de 5 000 éléments prend environ 9 ms hors navigateur ; le reste se partage entre la génération du lot par la source d'essai, la validation et le rendu React en mode développement.
 - **Rendu** : la limitation au visible maintient le DOM à quelques centaines d'éléments pour 5 000 transmis. Les durées d'interaction restent proches du plancher de deux images dans cet environnement ; une mesure sur un poste avec écran et un build de production reste à faire avant d'annoncer une capacité.
 
 ## À compléter
 
 - Même série sur un poste de travail réel (navigateur avec écran, build de production) et sur un navigateur WebKit ou Firefox.
 - Mémoire : non mesurée dans cette série.
-- Profilage du remplacement de lot (83 ms en série 2) : le recalcul des pistes de toutes les lignes est la piste la plus directe.
+- Profilage du remplacement de lot en build de production, pour séparer validation, pistes et rendu.

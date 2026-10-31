@@ -141,12 +141,15 @@ async function runScenarios(controller: TimelineController, settings: { prepareD
 
   controller.setViewport(VIEWPORT);
   await settle();
-  const before = performance.now();
-  controller.refresh();
-  await controller.waitForData(VIEWPORT.start);
-  while (controller.getSnapshot().data.loading) await frame();
-  await settle();
-  push(`3. Remplacement des données (${settings.loadDelay} ms de source incluse)`, ms(performance.now() - before));
+  const replacements: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    const before = performance.now();
+    controller.refresh();
+    while (controller.getSnapshot().data.loading) await frame();
+    await settle();
+    replacements.push(performance.now() - before);
+  }
+  push(`3. Remplacement des données, 5 essais (${settings.loadDelay} ms de source incluse, médiane / max)`, `${ms(percentile(replacements, 50))} / ${ms(Math.max(...replacements))}`);
 
   for (const speed of [1, 60, 600]) {
     controller.seek(VIEWPORT.start);
