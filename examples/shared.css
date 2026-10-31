@@ -2,7 +2,8 @@
 
 /*
  * Visual language of the examples: a GitHub-profile-like interface (Primer).
- * Light tokens first, GitHub dark equivalents under prefers-color-scheme: dark.
+ * Light by default; GitHub dark equivalents under <html data-theme="dark">, or
+ * <html data-theme="auto"> when the system is dark (see theme.ts).
  */
 
 :root {
@@ -59,11 +60,70 @@
 
   --pulse-from: rgba(26, 127, 55, 0.25);
   --pulse-to: rgba(26, 127, 55, 0.08);
+  color-scheme: light;
+}
+
+:root[data-theme='auto'] {
   color-scheme: light dark;
 }
 
+/* Explicit dark theme (<html data-theme="dark">). */
+:root[data-theme='dark'] {
+  --page: #010409;
+  --bg: #0d1117;
+  --bg-2: #161b22;
+  --bg-3: #21262d;
+  --bg-4: #30363d;
+  --border: #30363d;
+  --border-2: #21262d;
+  --text: #e6edf3;
+  --text-2: #9198a1;
+  --text-3: #768390;
+  --green: #3fb950;
+  --blue: #4493f8;
+  --blue-hover: #539bf5;
+  --blue-bg: rgba(56, 139, 253, 0.12);
+  --blue-border: rgba(56, 139, 253, 0.4);
+  --featured-bg: #0c1d33;
+  --featured-border: #1f4170;
+  --accent: #f78166;
+  --red: #f85149;
+  --shadow-sm: 0 1px 3px rgba(1, 4, 9, 0.6);
+  --shadow-md: 0 8px 24px rgba(1, 4, 9, 0.7);
+
+  --blue-tint: #0f2440;
+  --blue-ink: #79c0ff;
+  --blue-line: #1f4c85;
+  --blue-dot: #4493f8;
+  --green-tint: #0f2a1a;
+  --green-ink: #56d364;
+  --green-line: #1d5a2c;
+  --green-dot: #3fb950;
+  --purple-tint: #231a3a;
+  --purple-ink: #d2a8ff;
+  --purple-line: #4f3a7f;
+  --purple-dot: #ab7df8;
+  --yellow-tint: #2a2210;
+  --yellow-ink: #e3b341;
+  --yellow-line: #634a10;
+  --yellow-dot: #d29922;
+  --red-tint: #2d1517;
+  --red-ink: #ff7b72;
+  --red-line: #8e2b2b;
+  --red-dot: #f85149;
+  --gray-tint: #1c2128;
+  --gray-ink: #c9d1d9;
+  --gray-line: #3d444d;
+  --gray-dot: #768390;
+
+  --pulse-from: rgba(63, 185, 80, 0.35);
+  --pulse-to: rgba(63, 185, 80, 0.08);
+  color-scheme: dark;
+}
+
+/* Auto theme (<html data-theme="auto">): follows the system. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme='auto'] {
     --page: #010409;
     --bg: #0d1117;
     --bg-2: #161b22;
@@ -159,58 +219,16 @@ input {
 
 /* ------------------------------------------------------------ the timeline */
 
-/* Public --tw-* variables only; the dialog (.tw-modal-backdrop) receives them too. */
+/*
+ * The timeline follows the page theme through its `theme` prop (see theme.ts):
+ * the library palette already matches these tokens, only the fonts change.
+ */
 .tw-timeline,
+.tw-overview,
 .tw-modal-backdrop {
-  --tw-bg: #ffffff;
-  --tw-surface: #f6f8fa;
-  --tw-ink: #1f2328;
-  --tw-muted: #636c76;
-  --tw-line: #d0d7de;
-  --tw-grid: #eaeef2;
-  --tw-grid-major: #d8dee4;
-  --tw-accent: #0969da;
-  --tw-accent-soft: #ddf4ff;
-  --tw-live: #cf222e;
-  --tw-item-bg: var(--blue-tint);
-  --tw-item-border: var(--blue-line);
-  --tw-item-ink: var(--blue-ink);
-  --tw-group-bg: var(--purple-tint);
-  --tw-group-border: var(--purple-line);
-  --tw-group-ink: var(--purple-ink);
-  --tw-point: #0969da;
-  --tw-group-point: #8250df;
-  --tw-key: #e8663f;
-  --tw-focus: #0969da;
   --tw-font: var(--font-body);
   --tw-mono: var(--font-mono);
   --tw-radius: 6px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tw-timeline:not([data-theme='light']),
-  .tw-modal-backdrop:not([data-theme='light']) {
-    --tw-bg: #0d1117;
-    --tw-surface: #161b22;
-    --tw-ink: #e6edf3;
-    --tw-muted: #9198a1;
-    --tw-line: #30363d;
-    --tw-grid: #1b2028;
-    --tw-grid-major: #2a3038;
-    --tw-accent: #4493f8;
-    --tw-accent-soft: #12263f;
-    --tw-live: #f85149;
-    --tw-item-bg: var(--blue-tint);
-    --tw-item-border: var(--blue-line);
-    --tw-item-ink: var(--blue-ink);
-    --tw-group-bg: var(--purple-tint);
-    --tw-group-border: var(--purple-line);
-    --tw-group-ink: var(--purple-ink);
-    --tw-point: #4493f8;
-    --tw-group-point: #ab7df8;
-    --tw-key: #f78166;
-    --tw-focus: #4493f8;
-  }
 }
 
 /* Item tones shared by the examples. */
@@ -350,6 +368,59 @@ input {
   background: var(--blue);
   color: #fff;
   text-decoration: none;
+}
+
+/* ------------------------------------------------------------ theme switch */
+
+.theme-switch {
+  display: inline-flex;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 6px);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.theme-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: 500 13px var(--font-body);
+  cursor: pointer;
+}
+
+.theme-switch__option + .theme-switch__option {
+  border-left: 1px solid var(--border);
+}
+
+.theme-switch__option:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.theme-switch__option[aria-pressed='true'] {
+  background: var(--blue-bg, var(--blue-soft));
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.theme-switch__option:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+@media (max-width: 900px) {
+  .theme-switch__label {
+    display: none;
+  }
+
+  .theme-switch__option {
+    padding: 0 8px;
+  }
 }
 
 .underline-nav {

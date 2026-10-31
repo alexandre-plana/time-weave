@@ -1,8 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@400;500;600;700&display=swap');
 
 /*
- * « Surveillance de site » — self-contained Primer-like palette (light, then
- * GitHub dark under prefers-color-scheme), full-viewport layout.
+ * « Surveillance de site » — self-contained Primer-like palette (light by
+ * default, GitHub dark under <html data-theme="dark"> or "auto" + dark
+ * system), full-viewport layout.
  */
 
 :root {
@@ -50,11 +51,62 @@
 
   --font-body: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  color-scheme: light;
+}
+
+:root[data-theme='auto'] {
   color-scheme: light dark;
 }
 
+/* Explicit dark theme (<html data-theme="dark">). */
+:root[data-theme='dark'] {
+  --bg: #0d1117;
+  --bg-2: #161b22;
+  --bg-3: #21262d;
+  --border: #30363d;
+  --border-2: #21262d;
+  --text: #e6edf3;
+  --text-2: #9198a1;
+  --text-3: #6e7681;
+  --blue: #4493f8;
+  --blue-soft: #12263f;
+  --green: #3fb950;
+  --green-soft: #0f2a1a;
+  --red: #f85149;
+  --red-soft: #2d1517;
+  --yellow: #d29922;
+  --yellow-soft: #2a2210;
+  --purple: #ab7df8;
+  --purple-soft: #231a3a;
+  --gray: #8b949e;
+  --gray-soft: #21262d;
+  --shadow: 0 0 0 1px #30363d, 0 8px 24px rgba(1, 4, 9, 0.75);
+  --shadow-sm: 0 1px 3px rgba(1, 4, 9, 0.6);
+  --halo: rgba(13, 17, 23, 0.9);
+
+  --map-outside: #010409;
+  --map-site: #0d1117;
+  --map-grid: #11161d;
+  --map-road: #1c2128;
+  --map-road-line: #2d333b;
+  --map-building: #161b22;
+  --map-building-line: #30363d;
+  --map-roof: #1c2128;
+  --map-water: #0a1c30;
+  --map-wave: #16365a;
+  --map-zone: #30363d;
+  --map-container: #2d333b;
+  --map-fence: #8b949e;
+  --cone: rgba(68, 147, 248, 0.08);
+  --cone-line: rgba(68, 147, 248, 0.38);
+  --cone-motion: rgba(210, 153, 34, 0.28);
+  --cone-motion-line: #d29922;
+  color-scheme: dark;
+}
+
+/* Auto theme (<html data-theme="auto">): follows the system. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme='auto'] {
     --bg: #0d1117;
     --bg-2: #161b22;
     --bg-3: #21262d;
@@ -241,6 +293,59 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* ------------------------------------------------------------ theme switch */
+
+.theme-switch {
+  display: inline-flex;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 6px);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.theme-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: 500 13px var(--font-body);
+  cursor: pointer;
+}
+
+.theme-switch__option + .theme-switch__option {
+  border-left: 1px solid var(--border);
+}
+
+.theme-switch__option:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.theme-switch__option[aria-pressed='true'] {
+  background: var(--blue-bg, var(--blue-soft));
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.theme-switch__option:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+@media (max-width: 900px) {
+  .theme-switch__label {
+    display: none;
+  }
+
+  .theme-switch__option {
+    padding: 0 8px;
+  }
 }
 
 .sv-clock {
@@ -1426,9 +1531,35 @@ button {
   border-radius: 10px;
 }
 
+/* Explicit dark theme (<html data-theme="dark">). */
+:root[data-theme='dark'] .sv .tw-timeline,
+:root[data-theme='dark'] .tw-modal-backdrop {
+  --tw-bg: #0d1117;
+  --tw-surface: #161b22;
+  --tw-ink: #e6edf3;
+  --tw-muted: #9198a1;
+  --tw-line: #30363d;
+  --tw-grid: #161b22;
+  --tw-grid-major: #262c36;
+  --tw-accent: #4493f8;
+  --tw-accent-soft: #12263f;
+  --tw-live: #f85149;
+  --tw-item-bg: #12263f;
+  --tw-item-border: #1f4c85;
+  --tw-item-ink: #79c0ff;
+  --tw-group-bg: #2a2210;
+  --tw-group-border: #634a10;
+  --tw-group-ink: #e3b341;
+  --tw-point: #4493f8;
+  --tw-group-point: #d29922;
+  --tw-key: #f85149;
+  --tw-focus: #4493f8;
+}
+
+/* Auto theme (<html data-theme="auto">): follows the system. */
 @media (prefers-color-scheme: dark) {
-  .sv .tw-timeline:not([data-theme='light']),
-  .tw-modal-backdrop:not([data-theme='light']) {
+  :root[data-theme='auto'] .sv .tw-timeline,
+  :root[data-theme='auto'] .tw-modal-backdrop {
     --tw-bg: #0d1117;
     --tw-surface: #161b22;
     --tw-ink: #e6edf3;

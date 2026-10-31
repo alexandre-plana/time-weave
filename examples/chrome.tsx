@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { setPageTheme, usePageTheme } from './theme';
+import type { PageTheme } from './theme';
 
 /** Shared page chrome of the examples: top bar, repository navigation, pills. */
 
@@ -24,6 +26,40 @@ export function Logo({ size = 20 }: { size?: number }) {
       <rect x="4" y="6.7" width="11" height="2.6" rx="1.3" fill="#1a7f37" />
       <rect x="2.5" y="10.9" width="6" height="2.6" rx="1.3" fill="#fd8c73" />
     </svg>
+  );
+}
+
+const THEMES: { value: PageTheme; icon: string; label: string }[] = [
+  { value: 'light', icon: '☀️', label: 'Clair' },
+  { value: 'dark', icon: '🌙', label: 'Sombre' },
+  { value: 'auto', icon: '🖥️', label: 'Auto' },
+];
+
+/**
+ * Page theme switch (Clair / Sombre / Auto), shared by the top bars. Light is
+ * the default; the choice is remembered (see theme.ts).
+ */
+export function ThemeSwitch({ className }: { className?: string }) {
+  const theme = usePageTheme();
+  return (
+    <div className={`theme-switch${className ? ` ${className}` : ''}`} role="group" aria-label="Thème de la page">
+      {THEMES.map((entry) => (
+        <button
+          key={entry.value}
+          type="button"
+          className="theme-switch__option"
+          aria-pressed={theme === entry.value}
+          aria-label={entry.label}
+          title={entry.value === 'auto' ? 'Auto : suit le réglage du système' : entry.label}
+          onClick={() => setPageTheme(entry.value)}
+        >
+          <span aria-hidden="true">{entry.icon}</span>
+          <span className="theme-switch__label" aria-hidden="true">
+            {entry.label}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -57,6 +93,7 @@ export function TopBar({ current, root }: { current: PageId; root: string }) {
           </>
         )}
         <div className="topbar__actions">
+          <ThemeSwitch />
           <a className="topbar__button" href={`${root}bench/index.html`} aria-label="Banc de performance">
             <span aria-hidden="true">📊</span>
             <span className="topbar__label">Banc</span>

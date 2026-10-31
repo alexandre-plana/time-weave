@@ -107,12 +107,22 @@
   background: var(--blue-hover);
 }
 
+/* Explicit dark theme (<html data-theme="dark">). */
+:root[data-theme='dark'] .btn--primary {
+  background: #1f6feb;
+}
+
+:root[data-theme='dark'] .btn--primary:hover {
+  background: #388bfd;
+}
+
+/* Auto theme (<html data-theme="auto">): follows the system. */
 @media (prefers-color-scheme: dark) {
-  .btn--primary {
+  :root[data-theme='auto'] .btn--primary {
     background: #1f6feb;
   }
 
-  .btn--primary:hover {
+  :root[data-theme='auto'] .btn--primary:hover {
     background: #388bfd;
   }
 }

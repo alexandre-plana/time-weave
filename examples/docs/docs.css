@@ -16,8 +16,25 @@
   --docs-offset: 112px;
 }
 
+/* Explicit dark theme (<html data-theme="dark">). */
+:root[data-theme='dark'] {
+  --tk-comment: #8b949e;
+  --tk-string: #a5d6ff;
+  --tk-number: #79c0ff;
+  --tk-keyword: #ff7b72;
+  --tk-literal: #79c0ff;
+  --tk-type: #ffa657;
+  --tk-function: #d2a8ff;
+  --tk-tag: #7ee787;
+  --tk-attr: #79c0ff;
+  --tk-property: #79c0ff;
+  --code-bg: #161b22;
+  color-scheme: dark;
+}
+
+/* Auto theme (<html data-theme="auto">): follows the system. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme='auto'] {
     --tk-comment: #8b949e;
     --tk-string: #a5d6ff;
     --tk-number: #79c0ff;
@@ -1004,7 +1021,7 @@ html {
   font-weight: 600;
 }
 
-/* The overview strip, on the site palette; follows the theme forced on the demo. */
+/* The overview strip, on the site palette; follows the demo's data-theme (light, dark or auto). */
 .docs-overview .tw-overview {
   --tw-bg: #ffffff;
   --tw-surface: #f6f8fa;
@@ -1021,7 +1038,7 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
-  .docs-overview:not([data-theme='light']) .tw-overview {
+  .docs-overview[data-theme='auto'] .tw-overview {
     --tw-bg: #0d1117;
     --tw-surface: #161b22;
     --tw-ink: #e6edf3;
