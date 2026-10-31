@@ -620,6 +620,13 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     // Playback frames are deliberately not announced.
   }, [snapshot.status, snapshot.error, snapshot.pending, snapshot.data.error, labels, mode, formatTime]);
 
+  // The slider value is not updated on every playback frame, so assistive
+  // technologies do not announce each image; it follows pauses and jumps.
+  const announcedTime = useRef(snapshot.time);
+  const settled = snapshot.transport === 'paused' && !snapshot.rewinding;
+  const discrete = snapshot.lastCause !== 'play' && snapshot.lastCause !== 'rewind' && snapshot.lastCause !== 'live';
+  if (settled || discrete) announcedTime.current = snapshot.time;
+
   // ------------------------------------------------------------------ rendering helpers
   const cursorX = toX(snapshot.time);
   const pendingX = snapshot.pending && snapshot.pending.cause !== 'play' ? toX(snapshot.pending.target) : null;
@@ -725,8 +732,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
           aria-label={labels.cursor}
           aria-valuemin={domain.start}
           aria-valuemax={domain.end}
-          aria-valuenow={Math.round(snapshot.time)}
-          aria-valuetext={formatTime(snapshot.time, mode)}
+          aria-valuenow={Math.round(announcedTime.current)}
+          aria-valuetext={formatTime(announcedTime.current, mode)}
           aria-busy={snapshot.status === 'preparing' || snapshot.status === 'initializing'}
           onKeyDown={onAxisKeyDown}
           onPointerDown={onTrackPointerDown}

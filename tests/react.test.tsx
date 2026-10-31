@@ -247,3 +247,18 @@ describe('host lifecycle', () => {
     expect(controller.getSnapshot().time).toBeCloseTo(150);
   });
 });
+
+describe('announcements', () => {
+  it('does not update the slider value on every playback frame', () => {
+    const { controller, scheduler } = makeController();
+    render(<Timeline controller={controller} />);
+    const slider = screen.getByRole('slider');
+    act(() => controller.play());
+    act(() => scheduler.advance(500));
+    expect(slider.getAttribute('aria-valuenow')).toBe('0');
+    act(() => controller.pause());
+    expect(slider.getAttribute('aria-valuenow')).toBe('500');
+    act(() => controller.seek(2000));
+    expect(slider.getAttribute('aria-valuenow')).toBe('2000');
+  });
+});
