@@ -1,0 +1,20 @@
+/* Les couleurs de la timeline sont des variables sur .tw-timeline. */
+.tw-timeline.planning {
+  --tw-accent: #1a7f37;
+  --tw-item-bg: #dafbe1;
+  --tw-item-border: #4ac26b;
+  --tw-item-ink: #116329;
+  --tw-radius: 4px;
+}
+
+/* Thème sombre : suit prefers-color-scheme, ou la prop theme="dark". */
+.tw-timeline.planning[data-theme='dark'] {
+  --tw-item-bg: #0f2a1a;
+  --tw-item-border: #2ea043;
+  --tw-item-ink: #56d364;
+}
+
+/* Classes ajoutées par getItemClassName. */
+.tw-item.tache-bloquee {
+  --tw-item-border: #cf222e;
+}
