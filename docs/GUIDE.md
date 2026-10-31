@@ -177,3 +177,15 @@ Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la 
 ## Styles
 
 Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et `data-theme="light"` ou `"dark"` sur le conteneur force un thème. Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
+
+## Choix d'implémentation à valider
+
+Ces comportements ne sont pas tranchés explicitement par la conception ; l'implémentation retient l'option indiquée.
+
+| Situation | Comportement actuel | Alternative |
+| --- | --- | --- |
+| Lecture depuis le Direct alors que la frontière est la fin de période | Applique « Lecture à la fin » : retour au début puis lecture | Rester à la frontière, lecture immédiatement terminée |
+| Pause pendant un retour de boucle, puis extension de la période | Le retour engagé se termine (Pause laisse finir la préparation en cours) | Annuler le retour, rester à l'ancienne fin |
+| Navigation manuelle de la fenêtre | Nouvelle génération créée au plus une fois par tâche (microtâche), pour regrouper un geste | Invalidation synchrone à chaque déplacement |
+| Lot de fenêtre citant une ligne supprimée pendant son chargement | Lot refusé avec erreur structurée, lot précédent conservé | Écarter silencieusement les éléments de lignes absentes |
+| Clés hors de la période complète | Ignorées par la navigation ; redeviennent des destinations si la période s'étend | — |

@@ -188,7 +188,7 @@ describe('live mode', () => {
 describe('windowed data', () => {
   it('requests the viewport with a 25% margin bounded to the domain', async () => {
     const { source, loads, answer } = slowSource();
-    const { controller, snap } = setup({ rows, source, viewport: { start: 1000, end: 2000 } });
+    const { controller, snap } = setup({ rows, source, viewport: { start: 1000, end: 2000 }, initialTime: 1500 });
     controller.start();
     expect(loads[0]!.request.range).toEqual({ start: 750, end: 2250 });
     expect(loads[0]!.request.visible).toEqual({ start: 1000, end: 2000 });

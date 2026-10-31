@@ -209,6 +209,7 @@ interface ActiveLoad {
 interface CoverageWaiter {
   readonly time: number;
   readonly resolve: () => void;
+  readonly reject: (error: Error) => void;
 }
 
 type Listener<T> = (value: T) => void;
@@ -268,6 +269,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   private prep: Preparation | null = null;
   private prepSeq = 0;
   private rewind: Rewind | null = null;
+  private restartOnConfirm: Preparation | null = null;
   private prepareTime: TimelineControllerOptions<RowMeta, ItemMeta, KeyMeta>['prepareTime'];
 
   private loadSeq = 0;
@@ -392,6 +394,10 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
           signal?.removeEventListener('abort', onAbort);
           resolve();
         },
+        reject: (error) => {
+          signal?.removeEventListener('abort', onAbort);
+          reject(error);
+        },
       };
       const onAbort = (): void => {
         this.coverageWaiters = this.coverageWaiters.filter((entry) => entry !== waiter);
@@ -416,7 +422,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     if (this.started || this.disposed) return;
     this.started = true;
     this.beginPreparation(this.time, 'initial');
-    if (this.source.kind === 'windowed') this.startLoad('initial');
+    // The initial preparation may already have requested the range around its target.
+    if (this.source.kind === 'windowed' && !this.activeLoad) this.startLoad('initial');
   }
 
   /**
@@ -464,6 +471,9 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     this.prep = null;
     this.activeLoad?.abort.abort();
     this.activeLoad = null;
+    const waiters = this.coverageWaiters;
+    this.coverageWaiters = [];
+    for (const waiter of waiters) waiter.reject(abortError());
     this.disposed = true;
     this.listeners.clear();
     for (const set of Object.values(this.eventListeners)) set.clear();
@@ -486,6 +496,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       }
       this.transport = 'playing';
       if (!this.prep && this.time >= this.domain.end) this.beginPreparation(this.domain.start, 'play');
+      // Play while the pending destination is the end: restart from the start once it is confirmed.
+      else if (this.prep && this.prep.cause !== 'play' && this.prep.target >= this.domain.end) this.restartOnConfirm = this.prep;
       this.lastFrameNow = this.scheduler.now();
       this.ensureFrame();
       this.changed();
@@ -579,7 +591,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   nextKey(): boolean {
     const target = nextKeyInstant(this.keyInstantsCache, this.navigationReference());
     if (target === null || this.disposed) return false;
-    this.navigate(clamp(target, this.domain.start, this.domain.end), 'key');
+    this.navigate(target, 'key');
     return true;
   }
 
@@ -587,15 +599,15 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   previousKey(): boolean {
     const target = previousKeyInstant(this.keyInstantsCache, this.navigationReference());
     if (target === null || this.disposed) return false;
-    this.navigate(clamp(target, this.domain.start, this.domain.end), 'key');
+    this.navigate(target, 'key');
     return true;
   }
 
   /** Jumps to a given key by id. Returns `false` if it is unknown. */
   goToKey(id: string): boolean {
     const key = this.keys.find((entry) => entry.id === id);
-    if (!key || this.disposed) return false;
-    this.navigate(clamp(key.at, this.domain.start, this.domain.end), 'key');
+    if (!key || this.disposed || !rangeContainsTime(this.domain, key.at)) return false;
+    this.navigate(key.at, 'key');
     return true;
   }
 
@@ -607,7 +619,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     this.assertTime(time, 'time');
     if (this.disposed) return;
     const target = clamp(time, this.domain.start, this.domain.end);
-    if (this.reducedMotion || this.rewindDuration === 0 || target >= this.time) {
+    if (this.reducedMotion || this.rewindDuration === 0 || target >= this.navigationReference()) {
       this.navigate(target, 'rewind');
       return;
     }
@@ -693,7 +705,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       const previousEnd = this.domain.end;
       if (end > previousEnd) {
         this.domain = { start: this.domain.start, end };
-        if (this.source.kind === 'static') this.coverage = this.domain;
+        this.keyInstantsCache = this.keyInstantsInDomain(this.keys);
+        if (this.source.kind === 'static') this.setCoverage(this.domain);
         if (this.prep?.cause === 'loop' && this.transport === 'playing') {
           // The old end is no longer the end: keep playing towards the new one.
           this.abortPreparation();
@@ -940,7 +953,13 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   private setKeyCollection(keys: TimelineKey<KeyMeta>[]): void {
     this.keys = keys;
-    this.keyInstantsCache = keyInstants(keys);
+    this.keyInstantsCache = this.keyInstantsInDomain(keys);
+  }
+
+  /** Keys outside the domain are not destinations. */
+  private keyInstantsInDomain(keys: readonly TimelineKey<KeyMeta>[]): number[] {
+    const domain = this.domain;
+    return keyInstants(keys.filter((key) => key.at >= domain.start && key.at <= domain.end));
   }
 
   private navigationReference(): number {
@@ -1031,7 +1050,11 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     this.emit('time', { time: this.time, previous, cause: prep.cause, requestId: prep.id });
 
     if (this.prep) return; // a listener issued a new command
-    if (prep.cause === 'play' && this.time >= this.domain.end && this.transport === 'playing') {
+    const restart = this.restartOnConfirm === prep;
+    this.restartOnConfirm = null;
+    if (restart && this.transport === 'playing' && this.time >= this.domain.end) {
+      this.beginPreparation(this.domain.start, 'play');
+    } else if (prep.cause === 'play' && this.time >= this.domain.end && this.transport === 'playing') {
       if (this.loop) this.beginPreparation(this.domain.start, 'loop');
       else this.transport = 'paused';
     } else if (prep.cause === 'rewind' && this.rewind && this.time === this.rewind.target) {
@@ -1124,7 +1147,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     let next: TimeRange | null = null;
     if (this.transport === 'live' && (cause === 'live' || cause === 'initial')) {
       next = anchorViewport(this.viewport, target, 0.9, this.domain);
-    } else if (cause !== 'initial' && this.followPlayback && !rangeContainsTime(this.viewport, target)) {
+    } else if (this.followPlayback && !rangeContainsTime(this.viewport, target)) {
       const ratio = cause === 'play' || cause === 'loop' ? 0.1 : cause === 'rewind' ? 0.9 : 0.5;
       next = anchorViewport(this.viewport, target, ratio, this.domain);
     }
@@ -1151,7 +1174,11 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     queueMicrotask(() => {
       this.navigationQueued = false;
       if (this.disposed || this.source.kind !== 'windowed') return;
-      if (this.viewportCovered(this.coverage)) return;
+      if (this.viewportCovered(this.coverage)) {
+        // The visible range is already loaded: a request for another range is now obsolete.
+        if (this.activeLoad && !this.viewportCovered(this.activeLoad.range)) this.batch(() => this.dropActiveLoad());
+        return;
+      }
       if (this.activeLoad?.generation === this.generation && this.viewportCovered(this.activeLoad.range)) return;
       this.batch(() => {
         this.generation++;
@@ -1166,13 +1193,25 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   private requestAutomaticLoad(): void {
     if (this.source.kind !== 'windowed' || !this.started) return;
-    if (this.viewportCovered(this.coverage)) return;
+    if (this.viewportCovered(this.coverage)) {
+      // Returning to a loaded range: the active request for another range would replace it.
+      if (this.activeLoad && !this.viewportCovered(this.activeLoad.range) && !this.refreshPending) this.dropActiveLoad();
+      return;
+    }
     if (this.activeLoad) {
       // Keep the active request; remember a single next range (the latest viewport).
       if (!this.viewportCovered(this.activeLoad.range)) this.nextLoadWanted = true;
       return;
     }
     this.startLoad('follow');
+  }
+
+  private dropActiveLoad(): void {
+    this.generation++;
+    this.activeLoad?.abort.abort();
+    this.activeLoad = null;
+    this.nextLoadWanted = false;
+    this.changed();
   }
 
   private startLoad(reason: WindowReason): void {
@@ -1240,8 +1279,10 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     }
     this.changed();
     if (this.refreshPending) this.startLoad('refresh');
-    else if (this.nextLoadWanted && !this.viewportCovered(this.coverage)) this.startLoad('follow');
-    else this.nextLoadWanted = false;
+    else if ((this.nextLoadWanted || !this.viewportCovered(load.range)) && !this.viewportCovered(this.coverage)) {
+      // The viewport moved away from the range this load was made for.
+      this.startLoad('follow');
+    } else this.nextLoadWanted = false;
   }
 
   private setCoverage(range: TimeRange): void {
