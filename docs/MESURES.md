@@ -38,6 +38,7 @@ Les durées mesurées incluent deux images d'affichage après la commande (`requ
 | 2. Défilement vertical, médiane | 46 ms |
 | 3. Remplacement des 5 000 éléments (source immédiate) | 33 ms |
 | 4. Lecture 1×, 60×, 600× | 48 à 49 images/s, p95 50 ms, 1 à 3 images > 50 ms sur 2 s |
+| 4. Rendu React de la timeline par mise à jour pendant la lecture (`Profiler`, série suivante) | médiane 6,6 à 7,1 ms, p95 47 à 53 ms |
 | 4. Boucle complète | retour au début confirmé |
 | 5. Avance logique / temps réel, préparation 0 ms | 99 % |
 | 5. Avance logique / temps réel, préparation 50 ms | 20 % |
@@ -53,6 +54,7 @@ Les durées mesurées incluent deux images d'affichage après la commande (`requ
 - **Préparation retardée** : avec 50 ou 200 ms d'attente par position, le rejeu avance de la durée d'une image par cycle de préparation. C'est le comportement retenu par la conception (« un écran lent ralentit le rejeu », aucun rattrapage). Une application lente qui veut un rejeu plus rapide peut augmenter la vitesse, ou préparer moins souvent en ignorant les petites variations.
 - **Correction issue de la mesure** : la première série donnait 85 % d'avance avec une préparation immédiate. Le temps de rendu React pendant une confirmation synchrone était compté comme une attente. Le moteur garde désormais l'horodatage de l'image comme référence quand la confirmation arrive dans cette même image ; un test de règle couvre ce cas.
 - **Direct avec source lente** : les rafraîchissements continus sont regroupés derrière la demande active ; presque toutes les demandes aboutissent au lieu d'être annulées.
+- **Pics de rendu pendant la lecture** : le p95 correspond aux changements de page de la fenêtre suivie, qui chargent un nouveau lot de 5 000 éléments et recalculent les pistes. Le rendu courant d'une image reste sous 8 ms en build de développement.
 - **Rendu** : la limitation au visible maintient le DOM à quelques centaines d'éléments pour 5 000 transmis. Les durées d'interaction restent proches du plancher de deux images dans cet environnement ; une mesure sur un poste avec écran et un build de production reste à faire avant d'annoncer une capacité.
 
 ## À compléter

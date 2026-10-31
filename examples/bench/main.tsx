@@ -1,4 +1,4 @@
-import { StrictMode, useRef, useState } from 'react';
+import { Profiler, StrictMode, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from 'time-weave';
 import type { TimeRequest, TimelineController, TimelineItem, TimelineRow, WindowRequest } from 'time-weave';
@@ -59,6 +59,9 @@ declare global {
     __bench?: { done: boolean; results: Result[]; env: Record<string, unknown> };
   }
 }
+
+/** React render durations of the main timeline, collected by a Profiler. */
+const renders: number[] = [];
 
 const frame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
 const settle = async () => {
@@ -149,9 +152,11 @@ async function runScenarios(controller: TimelineController, settings: { prepareD
     controller.seek(VIEWPORT.start);
     controller.setSpeed(speed);
     controller.play();
+    renders.length = 0;
     const sample = await sampleFrames(2000);
     controller.pause();
     push(`4. Lecture ${speed}× : images/s · p95 · images > 50 ms`, `${sample.fps.toFixed(0)} · ${ms(sample.p95)} · ${sample.long}`);
+    push(`4. Lecture ${speed}× : rendu React par mise à jour (médiane / p95)`, `${ms(percentile(renders, 50))} / ${ms(percentile(renders, 95))}`);
   }
   controller.setLoop(true);
   controller.seek(DOMAIN.end - 1000);
@@ -333,7 +338,9 @@ function Bench() {
           Lancer les scénarios
         </button>
       </header>
+      <Profiler id="timeline" onRender={(_id, _phase, actualDuration) => renders.push(actualDuration)}>
       <Timeline controller={controller} height={640} labels={frenchLabels} locale="fr-FR" toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" />} />
+      </Profiler>
       <div style={{ height: 1, overflow: 'hidden' }}>
         <Timeline controller={dynamic} height={300} />
       </div>
