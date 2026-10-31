@@ -407,12 +407,14 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
    * Never called by the constructor so that creating an instance has no effect.
    */
   start(): void {
+    this.batch(() => this.ensureStarted());
+  }
+
+  private ensureStarted(): void {
     if (this.started || this.disposed) return;
     this.started = true;
-    this.batch(() => {
-      this.beginPreparation(this.time, 'initial');
-      if (this.source.kind === 'windowed') this.startLoad('initial');
-    });
+    this.beginPreparation(this.time, 'initial');
+    if (this.source.kind === 'windowed') this.startLoad('initial');
   }
 
   /**
@@ -473,8 +475,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   play(): void {
     if (this.disposed) return;
-    this.start();
     this.batch(() => {
+      this.ensureStarted();
       this.error = null;
       if (this.rewind) {
         this.rewind = null;
@@ -505,8 +507,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   stop(): void {
     if (this.disposed) return;
-    this.start();
     this.batch(() => {
+      this.ensureStarted();
       this.transport = 'paused';
       this.rewind = null;
       this.stopFrames();
@@ -607,8 +609,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       this.navigate(target, 'rewind');
       return;
     }
-    this.start();
     this.batch(() => {
+      this.ensureStarted();
       if (this.transport === 'live') this.transport = 'paused';
       this.abortPreparation();
       this.error = null;
@@ -622,8 +624,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   /** Follows the live frontier supplied by the application. */
   goLive(): void {
     if (this.disposed) return;
-    this.start();
     this.batch(() => {
+      this.ensureStarted();
       this.transport = 'live';
       this.rewind = null;
       this.error = null;
@@ -945,8 +947,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   private navigate(target: number, cause: TimeCause): void {
     if (this.disposed) return;
-    this.start();
     this.batch(() => {
+      this.ensureStarted();
       if (this.transport === 'live') this.transport = 'paused';
       this.rewind = null;
       this.beginPreparation(target, cause);
@@ -1109,7 +1111,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     let next: TimeRange | null = null;
     if (this.transport === 'live' && (cause === 'live' || cause === 'initial')) {
       next = anchorViewport(this.viewport, target, 0.9, this.domain);
-    } else if (this.followPlayback && !rangeContainsTime(this.viewport, target)) {
+    } else if (cause !== 'initial' && this.followPlayback && !rangeContainsTime(this.viewport, target)) {
       const ratio = cause === 'play' || cause === 'loop' ? 0.1 : cause === 'rewind' ? 0.9 : 0.5;
       next = anchorViewport(this.viewport, target, ratio, this.domain);
     }
