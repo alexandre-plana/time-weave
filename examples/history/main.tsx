@@ -6,6 +6,7 @@ import '@time-weave/react/styles.css';
 import '../shared.css';
 import './history.css';
 import { Box, RepoHeader, TopBar } from '../chrome';
+import { usePageTheme } from '../theme';
 
 type Category = 'direction' | 'product' | 'site' | 'milestone';
 
@@ -79,6 +80,7 @@ const keys: TimelineKey[] = items
   .map((item) => ({ id: `k-${item.id}`, at: isSpan(item) ? item.start : item.at, label: item.label }));
 
 function App() {
+  const pageTheme = usePageTheme();
   const [chapter, setChapter] = useState<TimelineItem<Fact> | null>(null);
 
   // The story panel shows what is active at the confirmed time.
@@ -145,6 +147,7 @@ function App() {
           <Box icon="🏛️" title="Chronologie" meta={<span className="counter">1950 → 2027</span>} className="tl-box">
             <Timeline
               controller={controller}
+              theme={pageTheme}
               height={540}
               locale="fr-FR"
               labels={frenchLabels}

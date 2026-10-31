@@ -25,6 +25,8 @@ import {
 import type { Camera, Incident, ItemInfo, Poi, RowInfo, SiteState } from './data';
 import { SceneView, useAlarmVersion } from './scene';
 import { SiteMap } from './SiteMap';
+import { usePageTheme } from '../theme';
+import { ThemeSwitch } from '../chrome';
 
 type Controller = TimelineController<RowInfo, ItemInfo>;
 type Selection = { type: 'poi'; id: string } | { type: 'incident'; id: string } | null;
@@ -106,6 +108,7 @@ function Header({ controller, scene, live, onToggleLive }: { controller: Control
           </span>
           {transport === 'live' && <span className="sv-live-tag">DIRECT</span>}
         </div>
+        <ThemeSwitch className="sv-theme" />
         <button type="button" className="sv-button sv-button--live" aria-pressed={live} onClick={onToggleLive}>
           <span className="sv-rec-dot" aria-hidden="true" />
           <span className="sv-button__text">Flux en direct</span>
@@ -495,6 +498,7 @@ function Splitter({ value, onChange, container }: { value: number; onChange: (va
 // ------------------------------------------------------------------ app
 
 function App() {
+  const pageTheme = usePageTheme();
   const scene = useMemo(() => new SceneView(), []);
   const narrow = useMedia('(max-width: 760px)');
   const reduced = useMedia('(prefers-reduced-motion: reduce)');
@@ -761,6 +765,7 @@ function App() {
         <section className="sv-timeline-pane" aria-label="Chronologie du poste" ref={pane}>
           <Timeline
             controller={controller}
+            theme={pageTheme}
             height="100%"
             labelWidth={narrow ? 128 : 208}
             laneHeight={22}

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
+import { usePageTheme } from '../../theme'; // docs:hide
 import type { TimelineItem, TimelineRow, VisibleRow } from '@time-weave/react';
 
 interface Tache {
@@ -29,6 +30,7 @@ export function Planning() {
   return (
     <Timeline
       controller={controller}
+      theme={usePageTheme()} // docs:hide
       className="planning"
       height={150}
       locale="fr-FR"

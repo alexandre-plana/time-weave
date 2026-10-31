@@ -14,6 +14,7 @@ import '@time-weave/react/styles.css';
 import '../shared.css';
 import './relative.css';
 import { Box, RepoHeader, TopBar } from '../chrome';
+import { usePageTheme } from '../theme';
 
 type Kind = 'phase' | 'actuator' | 'event' | 'alarm' | 'burst';
 interface Info {
@@ -109,6 +110,7 @@ interface Reading {
 }
 
 function App() {
+  const pageTheme = usePageTheme();
   const [reading, setReading] = useState<Reading | null>(null);
   const [selected, setSelected] = useState<TimelineItem<Info> | null>(null);
 
@@ -154,6 +156,7 @@ function App() {
           <Box icon="⏱️" title="Chronologie" meta={<span className="counter">T−2 s → T+12 s</span>} className="tl-box">
             <Timeline
               controller={controller}
+              theme={pageTheme}
               height={460}
               labelWidth={190}
               locale="fr-FR"

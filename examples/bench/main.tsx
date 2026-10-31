@@ -4,6 +4,7 @@ import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from 
 import type { TimeRequest, TimelineController, TimelineItem, TimelineRow, WindowRequest } from '@time-weave/react';
 import '@time-weave/react/styles.css';
 import '../shared.css';
+import { usePageTheme } from '../theme';
 
 /* Reference set (docs/JEU-REFERENCE.md): 211 rows, 51 visible at start, ~5 000 items per window with margin. */
 
@@ -282,6 +283,7 @@ async function liveScenario(push: (scenario: string, value: string) => void) {
 }
 
 function Bench() {
+  const pageTheme = usePageTheme();
   const [settings] = useState(() => ({ prepareDelay: 0, loadDelay: 0 }));
   const [mountStart] = useState(() => performance.now());
   const controllerRef = useRef<TimelineController | null>(null);
@@ -343,10 +345,10 @@ function Bench() {
         </button>
       </header>
       <Profiler id="timeline" onRender={(_id, _phase, actualDuration) => renders.push(actualDuration)}>
-      <Timeline controller={controller} height={640} labels={frenchLabels} locale="fr-FR" toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" />} />
+      <Timeline controller={controller} theme={pageTheme} height={640} labels={frenchLabels} locale="fr-FR" toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" />} />
       </Profiler>
       <div style={{ height: 1, overflow: 'hidden' }}>
-        <Timeline controller={dynamic} height={300} />
+        <Timeline controller={dynamic} theme={pageTheme} height={300} />
       </div>
       {results.length > 0 && (
         <section className="panel" style={{ marginTop: 16 }}>

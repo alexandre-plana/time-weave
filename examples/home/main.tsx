@@ -7,6 +7,7 @@ import '../shared.css';
 import { Box, Logo, Pill, REPOSITORY, StatusPill, TopBar } from '../chrome';
 import type { Tone } from '../chrome';
 import './home.css';
+import { usePageTheme } from '../theme';
 
 
 interface RowInfo {
@@ -105,6 +106,7 @@ function useNarrow() {
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 function HeroTimeline() {
+  const pageTheme = usePageTheme();
   // prepareTime is the synchronisation point: the application updates its own
   // state before the timeline confirms the new position.
   const [phase, setPhase] = useState<(typeof phases)[number]>(phases[0]);
@@ -156,6 +158,7 @@ function HeroTimeline() {
     >
       <Timeline
         controller={controller}
+        theme={pageTheme}
         height={narrow ? 432 : 372}
         labelWidth={narrow ? 150 : 172}
         locale="fr-FR"

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PlaybackControls, Timeline, frenchLabels, useTimelineController, useTimelineSelector } from '@time-weave/react';
+import { usePageTheme } from '../../theme'; // docs:hide
 import type { TimeRequest, TimelineItem } from '@time-weave/react';
 
 const debut = Date.UTC(2026, 9, 18, 8);
@@ -48,6 +49,7 @@ export function PrepareAsync() {
       </p>
       <Timeline
         controller={controller}
+        theme={usePageTheme()} // docs:hide
         height={170}
         locale="fr-FR"
         labels={frenchLabels}

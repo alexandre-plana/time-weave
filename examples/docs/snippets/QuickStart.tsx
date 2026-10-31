@@ -1,4 +1,5 @@
 import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
+import { usePageTheme } from '../../theme'; // docs:hide
 import type { TimelineItem, TimelineKey, TimelineRow } from '@time-weave/react';
 import '@time-weave/react/styles.css';
 
@@ -39,6 +40,7 @@ export function QuickStart() {
   return (
     <Timeline
       controller={controller}
+      theme={usePageTheme()} // docs:hide
       height={250}
       locale="fr-FR"
       labels={frenchLabels}

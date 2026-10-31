@@ -7,9 +7,9 @@
   --tw-radius: 4px;
 }
 
-/* Thème sombre : préférence du système (sauf theme="light")… */
+/* Thème sombre : préférence du système avec theme="auto"… */
 @media (prefers-color-scheme: dark) {
-  .tw-timeline.planning:not([data-theme='light']) {
+  .tw-timeline.planning[data-theme='auto'] {
     --tw-accent: #3fb950;
     --tw-item-bg: #0f2a1a;
     --tw-item-border: #2ea043;

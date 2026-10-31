@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
+import { usePageTheme } from '../../theme'; // docs:hide
 
 const MINUTE = 60_000;
 
@@ -29,6 +30,7 @@ export function LiveStream() {
   return (
     <Timeline
       controller={controller}
+      theme={usePageTheme()} // docs:hide
       height={150}
       locale="fr-FR"
       labels={frenchLabels}

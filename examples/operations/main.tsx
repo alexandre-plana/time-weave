@@ -28,6 +28,7 @@ import {
   sleep,
 } from './data';
 import type { Communication, ItemInfo, RowInfo } from './data';
+import { usePageTheme } from '../theme';
 
 const format = (time: number) => formatTimeReadout(time, 'calendar', 'fr-FR');
 const clock = (time: number) => new Date(time).toISOString().slice(11, 19);
@@ -99,6 +100,7 @@ function ControllerFacts({ controller }: { controller: TimelineController<RowInf
 }
 
 function App() {
+  const pageTheme = usePageTheme();
   const store = useMemo(() => new CommunicationStore(), []);
   const [prepareDelay, setPrepareDelay] = useState(0);
   const [loadDelay, setLoadDelay] = useState(50);
@@ -231,6 +233,7 @@ function App() {
           <Box icon="🛰️" title="Chronologie" meta={<span className="counter">211 lignes</span>} className="tl-box">
             <Timeline
               controller={controller}
+              theme={pageTheme}
               height={620}
               labelWidth={210}
               locale="fr-FR"

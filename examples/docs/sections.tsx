@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { PlaybackControls, Timeline, frenchLabels, useTimelineController } from '@time-weave/react';
 import type { TimelineController } from '@time-weave/react';
@@ -32,6 +32,7 @@ import { Planning } from './snippets/Custom';
 import customCode from './snippets/Custom.tsx?raw';
 import './snippets/theme.css';
 import themeCode from './snippets/theme.css?raw';
+import { usePageTheme } from '../theme';
 import eventsCode from './snippets/events.ts?raw';
 import recipeMapCode from './snippets/recipe-map.tsx?raw';
 import recipeStatusCode from './snippets/recipe-status.tsx?raw';
@@ -139,6 +140,7 @@ function QuickStartSection() {
 // ------------------------------------------------------------------- 3
 
 function DataModelDemo() {
+  const pageTheme = usePageTheme();
   const controller = useTimelineController({
     domain: { start: Date.UTC(2026, 9, 18, 7, 50), end: Date.UTC(2026, 9, 18, 9, 10) },
     rows: modelRows,
@@ -149,6 +151,7 @@ function DataModelDemo() {
   return (
     <Timeline
       controller={controller}
+      theme={pageTheme}
       height={200}
       locale="fr-FR"
       labels={frenchLabels}
@@ -191,10 +194,12 @@ function DataModel() {
 // ------------------------------------------------------------------- 4
 
 function RelativeDemo() {
+  const pageTheme = usePageTheme();
   const controller = useTimelineController(relatif);
   return (
     <Timeline
       controller={controller}
+      theme={pageTheme}
       height={170}
       labels={frenchLabels}
       formatTime={formatT}
@@ -328,6 +333,7 @@ function SourcesSection() {
 // ------------------------------------------------------------------- 7
 
 function RenderCountDemo() {
+  const pageTheme = usePageTheme();
   const controller = useTimelineController({
     domain: { start: Date.UTC(2026, 9, 18, 8), end: Date.UTC(2026, 9, 18, 10) },
     rows: [{ id: 'r', label: 'Lecture' }],
@@ -353,6 +359,7 @@ function RenderCountDemo() {
       </div>
       <Timeline
         controller={controller}
+        theme={pageTheme}
         height={130}
         labels={frenchLabels}
         locale="fr-FR"
@@ -364,7 +371,15 @@ function RenderCountDemo() {
 }
 
 function ThemedOverview() {
-  const [theme, setTheme] = useState<'auto' | 'light' | 'dark'>('auto');
+  // Follows the page theme until a value is picked here.
+  const pageTheme = usePageTheme();
+  const [choice, setTheme] = useState<'auto' | 'light' | 'dark' | null>(null);
+  const theme = choice ?? pageTheme;
+  const frame = useRef<HTMLDivElement>(null);
+  // TimelineOverview has no theme prop: give its root the same data-theme as the timeline.
+  useLayoutEffect(() => {
+    frame.current?.querySelector('.tw-overview')?.setAttribute('data-theme', theme);
+  }, [theme]);
   return (
     <Demo
       title="Timeline, TimelineOverview et bandes"
@@ -378,7 +393,7 @@ function ThemedOverview() {
         </span>
       }
     >
-      <div className="docs-overview" data-theme={theme === 'auto' ? undefined : theme}>
+      <div className="docs-overview" data-theme={theme} ref={frame}>
         <Semaine theme={theme} />
       </div>
     </Demo>
@@ -416,7 +431,7 @@ function ComponentsSection() {
           [<C>toolbar</C>, <C>ReactNode</C>, '—', <>Barre d’outils, ex. <C>{'<PlaybackControls />'}</C></>],
           [<C>rowsHeader</C>, <C>ReactNode</C>, <C>labels.rows</C>, 'En-tête de la colonne des lignes'],
           [<C>highlights</C>, <C>{'TimelineHighlight[]'}</C>, '—', 'Bandes de fond sur toutes les lignes'],
-          [<C>theme</C>, <C>{"'auto' | 'light' | 'dark'"}</C>, <C>{"'auto'"}</C>, <>Force un thème (<C>data-theme</C>)</>],
+          [<C>theme</C>, <C>{"'light' | 'dark' | 'auto'"}</C>, <C>{"'light'"}</C>, <>Thème, posé en <C>data-theme</C> ; <C>{"'auto'"}</C> suit le système</>],
           [<C>className</C>, <C>string</C>, '—', <>Classe ajoutée à <C>.tw-timeline</C></>],
           [<C>style</C>, <C>CSSProperties</C>, '—', <>Style inline, variables <C>--tw-*</C> comprises</>],
         ]}
@@ -557,9 +572,10 @@ function Customization() {
       </Demo>
       <Callout tone="info" title="Mode sombre">
         <p>
-          Par défaut (<C>{"theme='auto'"}</C>), la timeline suit <C>prefers-color-scheme</C>. <C>{"theme='dark'"}</C> ou <C>{"'light'"}</C> pose{' '}
-          <C>data-theme</C> sur <C>.tw-timeline</C> et sur la fenêtre de détail : ciblez <C>[data-theme=&apos;dark&apos;]</C> dans vos
-          surcharges. Essayez le sélecteur de thème de la section 7.
+          Par défaut (<C>{"theme='light'"}</C>), la timeline est claire quel que soit le système. <C>{"theme='dark'"}</C> la force en sombre,{' '}
+          <C>{"theme='auto'"}</C> suit <C>prefers-color-scheme</C>. La valeur est posée en <C>data-theme</C> sur <C>.tw-timeline</C> et sur la
+          fenêtre de détail : ciblez <C>[data-theme=&apos;dark&apos;]</C> dans vos surcharges. Essayez le sélecteur de thème de la section 7, ou
+          celui de la barre du haut.
         </p>
       </Callout>
     </Section>
