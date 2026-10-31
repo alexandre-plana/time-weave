@@ -115,7 +115,7 @@ Pendant l'attente, `snapshot.time` reste la position confirmée et `snapshot.pen
 
 Pour attendre des données couvrant la cible : `await controller.waitForData(request.target, request.signal)`.
 
-`controller.on('time', ({ time, previous, cause }) => …)` notifie chaque confirmation ; `on('error', …)` chaque échec de préparation et `on('dataError', …)` chaque échec ou lot invalide d'une source par fenêtre. Chaque appel retourne une fonction de désabonnement.
+`controller.on('time', ({ time, previous, cause }) => …)` notifie chaque confirmation ; `on('error', …)` chaque échec de préparation et `on('dataError', …)` chaque échec ou lot invalide d'une source par fenêtre. `on('viewport', ({ viewport, previous, origin }) => …)` signale chaque changement réel de fenêtre, avec `origin` : `navigation`, `zoom`, `follow` (suivi de lecture ou du Direct) ou `domain` (réajustement après `extendDomain`). Chaque appel retourne une fonction de désabonnement.
 
 ## Commandes
 
@@ -130,6 +130,10 @@ Pour attendre des données couvrant la cible : `await controller.waitForData(req
 | `goLive()` | Suit la frontière du direct |
 | `setLiveTime(t)`, `extendDomain(fin, liveTime?)` | Frontière du direct (jamais en recul) et extension de période |
 | `setViewport(plage)`, `zoomBy(facteur, ancre?)`, `panBy(durée)` | Fenêtre visible |
+| `zoomTo(durée, ancre?)` | Durée de fenêtre bornée à [durée minimale, période] ; l'ancre (curseur visible, sinon centre ; cible du Direct en Direct) garde sa position relative ; conserve le Direct |
+| `centerOn(t)` | Centre la fenêtre sur `t` (même durée, bornée) ; quitte le Direct |
+| `stepBy(durée)` | Saut relatif depuis la destination en attente ou le temps confirmé, borné ; conserve l'intention de lecture, quitte le Direct |
+| `fitToItems(marge = 0,05)` | Fenêtre couvrant les éléments chargés (+ marge de chaque côté), ou la période sans élément ; quitte le Direct |
 | `expand(id)`, `collapse(id)`, `toggle(id)`, `setExpanded(ids)`, `expandAll()`, `collapseAll()` | Dépliage |
 | `setFollowPlayback(booléen)`, `setReducedMotion(booléen)`, `setRewindDuration(ms)` | Suivi de la fenêtre, animations |
 | `setRows(lignes)`, `setKeys(clés)`, `setItems(éléments)`, `setSource(source)`, `refresh()` | Remplacement des collections ou de la source |

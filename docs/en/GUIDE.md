@@ -225,6 +225,10 @@ unsubscribe();
 | `retry()` | Retries a failed preparation; returns `false` if there is none |
 | `setLiveTime(t)`, `extendDomain(end, liveTime?)` | Live frontier (never moves back) and extension of the period (it can only grow) |
 | `setViewport(range, { origin? })`, `zoomBy(factor, anchor?)`, `panBy(duration)` | Visible window; `zoomBy` factor `> 1` zooms in |
+| `zoomTo(duration, anchor?)` | Viewport duration clamped to [minimum duration, domain]; the anchor (visible cursor, else centre; live target in live mode) keeps its relative position; keeps live mode |
+| `centerOn(t)` | Centres the viewport on `t` (same duration, clamped); leaves live mode |
+| `stepBy(duration)` | Relative jump from the pending destination or the confirmed time, clamped; keeps the playback intention, leaves live mode |
+| `fitToItems(padding = 0.05)` | Viewport covering the loaded items (+ padding on each side), or the domain when there is none; leaves live mode |
 | `expand(id)`, `collapse(id)`, `toggle(id)`, `setExpanded(ids)`, `expandAll()`, `collapseAll()` | Row expansion |
 | `setRows(rows)`, `setKeys(keys)`, `setItems(items)`, `update(changes)`, `setSource(source)`, `refresh()` | Data |
 | `setFollowPlayback(boolean)`, `setReducedMotion(boolean)`, `setRewindDuration(ms)` | Viewport following, animations |
