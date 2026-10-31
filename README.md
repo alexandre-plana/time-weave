@@ -23,6 +23,10 @@
   <a href="CHANGELOG.md">Journal des versions</a>
 </p>
 
+<p align="center">
+  <a href="https://alexandre-plana.github.io/time-weave/"><img alt="Ouvrir la démo en ligne" src="https://img.shields.io/badge/%E2%96%B6%20Ouvrir%20la%20d%C3%A9mo%20en%20ligne-alexandre--plana.github.io%2Ftime--weave-4772E9?style=for-the-badge"></a>
+</p>
+
 <br>
 
 https://github.com/user-attachments/assets/902d3060-0dcb-45dd-8415-b2aee7ceac4d
@@ -161,15 +165,15 @@ Toute l'apparence passe par des variables CSS `--tw-*`. Le clair et le sombre (p
 
 ## Exemples
 
-| Exemple | Ce qu'il montre |
-| --- | --- |
-| **Journée d'opérations** | 211 lignes, source par fenêtre, regroupement selon le zoom, `prepareTime` qui attend les données, flux simulé et Direct |
-| **Surveillance de site** | Plan de site portuaire : mobiles et leurs traces, caméras dont le champ se teinte à la détection, mosaïque vidéo, alarmes en clés et bandes, flux en direct |
-| **Histoire d'entreprise** | 75 ans de périodes et de jalons, contenu personnalisé, lecture à quatre ans par seconde |
-| **Temps relatif** | Séquence de −2 s à 12 s autour d'un déclenchement, mesures à la milliseconde |
-| **Banc de mesure** | Scénarios du [jeu de référence](docs/JEU-REFERENCE.md), résultats dans [MESURES.md](docs/MESURES.md) |
+| Exemple | Ce qu'il montre | En ligne |
+| --- | --- | --- |
+| **Journée d'opérations** | 211 lignes, source par fenêtre, regroupement selon le zoom, `prepareTime` qui attend les données, flux simulé et Direct | [Ouvrir](https://alexandre-plana.github.io/time-weave/operations/) |
+| **Surveillance de site** | Plan de site portuaire : mobiles et leurs traces, caméras dont le champ se teinte à la détection, mosaïque vidéo, alarmes en clés et bandes, flux en direct | [Ouvrir](https://alexandre-plana.github.io/time-weave/surveillance/) |
+| **Histoire d'entreprise** | 75 ans de périodes et de jalons, contenu personnalisé, lecture à quatre ans par seconde | [Ouvrir](https://alexandre-plana.github.io/time-weave/history/) |
+| **Temps relatif** | Séquence de −2 s à 12 s autour d'un déclenchement, mesures à la milliseconde | [Ouvrir](https://alexandre-plana.github.io/time-weave/relative/) |
+| **Banc de mesure** | Scénarios du [jeu de référence](docs/JEU-REFERENCE.md), résultats dans [MESURES.md](docs/MESURES.md) | [Ouvrir](https://alexandre-plana.github.io/time-weave/bench/) |
 
-Lancez-les avec `npm run dev:examples`, ou ouvrez la [démo en ligne](https://alexandre-plana.github.io/time-weave/).
+Toutes les pages sont publiées sur **[GitHub Pages](https://alexandre-plana.github.io/time-weave/)** à chaque push sur `main`. En local : `npm run dev:examples`.
 
 ## Documentation
 
