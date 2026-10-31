@@ -857,9 +857,6 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
               />
             )}
             {snapshot.data.loading && <span className="tw-loading" aria-hidden="true" />}
-            <span id={axisHelpId} className="tw-sr-only">
-              {labels.cursorHelp}
-            </span>
           </div>
           {/* Key markers sit over the axis, outside the slider: a slider cannot contain controls. */}
           <div className="tw-keys">
@@ -876,6 +873,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
               />
             ))}
           </div>
+          <span id={axisHelpId} className="tw-sr-only">
+            {labels.cursorHelp}
+          </span>
         </div>
       </div>
 

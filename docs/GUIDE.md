@@ -146,9 +146,10 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 
 - `useTimelineController(options)` crée une instance stable. Les options sont lues une fois, sauf `prepareTime` qui appelle toujours la dernière fonction fournie. Le hook démarre le contrôleur, suspend la progression quand la page est masquée et suit `prefers-reduced-motion` sauf si `reducedMotion` est donné.
 - `useTimelineHost(controller)` fait le même raccordement pour une instance créée par l'application avec `createTimelineController`.
-- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`.
+- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`.
+- `getItemAriaLabel(item)` remplace le nom accessible des éléments (par défaut : libellé, ou « Groupe de N » pour un groupe sans libellé, puis l'heure). Avec un `renderItem` qui affiche du texte, le nom doit contenir ce texte visible (WCAG 2.5.3, « Étiquette dans le nom »). Sans cette prop, le comportement par défaut est conservé.
 - `PlaybackControls` : `speeds` (par défaut `0,25×` à `8×`), `showLive`, `showLoop`, `showKeys`, `formatSpeed`.
-- `DetailModal` : fenêtre de détail simple, utilisable indépendamment.
+- `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` est recopié sur la fenêtre.
 - `frenchLabels` et `defaultLabels` fournissent les textes ; chaque entrée est remplaçable.
 
 ## Interactions et clavier
@@ -171,6 +172,8 @@ L'axe est un curseur accessible (`role="slider"`) :
 | Page préc. / Page suiv. | Clé précédente / suivante |
 | + / − | Zoom |
 | Espace | Lecture / pause |
+
+Les losanges des clés sont posés au-dessus de l'axe, hors du curseur ; ils restent cliquables (zone de 24 px) mais ne sont pas des arrêts de tabulation : Page préc. / Page suiv. y mènent, ce que rappelle une description associée au curseur (`labels.cursorHelp`).
 
 Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la ligne (← →) ou passent à la ligne voisine (↑ ↓) ; Entrée active l'élément. Un élément hors de la fenêtre est révélé avant de recevoir le focus.
 

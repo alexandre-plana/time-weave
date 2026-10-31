@@ -1,10 +1,12 @@
 /* Time Weave — default styles. Override the --tw-* variables or the tw-* classes. */
 
-.tw-timeline {
+/* The variables are also defined on the detail dialog, rendered in document.body. */
+.tw-timeline,
+.tw-modal-backdrop {
   --tw-bg: #ffffff;
   --tw-surface: #f9fafb;
   --tw-ink: #222832;
-  --tw-muted: #7b8391;
+  --tw-muted: #646c79;
   --tw-line: #e6e9ee;
   --tw-grid: #eef0f4;
   --tw-grid-major: #dde1e8;
@@ -16,7 +18,9 @@
   --tw-item-ink: #2f5d9b;
   --tw-group-bg: #f1edf9;
   --tw-group-border: #cdbfe9;
-  --tw-group-ink: #6a54a3;
+  --tw-group-ink: #5f4999;
+  --tw-point: var(--tw-accent);
+  --tw-group-point: #9a85cf;
   --tw-key: #b08027;
   --tw-focus: #4772e9;
   --tw-font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -24,7 +28,9 @@
   --tw-axis-height: 40px;
   --tw-label-width: 220px;
   --tw-radius: 6px;
+}
 
+.tw-timeline {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -40,12 +46,16 @@
 
 .tw-timeline *,
 .tw-timeline *::before,
-.tw-timeline *::after {
+.tw-timeline *::after,
+.tw-modal-backdrop *,
+.tw-modal-backdrop *::before,
+.tw-modal-backdrop *::after {
   box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {
-  .tw-timeline:not([data-theme='light']) {
+  .tw-timeline:not([data-theme='light']),
+  .tw-modal-backdrop:not([data-theme='light']) {
     --tw-bg: #15181d;
     --tw-surface: #1b1f26;
     --tw-ink: #e6e9ef;
@@ -61,11 +71,13 @@
     --tw-group-bg: #2a2440;
     --tw-group-border: #54478a;
     --tw-group-ink: #c4b5ef;
+    --tw-group-point: #9a85cf;
     --tw-key: #e0b25b;
   }
 }
 
-.tw-timeline[data-theme='dark'] {
+.tw-timeline[data-theme='dark'],
+.tw-modal-backdrop[data-theme='dark'] {
   --tw-bg: #15181d;
   --tw-surface: #1b1f26;
   --tw-ink: #e6e9ef;
@@ -81,6 +93,7 @@
   --tw-group-bg: #2a2440;
   --tw-group-border: #54478a;
   --tw-group-ink: #c4b5ef;
+  --tw-group-point: #9a85cf;
   --tw-key: #e0b25b;
 }
 
@@ -237,6 +250,13 @@
   text-transform: uppercase;
 }
 
+.tw-axis-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
 .tw-axis {
   position: relative;
   flex: 1;
@@ -292,18 +312,43 @@
   }
 }
 
+/* Key markers: a layer over the axis, outside the slider. */
+.tw-keys {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 24 px hit area around a 9 px diamond. */
 .tw-key {
   position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.tw-key::before {
+  content: '';
+  position: absolute;
+  left: 7.5px;
   bottom: 4px;
   width: 9px;
   height: 9px;
-  margin-left: -4.5px;
-  padding: 0;
-  border: 0;
   border-radius: 1px;
   background: var(--tw-key);
   transform: rotate(45deg);
-  cursor: pointer;
+}
+
+.tw-key:focus-visible {
+  outline: 2px solid var(--tw-focus);
+  outline-offset: -4px;
 }
 
 .tw-cursor-handle {
@@ -503,7 +548,8 @@
 .tw-item--point {
   border-radius: 50%;
   justify-content: center;
-  background: var(--tw-item-border);
+  border-color: var(--tw-point);
+  background: var(--tw-point);
 }
 
 .tw-item--group {
@@ -514,7 +560,12 @@
 
 .tw-item--point.tw-item--group {
   border-radius: 3px;
-  background: var(--tw-group-border);
+  border-color: var(--tw-group-point);
+  background: var(--tw-group-point);
+}
+
+.tw-item--point.tw-item--selected {
+  border-color: var(--tw-accent);
 }
 
 .tw-item--active {
@@ -618,7 +669,7 @@
 }
 
 .tw-detail-fields dt {
-  color: var(--tw-muted, #7b8391);
+  color: var(--tw-muted, #646c79);
 }
 
 .tw-detail-fields dd {
@@ -657,8 +708,8 @@
   padding: 6px;
 }
 
-.tw-timeline[data-narrow] .tw-zoom .tw-button--text {
-  display: none;
+.tw-button--fit {
+  padding: 0;
 }
 
 .tw-timeline[data-narrow] .tw-readout {

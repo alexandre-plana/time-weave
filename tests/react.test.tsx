@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PlaybackControls,
   Timeline,
+  frenchLabels,
   createManualScheduler,
   createTimelineController,
   useTimelineController,
@@ -363,5 +364,92 @@ describe('review regressions (React)', () => {
     const viewport = controller.getSnapshot().viewport;
     expect(viewport.start).toBeLessThanOrEqual(1000);
     expect(viewport.end).toBeGreaterThanOrEqual(1000);
+  });
+});
+
+describe('accessibility audit', () => {
+  it('key markers are outside the slider, clickable, and Page Up / Page Down are described', () => {
+    const { controller } = makeController();
+    const { container } = render(<Timeline controller={controller} />);
+    const slider = screen.getByRole('slider');
+    const key = screen.getByRole('button', { name: /Key Alerte/ });
+    expect(slider.contains(key)).toBe(false);
+    expect(slider.querySelector('button, [tabindex="0"]')).toBeNull();
+    expect(key.closest('.tw-keys')).not.toBeNull();
+    expect(key.getAttribute('tabindex')).toBe('-1');
+    const help = document.getElementById(slider.getAttribute('aria-describedby')!);
+    expect(help?.textContent).toMatch(/Page Up and Page Down/);
+    expect(slider.contains(help)).toBe(false);
+    fireEvent.click(key);
+    expect(controller.getSnapshot().time).toBe(4000);
+    expect(container.querySelectorAll('.tw-key')).toHaveLength(1);
+    expect(frenchLabels.cursorHelp).toMatch(/Page précédente/);
+  });
+
+  it('a grouped item without label is named by its group size, once', () => {
+    const { controller } = makeController({
+      source: [...items, { id: 'grp-42', rowId: 'b', at: 7000, group: { count: 5 } }],
+    });
+    render(<Timeline controller={controller} />);
+    const button = document.querySelector('[data-item-id="grp-42"]')!;
+    const name = button.getAttribute('aria-label')!;
+    expect(name).toMatch(/^Group of 5, /);
+    expect(name).not.toContain('grp-42');
+    expect(name.match(/Group of 5/g)).toHaveLength(1);
+    // A labelled group keeps its label then its size.
+    expect(document.querySelector('[data-item-id="g"]')!.getAttribute('aria-label')).toMatch(/^Synthèse, Group of 12, /);
+  });
+
+  it('getItemAriaLabel replaces the accessible name of items', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} getItemAriaLabel={(item) => `Visible ${item.label ?? item.id}`} />);
+    expect(screen.getByRole('button', { name: 'Visible Mesure 1' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Visible Cycle' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Mesure 1, / })).toBeNull();
+  });
+
+  it('the detail dialog is rendered in document.body and makes the timeline inert while open', () => {
+    const { controller } = makeController();
+    const { container } = render(<Timeline controller={controller} detail />);
+    const frame = container.querySelector<HTMLElement>('.tw-timeline')!;
+    frame.setAttribute('data-theme', 'dark');
+    const trigger = screen.getByRole('button', { name: /Cycle/ });
+    act(() => trigger.focus());
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole('dialog');
+    expect(frame.contains(dialog)).toBe(false);
+    expect(dialog.closest('.tw-modal-backdrop')!.parentElement).toBe(document.body);
+    expect(dialog.closest('.tw-modal-backdrop')!.getAttribute('data-theme')).toBe('dark');
+    expect(frame.hasAttribute('inert')).toBe(true);
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(frame.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('keeps a compact "whole period" button on narrow screens', () => {
+    const { controller } = makeController();
+    const { container } = render(<Timeline controller={controller} initialTrackWidth={300} labelWidth={200} />);
+    expect(container.querySelector('.tw-timeline')!.hasAttribute('data-narrow')).toBe(true);
+    act(() => controller.zoomBy(2));
+    const fit = screen.getByRole('button', { name: 'Show the whole period' });
+    expect(fit.textContent).toBe('');
+    fireEvent.click(fit);
+    expect(controller.getSnapshot().viewport).toEqual({ start: 0, end: 10_000 });
+  });
+
+  it('tick labels near the right edge are anchored inside the track', () => {
+    const { controller } = makeController();
+    const { container } = render(<Timeline controller={controller} initialTrackWidth={800} />);
+    const texts = Array.from(container.querySelectorAll<SVGTextElement>('.tw-tick text'));
+    expect(texts.length).toBeGreaterThan(0);
+    for (const text of texts) {
+      const g = text.parentElement!;
+      const x = Number(/translate\(([-\d.]+)/.exec(g.getAttribute('transform')!)![1]);
+      const width = text.textContent!.length * 6.2;
+      const end = text.getAttribute('text-anchor') === 'end' ? x - 4 : x + 4 + width;
+      expect(end).toBeLessThanOrEqual(800);
+    }
   });
 });
