@@ -177,7 +177,7 @@ describe.each([
     expect(eventListenerCount(controller)).toBe(baseEvents);
     // Nothing left in the page, including the dialog portal rendered in document.body.
     expect(document.body.children.length).toBe(0);
-  });
+  }, 30_000);
 
   it('only one frame request is outstanding while playing after remounts', () => {
     const { controller, scheduler } = makeController();

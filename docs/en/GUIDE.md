@@ -415,6 +415,14 @@ export const french = (
 export const custom = <Timeline controller={controller} labels={{ rows: 'Sensors', group: (count) => `${count} messages` }} />;
 ```
 
+## Overview
+
+```tsx
+<TimelineOverview controller={controller} height={48} controlsId="my-timeline" />
+```
+
+`TimelineOverview` shows the whole domain: density histogram of loaded items, keys, cursor, live frontier, loaded range and the visible window. Drag the window to pan, drag its edges to zoom, click elsewhere to centre the view there, wheel to pan. With the keyboard the window is a `role="scrollbar"`: ←/→ pan by 10% (Shift: 50%), PageUp/PageDown by one viewport, +/− zoom, Home/End go to the bounds. `controlsId` sets `aria-controls` to the timeline. The histogram is recomputed only when items, domain or width change.
+
 ## Highlight bands
 
 ```tsx

@@ -2,6 +2,7 @@
 
 /* The variables are also defined on the detail dialog, rendered in document.body. */
 .tw-timeline,
+.tw-overview,
 .tw-modal-backdrop {
   --tw-bg: #ffffff;
   --tw-surface: #f9fafb;
@@ -76,6 +77,7 @@
 
 @media (prefers-color-scheme: dark) {
   .tw-timeline:not([data-theme='light']),
+  .tw-overview:not([data-theme='light']),
   .tw-modal-backdrop:not([data-theme='light']) {
     --tw-bg: #15181d;
     --tw-surface: #1b1f26;
@@ -118,6 +120,7 @@
 }
 
 .tw-timeline[data-theme='dark'],
+.tw-overview[data-theme='dark'],
 .tw-modal-backdrop[data-theme='dark'] {
   --tw-bg: #15181d;
   --tw-surface: #1b1f26;
@@ -862,4 +865,153 @@
 .tw-item-count--compact {
   margin: 0 auto;
   padding: 1px 2px;
+}
+
+/* ---------------------------------------------------------------- overview (TimelineOverview) */
+
+/* ---------------------------------------------------------------- overview (TimelineOverview) */
+
+/*
+ * The --tw-* variables must also be defined on .tw-overview (it may be rendered
+ * outside .tw-timeline): add `.tw-overview` to the selectors that declare them
+ * (light, `prefers-color-scheme: dark` and `[data-theme='dark']`).
+ */
+
+.tw-overview {
+  position: relative;
+  box-sizing: border-box;
+  background: var(--tw-surface);
+  color: var(--tw-ink);
+  border: 1px solid var(--tw-line);
+  border-radius: var(--tw-radius);
+  font: 12px/1.4 var(--tw-font);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tw-overview *,
+.tw-overview *::before,
+.tw-overview *::after {
+  box-sizing: border-box;
+}
+
+.tw-overview-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.tw-overview-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.tw-overview-density {
+  fill: var(--tw-item-border);
+}
+
+.tw-overview-coverage {
+  fill: var(--tw-accent);
+  opacity: 0.25;
+}
+
+.tw-overview-key {
+  stroke: var(--tw-key);
+  stroke-width: 1;
+  opacity: 0.8;
+}
+
+.tw-overview-shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--tw-bg) 55%, transparent);
+  pointer-events: none;
+}
+
+.tw-overview-cursor,
+.tw-overview-live {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.tw-overview-cursor {
+  border-left: 2px solid var(--tw-accent);
+  margin-left: -1px;
+}
+
+.tw-overview-live {
+  border-left: 1px dashed var(--tw-live);
+}
+
+.tw-overview-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 1px solid var(--tw-accent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--tw-accent) 10%, transparent);
+  cursor: grab;
+  outline: none;
+}
+
+.tw-overview-window:active {
+  cursor: grabbing;
+}
+
+.tw-overview-window:focus-visible {
+  box-shadow: 0 0 0 2px var(--tw-bg), 0 0 0 4px var(--tw-focus);
+}
+
+/* Edge handles: 8 px hit area, a short grip line drawn in the middle. */
+.tw-overview-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  transition: background-color 120ms ease;
+}
+
+.tw-overview-handle--start {
+  left: -4px;
+}
+
+.tw-overview-handle--end {
+  right: -4px;
+}
+
+.tw-overview-handle::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 30%;
+  bottom: 30%;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--tw-accent);
+}
+
+.tw-overview-handle:hover {
+  background: color-mix(in srgb, var(--tw-accent) 20%, transparent);
+}
+
+.tw-overview[data-reduced-motion] .tw-overview-handle {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-overview-handle {
+    transition: none;
+  }
 }

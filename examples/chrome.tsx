@@ -25,6 +25,12 @@ export function Logo({ size = 20 }: { size?: number }) {
   );
 }
 
+/** On a narrow screen, scrolls the navigation so that the current page is visible. */
+function revealCurrent(nav: HTMLElement | null) {
+  const link = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+  if (nav && link && link.offsetLeft + link.offsetWidth > nav.clientWidth) nav.scrollLeft = link.offsetLeft - 16;
+}
+
 /**
  * Top bar. `root` is the relative path to the examples root ('./' on the
  * landing page, '../' in an example).
@@ -60,7 +66,7 @@ export function TopBar({ current, root }: { current: PageId; root: string }) {
         </div>
       </div>
       {current !== 'home' && (
-        <nav className="underline-nav" aria-label="Pages de démonstration">
+        <nav className="underline-nav" aria-label="Pages de démonstration" ref={revealCurrent}>
           {PAGES.map((entry) => (
             <a key={entry.id} href={`${root}${entry.href}`} aria-current={entry.id === current ? 'page' : undefined}>
               <span aria-hidden="true">{entry.icon}</span>

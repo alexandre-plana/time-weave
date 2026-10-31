@@ -172,6 +172,15 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 - `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` (ou celui de l'ancêtre le plus proche) est recopié sur la fenêtre, sauf si `theme` (`'light'` ou `'dark'`) est donné.
 - `frenchLabels` et `defaultLabels` fournissent les textes ; chaque entrée est remplaçable.
 
+## Vue d'ensemble
+
+```tsx
+<Timeline controller={controller} />
+<TimelineOverview controller={controller} labels={frenchLabels} locale="fr-FR" height={48} controlsId="ma-timeline" />
+```
+
+`TimelineOverview` affiche toute la période : histogramme de densité des éléments chargés, clés, curseur, frontière du direct, plage chargée et fenêtre visible. Glisser la fenêtre la déplace, glisser ses bords zoome, un clic ailleurs y centre la vue, la molette la déplace. Au clavier, la fenêtre est une barre de défilement (`role="scrollbar"`) : ← → déplacent de 10 % (Maj : 50 %), Page préc./suiv. d'une fenêtre, + / − zooment, Début et Fin vont aux bornes. `controlsId` relie la barre à la timeline (`aria-controls`). L'histogramme n'est recalculé que si les éléments, la période ou la largeur changent.
+
 ## Bandes de mise en évidence
 
 ```tsx
