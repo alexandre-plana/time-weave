@@ -4,3 +4,6 @@ examples/dist/
 *.tgz
 .DS_Store
 coverage/
+motion/out/*.wav
+motion/out/cues.json
+motion/out/img/
