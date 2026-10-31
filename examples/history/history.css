@@ -15,6 +15,10 @@
   font: 9px 'IBM Plex Mono', monospace;
 }
 
+.hist-item small::after {
+  content: attr(data-years);
+}
+
 .tw-item.hist--direction {
   --tw-item-bg: #f1edf9;
   --tw-item-border: #cdbfe9;

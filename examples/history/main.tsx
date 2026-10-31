@@ -105,10 +105,8 @@ function App() {
       <span className="hist-item">
         {context.width > 40 && item.label}
         {context.width > 150 && (
-          <small aria-hidden="true">
-            {' '}
-            {yearOf(item.start)}–{yearOf(item.end)}
-          </small>
+          // Years are drawn via CSS (::after) so they stay out of the visible text the item's accessible name must contain.
+          <small aria-hidden="true" data-years={`${yearOf(item.start)}–${yearOf(item.end)}`} />
         )}
       </span>
     );
