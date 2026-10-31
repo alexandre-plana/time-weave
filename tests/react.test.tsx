@@ -295,3 +295,25 @@ describe('axis', () => {
     expect(controller.getSnapshot().viewport).toEqual({ start: 0, end: 10_000 });
   });
 });
+
+describe('DetailModal', () => {
+  it('keeps Tab inside the dialog and closes on backdrop click', async () => {
+    const { DetailModal } = await import('../src/react/index.js');
+    const onClose = vi.fn();
+    render(
+      <DetailModal title="Titre" onClose={onClose}>
+        <a href="#x">lien</a>
+      </DetailModal>,
+    );
+    const close = screen.getByRole('button', { name: 'Close' });
+    const link = screen.getByRole('link');
+    expect(document.activeElement).toBe(close);
+    act(() => link.focus());
+    fireEvent.keyDown(link, { key: 'Tab' });
+    expect(document.activeElement).toBe(close);
+    fireEvent.keyDown(close, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(link);
+    fireEvent.mouseDown(document.querySelector('.tw-modal-backdrop')!);
+    expect(onClose).toHaveBeenCalled();
+  });
+});
