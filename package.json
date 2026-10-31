@@ -34,7 +34,8 @@
     "check:react18": "node scripts/check-react18.mjs",
     "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run check:react18 && npm run build:examples && npm run test:e2e",
     "prepack": "npm run build",
-    "test:coverage": "vitest run --coverage --coverage.include='src/**'"
+    "test:coverage": "vitest run --coverage --coverage.include='src/**'",
+    "bench": "node scripts/run-bench.mjs"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0",

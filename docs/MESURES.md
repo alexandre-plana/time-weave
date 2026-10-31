@@ -3,7 +3,7 @@
 Date : 31 octobre 2026.
 Statut : séries relevées dans un environnement de développement sans écran. Elles ne constituent pas une capacité annoncée.
 
-Les scénarios suivent le [jeu de référence](JEU-REFERENCE.md). La page `examples/bench/` les exécute : `npm run dev:examples`, puis ouvrir `/bench/index.html` et cliquer sur « Lancer les scénarios », ou ajouter `?run=1` à l'adresse. Les résultats sont aussi exposés dans `window.__bench` pour une exécution automatisée.
+Les scénarios suivent le [jeu de référence](JEU-REFERENCE.md). Sur un poste de travail, `npm run bench -- --headed` construit les exemples, exécute les scénarios dans Chromium avec fenêtre et affiche un tableau Markdown à coller ici. La page `examples/bench/` les exécute : `npm run dev:examples`, puis ouvrir `/bench/index.html` et cliquer sur « Lancer les scénarios », ou ajouter `?run=1` à l'adresse. Les résultats sont aussi exposés dans `window.__bench` pour une exécution automatisée.
 
 ## Environnement
 
