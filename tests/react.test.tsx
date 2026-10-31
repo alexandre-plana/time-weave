@@ -223,3 +223,27 @@ describe('pointer gestures', () => {
     expect(controller.getSnapshot().time).toBe(0);
   });
 });
+
+describe('host lifecycle', () => {
+  it('pauses progression while the page is hidden and resumes without catch-up', () => {
+    const scheduler = createManualScheduler();
+    function Host() {
+      const controller = useTimelineController({ domain: { start: 0, end: 100_000 }, mode: 'relative', scheduler });
+      (globalThis as { __c?: TimelineController }).__c = controller;
+      return null;
+    }
+    render(<Host />);
+    const controller = (globalThis as { __c?: TimelineController }).__c!;
+    act(() => controller.play());
+    act(() => scheduler.advance(100));
+    expect(controller.getSnapshot().time).toBeCloseTo(100);
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => scheduler.advance(5000));
+    expect(controller.getSnapshot().time).toBeCloseTo(100);
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => scheduler.advance(50));
+    expect(controller.getSnapshot().time).toBeCloseTo(150);
+  });
+});
