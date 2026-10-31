@@ -453,3 +453,67 @@ describe('accessibility audit', () => {
     }
   });
 });
+
+describe('batch replacement reuse', () => {
+  const clone = (list: readonly TimelineItem[]): TimelineItem[] => list.map((item) => ({ ...item }));
+
+  it('an equivalent refresh does not re-render rows and hands out the current objects', () => {
+    const { controller } = makeController();
+    const renderRowLabel = vi.fn((row: { row: { label: string } }) => row.row.label);
+    const onItemClick = vi.fn();
+    const { container } = render(<Timeline controller={controller} renderRowLabel={renderRowLabel} onItemClick={onItemClick} />);
+    const button = container.querySelector('[data-item-id="i2"]');
+    renderRowLabel.mockClear();
+    const next = clone(items);
+    act(() => controller.setItems(next));
+    expect(renderRowLabel).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-item-id="i2"]')).toBe(button);
+    fireEvent.click(screen.getByRole('button', { name: /Mesure 2/ }));
+    expect(onItemClick.mock.calls[0]![0]).toBe(next[1]);
+  });
+
+  it('only the rows whose items changed are re-rendered', () => {
+    const { controller } = makeController();
+    const renderRowLabel = vi.fn((row: { row: { id: string; label: string } }) => row.row.label);
+    render(<Timeline controller={controller} renderRowLabel={renderRowLabel} />);
+    renderRowLabel.mockClear();
+    act(() => controller.setItems(clone(items).map((item) => (item.id === 'i3' ? { ...item, label: 'Cycle 2' } : item))));
+    expect(renderRowLabel.mock.calls.map((call) => call[0].row.id)).toEqual(['b']);
+    expect(screen.getByRole('button', { name: /Cycle 2/ })).toBeTruthy();
+    // Moved times change the order and the lanes of that row only.
+    renderRowLabel.mockClear();
+    act(() => controller.setItems(clone(items).map((item) => (item.id === 'i1' ? { ...item, at: 3500 } : item))));
+    expect(renderRowLabel.mock.calls.map((call) => call[0].row.id).sort()).toEqual(['a', 'b']);
+  });
+
+  it('custom item renderers receive the current objects after an equivalent refresh', () => {
+    const { controller } = makeController();
+    const renderItem = vi.fn((item: TimelineItem) => String(item.meta ?? ''));
+    render(<Timeline controller={controller} renderItem={renderItem} />);
+    act(() => controller.setItems(clone(items).map((item) => ({ ...item, meta: 'v2' }))));
+    expect(screen.getAllByText('v2').length).toBeGreaterThan(0);
+  });
+});
+
+describe('narrow spans', () => {
+  it('render no clipped label, only a group count that fits, and keep the accessible name', () => {
+    // 10 000 ms over 800 px: 12.5 ms per pixel.
+    const { controller } = makeController({
+      source: [
+        { id: 'wide', rowId: 'a', start: 1000, end: 3000, label: 'Large' },
+        { id: 'thin', rowId: 'a', start: 4000, end: 4200, label: 'Étroit' },
+        { id: 'thin-group', rowId: 'b', start: 4000, end: 4300, label: 'Lot', group: { count: 3 } },
+        { id: 'tiny-group', rowId: 'b', start: 6000, end: 6200, label: 'Lot 2', group: { count: 123 } },
+      ],
+    });
+    const { container } = render(<Timeline controller={controller} initialTrackWidth={800} />);
+    const item = (id: string): HTMLElement => container.querySelector<HTMLElement>(`[data-item-id="${id}"]`)!;
+    expect(item('wide').textContent).toBe('Large');
+    expect(item('thin').textContent).toBe('');
+    expect(item('thin').getAttribute('aria-label')).toMatch(/^Étroit, /);
+    expect(item('thin-group').textContent).toBe('3');
+    expect(item('thin-group').getAttribute('aria-label')).toMatch(/^Lot, Group of 3, /);
+    expect(item('tiny-group').textContent).toBe('');
+    expect(item('tiny-group').getAttribute('aria-label')).toMatch(/^Lot 2, Group of 123, /);
+  });
+});

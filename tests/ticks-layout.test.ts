@@ -85,4 +85,37 @@ describe('lanes', () => {
     expect(assignLanes(items, 0).laneCount).toBe(1);
     expect(assignLanes(items, 5).laneCount).toBe(2);
   });
+
+  it('accepts presorted input with the same result, ties on start included', () => {
+    const items = [
+      { id: 'z', rowId: 'r', start: 0, end: 1 },
+      { id: 'b', rowId: 'r', start: 5, end: 6 },
+      { id: 'a', rowId: 'r', start: 5, end: 8 },
+      { id: 'p', rowId: 'r', at: 5 },
+      { id: 'c', rowId: 'r', start: 7, end: 20 },
+      { id: 'q', rowId: 'r', at: 30 },
+    ];
+    for (const extent of [0, 4]) {
+      const sorted = assignLanes(items, extent);
+      const presorted = assignLanes(items, extent, { presorted: true });
+      expect([...presorted.lanes.entries()].sort()).toEqual([...sorted.lanes.entries()].sort());
+      expect(presorted.laneCount).toBe(sorted.laneCount);
+    }
+    // With a minimal extent, ties on start are ordered by footprint then id, not by end.
+    const ties = [
+      { id: 'b', rowId: 'r', start: 0, end: 1 },
+      { id: 'a', rowId: 'r', start: 0, end: 2 },
+    ];
+    expect(assignLanes(ties, 5, { presorted: true }).lanes.get('a')).toBe(0);
+    expect(assignLanes(ties, 5).lanes.get('a')).toBe(0);
+  });
+
+  it('sorts input wrongly marked as presorted', () => {
+    const items = [
+      { id: 'late', rowId: 'r', start: 10, end: 20 },
+      { id: 'early', rowId: 'r', start: 0, end: 15 },
+    ];
+    expect([...assignLanes(items, 0, { presorted: true }).lanes.entries()].sort()).toEqual([...assignLanes(items).lanes.entries()].sort());
+    expect(assignLanes(items, 0, { presorted: true }).lanes.get('early')).toBe(0);
+  });
 });
