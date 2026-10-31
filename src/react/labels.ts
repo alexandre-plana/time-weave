@@ -32,6 +32,14 @@ export interface TimelineLabels {
   start: string;
   end: string;
   duration: string;
+  /** Name of the overview strip (`TimelineOverview`). */
+  overview: string;
+  /** Name of the overview window, the scrollbar showing the visible range. */
+  overviewWindow: string;
+  /** Value text of the overview window. */
+  overviewRange: (start: string, end: string) => string;
+  /** Keyboard help linked to the overview window. */
+  overviewHelp: string;
 }
 
 export const defaultLabels: TimelineLabels = {
@@ -66,6 +74,10 @@ export const defaultLabels: TimelineLabels = {
   start: 'Start',
   end: 'End',
   duration: 'Duration',
+  overview: 'Overview',
+  overviewWindow: 'Visible window',
+  overviewRange: (start, end) => `${start} to ${end}`,
+  overviewHelp: 'Arrow keys move the window (Shift: faster), plus and minus zoom, Home and End go to the start or end of the period.',
 };
 
 export const frenchLabels: TimelineLabels = {
@@ -100,4 +112,8 @@ export const frenchLabels: TimelineLabels = {
   start: 'Début',
   end: 'Fin',
   duration: 'Durée',
+  overview: 'Vue d’ensemble',
+  overviewWindow: 'Fenêtre visible',
+  overviewRange: (start, end) => `${start} à ${end}`,
+  overviewHelp: 'Les flèches déplacent la fenêtre (Maj : plus vite), plus et moins zooment, Début et Fin vont au début ou à la fin de la période.',
 };

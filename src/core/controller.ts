@@ -173,10 +173,28 @@ export interface TimeChange {
   readonly requestId: number;
 }
 
+/**
+ * Why the viewport changed: `navigation` (manual move, leaves live mode), `zoom`
+ * (keeps the live anchor), `follow` (automatic follow of playback or live mode),
+ * `domain` (re-fit after `extendDomain`).
+ */
+export type ViewportOrigin = 'navigation' | 'zoom' | 'follow' | 'domain';
+
+export interface ViewportChange {
+  readonly viewport: TimeRange;
+  readonly previous: TimeRange;
+  readonly origin: ViewportOrigin;
+}
+
 export interface TimelineEvents {
   time: TimeChange;
   error: PreparationError;
   dataError: { readonly error: unknown };
+  /**
+   * Emitted once per actual viewport change (never when unchanged), at the end of
+   * the command that caused it, before `subscribe` listeners are notified.
+   */
+  viewport: ViewportChange;
 }
 
 export interface ViewportOptions {
@@ -305,7 +323,10 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     time: new Set(),
     error: new Set(),
     dataError: new Set(),
+    viewport: new Set(),
   };
+  /** Viewport changes of the current batch, emitted when the outermost batch ends. */
+  private viewportEvents: ViewportChange[] = [];
   private batchDepth = 0;
   private dirty = false;
   private snapshot: TimelineSnapshot<RowMeta, ItemMeta, KeyMeta> | null = null;
@@ -487,6 +508,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     for (const waiter of waiters) waiter.reject(abortError());
     this.disposed = true;
     this.listeners.clear();
+    this.viewportEvents = [];
     for (const set of Object.values(this.eventListeners)) set.clear();
   }
 
@@ -726,7 +748,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       if (end > previousEnd) {
         this.domain = { start: this.domain.start, end };
         // The minimum viewport duration may have been capped by the former domain length.
-        this.viewport = fitViewport(this.viewport, this.domain, this.minViewportDuration);
+        this.assignViewport(fitViewport(this.viewport, this.domain, this.minViewportDuration), 'domain');
         this.keyInstantsCache = this.keyInstantsInDomain(this.keys);
         if (this.source.kind === 'static') this.setCoverage(this.domain);
         if (this.prep?.cause === 'loop' && this.transport === 'playing') {
@@ -755,10 +777,11 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     this.batch(() => {
       const next = fitViewport(range, this.domain, this.minViewportDuration);
       if (options.origin !== 'zoom' && this.transport === 'live') this.transport = 'paused';
+      const origin = options.origin === 'zoom' ? 'zoom' : 'navigation';
       if (this.transport === 'live') {
-        this.viewport = anchorViewport(next, this.liveTarget(), 0.9, this.domain);
+        this.assignViewport(anchorViewport(next, this.liveTarget(), 0.9, this.domain), origin);
       } else {
-        this.viewport = next;
+        this.assignViewport(next, origin);
       }
       this.queueNavigationLoad();
       this.changed();
@@ -786,6 +809,83 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   panBy(delta: number): void {
     if (!Number.isFinite(delta) || delta === 0) return;
     this.setViewport({ start: this.viewport.start + delta, end: this.viewport.end + delta });
+  }
+
+  /**
+   * Sets the viewport duration, clamped to [minViewportDuration, domain length],
+   * keeping `anchor` at the same relative position. The default anchor is the
+   * cursor when visible, else the viewport centre; in live mode the viewport stays
+   * anchored on the live target. Zoom origin: keeps live mode.
+   */
+  zoomTo(duration: number, anchor?: number): void {
+    if (!Number.isFinite(duration) || duration <= 0) {
+      throw new TimelineValidationError([
+        { code: 'invalid-option', path: 'duration', message: 'Viewport duration must be a positive finite number' },
+      ]);
+    }
+    if (anchor !== undefined) this.assertTime(anchor, 'anchor');
+    if (this.disposed) return;
+    const viewport = this.viewport;
+    const current = rangeDuration(viewport);
+    let center = anchor;
+    if (center === undefined) {
+      if (this.transport === 'live') center = this.liveTarget();
+      else center = rangeContainsTime(viewport, this.time) ? this.time : (viewport.start + viewport.end) / 2;
+    }
+    const next = clamp(duration, Math.min(this.minViewportDuration, rangeDuration(this.domain)), rangeDuration(this.domain));
+    const ratio = current > 0 ? (center - viewport.start) / current : 0.5;
+    const start = center - next * ratio;
+    this.setViewport({ start, end: start + next }, { origin: 'zoom' });
+  }
+
+  /** Translates the viewport (same duration) so that `time` is centred, within the domain. Leaves live mode. */
+  centerOn(time: number): void {
+    this.assertTime(time, 'time');
+    if (this.disposed) return;
+    const half = rangeDuration(this.viewport) / 2;
+    const center = clamp(time, this.domain.start, this.domain.end);
+    this.setViewport({ start: center - half, end: center + half });
+  }
+
+  /**
+   * Seeks `delta` away from the navigation reference (pending destination if any,
+   * else the confirmed time), bounded to the domain. `0` is a no-op.
+   */
+  stepBy(delta: number): void {
+    if (!Number.isFinite(delta)) {
+      throw new TimelineValidationError([{ code: 'invalid-option', path: 'delta', message: 'Step must be a finite number' }]);
+    }
+    if (this.disposed || delta === 0) return;
+    this.navigate(clamp(this.navigationReference() + delta, this.domain.start, this.domain.end), 'seek');
+  }
+
+  /**
+   * Fits the viewport to the extent of the loaded items, widened by `padding`
+   * (ratio of the extent) on each side, or to the domain when there is none.
+   * Navigation origin: leaves live mode.
+   */
+  fitToItems(padding = 0.05): void {
+    if (!Number.isFinite(padding) || padding < 0) {
+      throw new TimelineValidationError([
+        { code: 'invalid-option', path: 'padding', message: 'Padding must be a non-negative finite number' },
+      ]);
+    }
+    if (this.disposed) return;
+    let start = Infinity;
+    let end = -Infinity;
+    for (const item of this.items) {
+      const from = 'at' in item ? item.at : item.start;
+      const to = 'at' in item ? item.at : item.end;
+      if (from < start) start = from;
+      if (to > end) end = to;
+    }
+    const range = start <= end ? expandRange({ start, end }, padding, this.domain) : this.domain;
+    // An extent entirely outside the domain falls back to its nearest edge.
+    const bounded = {
+      start: clamp(range.start, this.domain.start, this.domain.end),
+      end: clamp(range.end, this.domain.start, this.domain.end),
+    };
+    this.setViewport(bounded);
   }
 
   // ---------------------------------------------------------------- rows, keys, items
@@ -1256,11 +1356,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       const ratio = cause === 'play' || cause === 'loop' ? 0.1 : cause === 'rewind' ? 0.9 : 0.5;
       next = anchorViewport(this.viewport, target, ratio, this.domain);
     }
-    if (next && (next.start !== this.viewport.start || next.end !== this.viewport.end)) {
-      this.viewport = next;
-      this.requestAutomaticLoad();
-      this.changed();
-    }
+    if (next && this.assignViewport(next, 'follow')) this.requestAutomaticLoad();
   }
 
   // ---------------------------------------------------------------- window loading
@@ -1409,6 +1505,16 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   // ---------------------------------------------------------------- notification
 
+  /** Single place where the viewport changes: records the event, never for an unchanged range. */
+  private assignViewport(next: TimeRange, origin: ViewportOrigin): boolean {
+    const previous = this.viewport;
+    if (next.start === previous.start && next.end === previous.end) return false;
+    this.viewport = next;
+    this.viewportEvents.push({ viewport: next, previous, origin });
+    this.changed();
+    return true;
+  }
+
   private changed(): void {
     this.dirty = true;
     this.snapshot = null;
@@ -1417,13 +1523,26 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   private batch(fn: () => void): void {
     this.batchDepth++;
     try {
-      fn();
+      try {
+        fn();
+      } finally {
+        // Viewport events of the whole command, while still batched so that commands
+        // issued by their listeners join the same notification.
+        if (this.batchDepth === 1) this.flushViewportEvents();
+      }
     } finally {
       this.batchDepth--;
       if (this.batchDepth === 0 && this.dirty) {
         this.dirty = false;
         for (const listener of Array.from(this.listeners)) listener();
       }
+    }
+  }
+
+  private flushViewportEvents(): void {
+    while (this.viewportEvents.length) {
+      const event = this.viewportEvents.shift()!;
+      this.emit('viewport', event);
     }
   }
 

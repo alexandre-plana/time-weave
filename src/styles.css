@@ -28,6 +28,27 @@
   --tw-axis-height: 40px;
   --tw-label-width: 220px;
   --tw-radius: 6px;
+  /* Highlight bands: fill, edge, label tag and label ink (contrast >= 5.5:1 on the tag). */
+  --tw-highlight-neutral: rgb(100 108 121 / 0.08);
+  --tw-highlight-neutral-edge: #c3c8d1;
+  --tw-highlight-neutral-tag: #eef0f3;
+  --tw-highlight-neutral-ink: #3d4450;
+  --tw-highlight-info: rgb(71 114 233 / 0.08);
+  --tw-highlight-info-edge: #a9bff3;
+  --tw-highlight-info-tag: #e6edfd;
+  --tw-highlight-info-ink: #24489f;
+  --tw-highlight-success: rgb(34 148 90 / 0.09);
+  --tw-highlight-success-edge: #9fd3b5;
+  --tw-highlight-success-tag: #e2f3e9;
+  --tw-highlight-success-ink: #1d6b43;
+  --tw-highlight-warning: rgb(214 148 30 / 0.11);
+  --tw-highlight-warning-edge: #e7c27a;
+  --tw-highlight-warning-tag: #fbefd6;
+  --tw-highlight-warning-ink: #7a4f00;
+  --tw-highlight-danger: rgb(217 72 59 / 0.09);
+  --tw-highlight-danger-edge: #eeaaa3;
+  --tw-highlight-danger-tag: #fbe5e2;
+  --tw-highlight-danger-ink: #a12d22;
 }
 
 .tw-timeline {
@@ -73,6 +94,26 @@
     --tw-group-ink: #c4b5ef;
     --tw-group-point: #9a85cf;
     --tw-key: #e0b25b;
+    --tw-highlight-neutral: rgb(142 151 166 / 0.1);
+    --tw-highlight-neutral-edge: #444c59;
+    --tw-highlight-neutral-tag: #262b33;
+    --tw-highlight-neutral-ink: #c9cfd9;
+    --tw-highlight-info: rgb(123 156 245 / 0.12);
+    --tw-highlight-info-edge: #3d5287;
+    --tw-highlight-info-tag: #1f2a45;
+    --tw-highlight-info-ink: #a9c0f7;
+    --tw-highlight-success: rgb(87 196 135 / 0.11);
+    --tw-highlight-success-edge: #2f6b50;
+    --tw-highlight-success-tag: #17322a;
+    --tw-highlight-success-ink: #8fdcb2;
+    --tw-highlight-warning: rgb(224 178 91 / 0.12);
+    --tw-highlight-warning-edge: #6e5426;
+    --tw-highlight-warning-tag: #362b17;
+    --tw-highlight-warning-ink: #ecc679;
+    --tw-highlight-danger: rgb(239 110 98 / 0.12);
+    --tw-highlight-danger-edge: #7a3a35;
+    --tw-highlight-danger-tag: #3a1e1d;
+    --tw-highlight-danger-ink: #f3a49b;
   }
 }
 
@@ -95,6 +136,26 @@
   --tw-group-ink: #c4b5ef;
   --tw-group-point: #9a85cf;
   --tw-key: #e0b25b;
+  --tw-highlight-neutral: rgb(142 151 166 / 0.1);
+  --tw-highlight-neutral-edge: #444c59;
+  --tw-highlight-neutral-tag: #262b33;
+  --tw-highlight-neutral-ink: #c9cfd9;
+  --tw-highlight-info: rgb(123 156 245 / 0.12);
+  --tw-highlight-info-edge: #3d5287;
+  --tw-highlight-info-tag: #1f2a45;
+  --tw-highlight-info-ink: #a9c0f7;
+  --tw-highlight-success: rgb(87 196 135 / 0.11);
+  --tw-highlight-success-edge: #2f6b50;
+  --tw-highlight-success-tag: #17322a;
+  --tw-highlight-success-ink: #8fdcb2;
+  --tw-highlight-warning: rgb(224 178 91 / 0.12);
+  --tw-highlight-warning-edge: #6e5426;
+  --tw-highlight-warning-tag: #362b17;
+  --tw-highlight-warning-ink: #ecc679;
+  --tw-highlight-danger: rgb(239 110 98 / 0.12);
+  --tw-highlight-danger-edge: #7a3a35;
+  --tw-highlight-danger-tag: #3a1e1d;
+  --tw-highlight-danger-ink: #f3a49b;
 }
 
 /* ---------------------------------------------------------------- buttons */
@@ -498,6 +559,82 @@
 
 .tw-grid-line--major {
   background: var(--tw-grid-major);
+}
+
+/* Highlight bands: decorative periods behind the rows; never take the pointer. */
+.tw-highlight,
+.tw-highlight-mark {
+  --tw-hl-fill: var(--tw-highlight-neutral);
+  --tw-hl-edge: var(--tw-highlight-neutral-edge);
+  --tw-hl-tag: var(--tw-highlight-neutral-tag);
+  --tw-hl-ink: var(--tw-highlight-neutral-ink);
+}
+
+.tw-highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--tw-hl-fill);
+  border-left: 1px solid var(--tw-hl-edge);
+  border-right: 1px solid var(--tw-hl-edge);
+  pointer-events: none;
+}
+
+.tw-highlight--clip-start {
+  border-left: 0;
+}
+
+.tw-highlight--clip-end {
+  border-right: 0;
+}
+
+.tw-highlight--info {
+  --tw-hl-fill: var(--tw-highlight-info);
+  --tw-hl-edge: var(--tw-highlight-info-edge);
+  --tw-hl-tag: var(--tw-highlight-info-tag);
+  --tw-hl-ink: var(--tw-highlight-info-ink);
+}
+
+.tw-highlight--success {
+  --tw-hl-fill: var(--tw-highlight-success);
+  --tw-hl-edge: var(--tw-highlight-success-edge);
+  --tw-hl-tag: var(--tw-highlight-success-tag);
+  --tw-hl-ink: var(--tw-highlight-success-ink);
+}
+
+.tw-highlight--warning {
+  --tw-hl-fill: var(--tw-highlight-warning);
+  --tw-hl-edge: var(--tw-highlight-warning-edge);
+  --tw-hl-tag: var(--tw-highlight-warning-tag);
+  --tw-hl-ink: var(--tw-highlight-warning-ink);
+}
+
+.tw-highlight--danger {
+  --tw-hl-fill: var(--tw-highlight-danger);
+  --tw-hl-edge: var(--tw-highlight-danger-edge);
+  --tw-hl-tag: var(--tw-highlight-danger-tag);
+  --tw-hl-ink: var(--tw-highlight-danger-ink);
+}
+
+.tw-highlight-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  max-width: calc(100% - 8px);
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--tw-hl-tag);
+  color: var(--tw-hl-ink);
+  font: 500 10px/1.4 var(--tw-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The band continues across the axis, under the ticks. */
+.tw-highlight-mark {
+  fill: var(--tw-hl-fill);
+  pointer-events: none;
 }
 
 .tw-overlay {

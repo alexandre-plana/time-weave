@@ -45,6 +45,27 @@ export interface ItemRenderContext<RowMeta> {
   readonly active: boolean;
 }
 
+/** Tone of a highlight band; each maps to the `--tw-highlight-<tone>*` variables. */
+export type TimelineHighlightTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+
+/**
+ * A period drawn in the background across all rows (incident, maintenance
+ * window, business hours…), independent from the items. Decorative: it never
+ * intercepts the pointer; its label is added to the cursor's accessible value
+ * while the confirmed time is inside it.
+ */
+export interface TimelineHighlight {
+  readonly id: string;
+  /** Inclusive start, in the timeline's time unit. */
+  readonly start: number;
+  /** Exclusive end; must be greater than `start`. */
+  readonly end: number;
+  readonly label?: string;
+  /** Defaults to `'neutral'`. */
+  readonly tone?: TimelineHighlightTone;
+  readonly className?: string;
+}
+
 export interface TimelineProps<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknown> {
   controller: TimelineController<RowMeta, ItemMeta, KeyMeta>;
   /** Total height of the component. Defaults to 420 px. */
@@ -85,6 +106,11 @@ export interface TimelineProps<RowMeta = unknown, ItemMeta = unknown, KeyMeta = 
    * or `'dark'` sets `data-theme` on the frame and on the detail dialog.
    */
   theme?: 'light' | 'dark' | 'auto';
+  /**
+   * Background bands across all rows. Bands with non-finite or inverted times
+   * are ignored (with a warning in development).
+   */
+  highlights?: readonly TimelineHighlight[];
   className?: string;
   style?: CSSProperties;
 }
@@ -103,6 +129,33 @@ const MIN_LABEL_WIDTH = 28;
 const COUNT_CHAR_WIDTH = 5.6;
 /** Horizontal padding and border of the group count badge, plus a small margin. */
 const COUNT_CHROME = 12;
+/** A band at least this wide (in px) shows its label as a tag at its start. */
+const HIGHLIGHT_LABEL_WIDTH = 60;
+const HIGHLIGHT_TONES: ReadonlySet<string> = new Set(['neutral', 'info', 'success', 'warning', 'danger']);
+const EMPTY_HIGHLIGHTS: readonly TimelineHighlight[] = [];
+
+function isDevelopment(): boolean {
+  const env = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env;
+  return env?.NODE_ENV !== 'production';
+}
+
+/** Valid bands sorted by start; invalid ones are reported once per id through `warned`. */
+function validateHighlights(input: readonly TimelineHighlight[], warned: Set<string>): readonly TimelineHighlight[] {
+  const valid: TimelineHighlight[] = [];
+  for (const band of input) {
+    const ok = band != null && Number.isFinite(band.start) && Number.isFinite(band.end) && band.end > band.start;
+    if (ok) {
+      valid.push(band);
+      continue;
+    }
+    const key = String(band?.id);
+    if (!warned.has(key) && isDevelopment()) {
+      warned.add(key);
+      console.warn(`[time-weave] Highlight "${key}" ignored: start and end must be finite with end > start.`);
+    }
+  }
+  return valid.sort((a, b) => a.start - b.start || a.end - b.end);
+}
 
 function useElementWidth(fallback: number): [(element: HTMLElement | null) => void, number] {
   const [width, setWidth] = useState(fallback);
@@ -240,6 +293,10 @@ function sameVisibleRow<M>(a: VisibleRow<M>, b: VisibleRow<M>): boolean {
   return a === b || (a.row === b.row && a.depth === b.depth && a.hasChildren === b.hasChildren && a.expanded === b.expanded);
 }
 
+function toneOf(band: TimelineHighlight): TimelineHighlightTone {
+  return band.tone && HIGHLIGHT_TONES.has(band.tone) ? band.tone : 'neutral';
+}
+
 function countFits(count: number, width: number): boolean {
   return String(count).length * COUNT_CHAR_WIDTH + COUNT_CHROME <= width;
 }
@@ -270,6 +327,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     toolbar,
     rowsHeader,
     theme = 'auto',
+    highlights = EMPTY_HIGHLIGHTS,
     className,
     style,
   } = props;
@@ -507,6 +565,30 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     }
     return result;
   }, [ticks, viewport, trackWidth]);
+
+  // ------------------------------------------------------------------ highlight bands
+  // Independent from the rows: a change of bands never re-renders a row.
+  const warnedHighlights = useRef(new Set<string>());
+  const validHighlights = useMemo(() => validateHighlights(highlights, warnedHighlights.current), [highlights]);
+  const highlightBands = useMemo(() => {
+    const span = viewport.end - viewport.start;
+    const margin = span * 0.05;
+    const from = Math.max(domain.start, viewport.start - margin);
+    const to = Math.min(domain.end, viewport.end + margin);
+    const result: { band: TimelineHighlight; left: number; width: number; clipStart: boolean; clipEnd: boolean }[] = [];
+    for (const band of validHighlights) {
+      if (band.start >= to) break;
+      if (band.end <= from) continue;
+      const position = (time: number): number => ((time - viewport.start) / span) * trackWidth;
+      const start = Math.max(band.start, domain.start);
+      const end = Math.min(band.end, domain.end);
+      const x1 = Math.max(0, position(start));
+      const x2 = Math.min(trackWidth, position(end));
+      if (x2 <= x1) continue;
+      result.push({ band, left: x1, width: x2 - x1, clipStart: start > band.start || x1 > position(start), clipEnd: end < band.end || x2 < position(end) });
+    }
+    return result;
+  }, [validHighlights, viewport, domain, trackWidth]);
 
   // ------------------------------------------------------------------ pointer interactions
   const drag = useRef<
@@ -827,6 +909,17 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const settled = snapshot.transport === 'paused' && !snapshot.rewinding;
   const discrete = snapshot.lastCause !== 'play' && snapshot.lastCause !== 'rewind' && snapshot.lastCause !== 'live';
   if (settled || discrete) announcedTime.current = snapshot.time;
+  const announced = announcedTime.current;
+  // Labels of the bands holding the announced time, for the slider's value text.
+  const announcedHighlights = useMemo(() => {
+    const names: string[] = [];
+    for (const band of validHighlights) {
+      if (band.start > announced) break;
+      if (announced < band.end && band.label) names.push(band.label);
+    }
+    return names.join(', ');
+  }, [validHighlights, announced]);
+  const cursorValueText = announcedHighlights ? `${formatTime(announced, mode)} — ${announcedHighlights}` : formatTime(announced, mode);
 
   // ------------------------------------------------------------------ rendering helpers
   const cursorX = toX(snapshot.time);
@@ -960,8 +1053,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
             aria-describedby={axisHelpId}
             aria-valuemin={domain.start}
             aria-valuemax={domain.end}
-            aria-valuenow={Math.round(announcedTime.current)}
-            aria-valuetext={formatTime(announcedTime.current, mode)}
+            aria-valuenow={Math.round(announced)}
+            aria-valuetext={cursorValueText}
             aria-busy={snapshot.status === 'preparing' || snapshot.status === 'initializing'}
             onKeyDown={onAxisKeyDown}
             onPointerDown={onTrackPointerDown}
@@ -973,6 +1066,16 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
             }}
           >
             <svg className="tw-axis-svg" width={trackWidth} height="100%" aria-hidden="true">
+              {highlightBands.map(({ band, left, width }) => (
+                <rect
+                  key={band.id}
+                  className={`tw-highlight-mark tw-highlight--${toneOf(band)}`}
+                  x={left}
+                  width={width}
+                  y="0"
+                  height="100%"
+                />
+              ))}
               {coverage && (
                 <rect
                   className="tw-coverage"
@@ -1030,6 +1133,24 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
 
       <div className="tw-body-wrap">
         <div className="tw-grid" aria-hidden="true">
+          {highlightBands.map(({ band, left, width, clipStart, clipEnd }) => (
+            <div
+              key={band.id}
+              className={[
+                'tw-highlight',
+                `tw-highlight--${toneOf(band)}`,
+                clipStart ? 'tw-highlight--clip-start' : '',
+                clipEnd ? 'tw-highlight--clip-end' : '',
+                band.className ?? '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              data-highlight-id={band.id}
+              style={{ left, width }}
+            >
+              {band.label && width >= HIGHLIGHT_LABEL_WIDTH && <span className="tw-highlight-label">{band.label}</span>}
+            </div>
+          ))}
           {ticks.ticks.map((tick) => (
             <span key={tick.time} className={tick.major ? 'tw-grid-line tw-grid-line--major' : 'tw-grid-line'} style={{ left: toX(tick.time) }} />
           ))}

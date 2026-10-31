@@ -10,3 +10,5 @@ export type { UseTimelineControllerOptions, TimelineHostOptions } from './useTim
 export { createAnimationFrameScheduler } from './browserScheduler.js';
 export { defaultLabels, frenchLabels } from './labels.js';
 export type { TimelineLabels } from './labels.js';
+export { TimelineOverview } from './TimelineOverview.js';
+export type { TimelineOverviewProps } from './TimelineOverview.js';
