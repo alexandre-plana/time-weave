@@ -178,7 +178,7 @@ function App() {
                       <strong>
                         {sensor.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sensor.unit}
                       </strong>
-                      <meter min={0} max={sensor.max} value={sensor.value} />
+                      <meter min={0} max={sensor.max} value={sensor.value} aria-label={sensor.label} />
                     </li>
                   ))}
                 </ul>

@@ -62,6 +62,11 @@ export interface TimelineProps<RowMeta = unknown, ItemMeta = unknown, KeyMeta = 
   renderRowLabel?: (row: VisibleRow<RowMeta>) => ReactNode;
   renderItem?: (item: TimelineItem<ItemMeta>, context: ItemRenderContext<RowMeta>) => ReactNode;
   getItemClassName?: (item: TimelineItem<ItemMeta>) => string | undefined;
+  /**
+   * Accessible name of an item button. Defaults to its label (or group size),
+   * then its time. When `renderItem` shows text, include it in the name (WCAG 2.5.3).
+   */
+  getItemAriaLabel?: (item: TimelineItem<ItemMeta>) => string;
   /** Called on click or keyboard activation. Does not move time by default. */
   onItemClick?: (item: TimelineItem<ItemMeta>, context: ItemActionContext<RowMeta, ItemMeta, KeyMeta>) => void;
   /** Controlled selection. When omitted, the timeline keeps its own. */
@@ -85,6 +90,8 @@ const OVERSCAN_PX = 200;
 const DRAG_THRESHOLD = 4;
 const ZOOM_STEP = 1.6;
 const ANNOUNCE_DELAY = 400;
+/** Estimated advance of one character of a 10 px monospace tick label. */
+const TICK_CHAR_WIDTH = 6.2;
 
 function useElementWidth(fallback: number): [(element: HTMLElement | null) => void, number] {
   const [width, setWidth] = useState(fallback);
@@ -164,6 +171,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     renderRowLabel,
     renderItem,
     getItemClassName,
+    getItemAriaLabel,
     onItemClick,
     tooltip = true,
     detail = false,
@@ -174,7 +182,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     style,
   } = props;
   const labels = useMemo(() => ({ ...defaultLabels, ...props.labels }), [props.labels]);
-  const tooltipId = `tw-tooltip-${useId().replace(/:/g, '')}`;
+  const baseId = useId().replace(/:/g, '');
+  const tooltipId = `tw-tooltip-${baseId}`;
+  const axisHelpId = `tw-axis-help-${baseId}`;
   const snapshot = useTimelineSnapshot(controller);
   const { viewport, domain, mode } = snapshot;
   const formatTime = useMemo(
@@ -351,6 +361,29 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     [mode, viewport, trackWidth, locale, formatTick],
   );
 
+  // Tick labels start right of their line; near the right edge a label is
+  // anchored to its end instead, or dropped when it would cover its neighbour.
+  const tickLabels = useMemo(() => {
+    const result = new Map<number, { x: number; anchor: 'start' | 'end' } | null>();
+    let previousEnd = -Infinity;
+    for (const tick of ticks.ticks) {
+      const x = ((tick.time - viewport.start) / (viewport.end - viewport.start)) * trackWidth;
+      const width = tick.label.length * TICK_CHAR_WIDTH;
+      let placement: { x: number; anchor: 'start' | 'end' } | null = { x: 4, anchor: 'start' };
+      let left = x + 4;
+      let right = x + 4 + width;
+      if (right > trackWidth - 2) {
+        placement = { x: -4, anchor: 'end' };
+        left = x - 4 - width;
+        right = x - 4;
+        if (left < previousEnd + 4) placement = null;
+      }
+      if (placement) previousEnd = right;
+      result.set(tick.time, placement);
+    }
+    return result;
+  }, [ticks, viewport, trackWidth]);
+
   // ------------------------------------------------------------------ pointer interactions
   const drag = useRef<
     | { kind: 'pan'; pointerId: number; startX: number; startViewport: { start: number; end: number }; moved: boolean }
@@ -461,7 +494,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     if (!frame) return;
     const onWheel = (event: WheelEvent): void => {
       const target = event.target as HTMLElement | null;
-      if (!target?.closest('.tw-axis, .tw-row-track, .tw-body')) return;
+      if (!target?.closest('.tw-axis, .tw-keys, .tw-row-track, .tw-body')) return;
       if (target.closest('.tw-row-label')) return;
       const { timeAtClientX: at, msPerPixel: scale } = wheelState.current;
       if (event.ctrlKey || event.metaKey) {
@@ -746,8 +779,20 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
               <button type="button" className="tw-button" onClick={() => controller.zoomBy(ZOOM_STEP)} aria-label={labels.zoomIn} title={labels.zoomIn}>
                 +
               </button>
-              <button type="button" className="tw-button tw-button--text" onClick={() => controller.setViewport(domain, { origin: 'zoom' })} title={labels.zoomFit}>
-                {labels.zoomFit}
+              <button
+                type="button"
+                className={narrow ? 'tw-button tw-button--fit' : 'tw-button tw-button--text'}
+                onClick={() => controller.setViewport(domain, { origin: 'zoom' })}
+                aria-label={narrow ? labels.zoomFit : undefined}
+                title={labels.zoomFit}
+              >
+                {narrow ? (
+                  <svg className="tw-icon" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" />
+                  </svg>
+                ) : (
+                  labels.zoomFit
+                )}
               </button>
             </div>
           )}
@@ -756,69 +801,81 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
 
       <div className="tw-header">
         <div className="tw-corner">{rowsHeader ?? labels.rows}</div>
-        <div
-          ref={setAxisRef}
-          className="tw-axis"
-          tabIndex={0}
-          role="slider"
-          aria-label={labels.cursor}
-          aria-valuemin={domain.start}
-          aria-valuemax={domain.end}
-          aria-valuenow={Math.round(announcedTime.current)}
-          aria-valuetext={formatTime(announcedTime.current, mode)}
-          aria-busy={snapshot.status === 'preparing' || snapshot.status === 'initializing'}
-          onKeyDown={onAxisKeyDown}
-          onPointerDown={onTrackPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerCancel}
-          onLostPointerCapture={(event) => {
-            if (drag.current && drag.current.kind !== 'pinch' && drag.current.pointerId === event.pointerId) drag.current = null;
-          }}
-        >
-          <svg className="tw-axis-svg" width={trackWidth} height="100%" aria-hidden="true">
-            {coverage && (
-              <rect
-                className="tw-coverage"
-                x={Math.max(0, toX(coverage.start))}
-                width={Math.max(0, Math.min(trackWidth, toX(coverage.end)) - Math.max(0, toX(coverage.start)))}
-                y="0"
-                height="3"
+        <div className="tw-axis-wrap">
+          <div
+            ref={setAxisRef}
+            className="tw-axis"
+            tabIndex={0}
+            role="slider"
+            aria-label={labels.cursor}
+            aria-describedby={axisHelpId}
+            aria-valuemin={domain.start}
+            aria-valuemax={domain.end}
+            aria-valuenow={Math.round(announcedTime.current)}
+            aria-valuetext={formatTime(announcedTime.current, mode)}
+            aria-busy={snapshot.status === 'preparing' || snapshot.status === 'initializing'}
+            onKeyDown={onAxisKeyDown}
+            onPointerDown={onTrackPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
+            onLostPointerCapture={(event) => {
+              if (drag.current && drag.current.kind !== 'pinch' && drag.current.pointerId === event.pointerId) drag.current = null;
+            }}
+          >
+            <svg className="tw-axis-svg" width={trackWidth} height="100%" aria-hidden="true">
+              {coverage && (
+                <rect
+                  className="tw-coverage"
+                  x={Math.max(0, toX(coverage.start))}
+                  width={Math.max(0, Math.min(trackWidth, toX(coverage.end)) - Math.max(0, toX(coverage.start)))}
+                  y="0"
+                  height="3"
+                />
+              )}
+              {ticks.ticks.map((tick) => {
+                const x = toX(tick.time);
+                const placement = tickLabels.get(tick.time);
+                return (
+                  <g key={tick.time} className={tick.major ? 'tw-tick tw-tick--major' : 'tw-tick'} transform={`translate(${x},0)`}>
+                    <line y1="22" y2="100%" />
+                    {placement && (
+                      <text x={placement.x} y="16" textAnchor={placement.anchor}>
+                        {tick.label}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+            {inTrack(cursorX) && (
+              <span
+                className="tw-cursor-handle"
+                style={{ left: cursorX }}
+                onPointerDown={onCursorPointerDown}
+                aria-hidden="true"
               />
             )}
-            {ticks.ticks.map((tick) => {
-              const x = toX(tick.time);
-              return (
-                <g key={tick.time} className={tick.major ? 'tw-tick tw-tick--major' : 'tw-tick'} transform={`translate(${x},0)`}>
-                  <line y1="22" y2="100%" />
-                  <text x="4" y="16">
-                    {tick.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-          {visibleKeys.map((key) => (
-            <button
-              key={key.id}
-              type="button"
-              className="tw-key"
-              style={{ left: toX(key.at) }}
-              aria-label={labels.key(key.label ?? key.id, formatTime(key.at, mode))}
-              title={key.label ?? key.id}
-              onClick={() => controller.goToKey(key.id)}
-              tabIndex={-1}
-            />
-          ))}
-          {inTrack(cursorX) && (
-            <span
-              className="tw-cursor-handle"
-              style={{ left: cursorX }}
-              onPointerDown={onCursorPointerDown}
-              aria-hidden="true"
-            />
-          )}
-          {snapshot.data.loading && <span className="tw-loading" aria-hidden="true" />}
+            {snapshot.data.loading && <span className="tw-loading" aria-hidden="true" />}
+            <span id={axisHelpId} className="tw-sr-only">
+              {labels.cursorHelp}
+            </span>
+          </div>
+          {/* Key markers sit over the axis, outside the slider: a slider cannot contain controls. */}
+          <div className="tw-keys">
+            {visibleKeys.map((key) => (
+              <button
+                key={key.id}
+                type="button"
+                className="tw-key"
+                style={{ left: toX(key.at) }}
+                aria-label={labels.key(key.label ?? key.id, formatTime(key.at, mode))}
+                title={key.label ?? key.id}
+                onClick={() => controller.goToKey(key.id)}
+                tabIndex={-1}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -864,6 +921,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
                   renderRowLabel={renderRowLabel}
                   renderItem={renderItem}
                   getItemClassName={getItemClassName}
+                  getItemAriaLabel={getItemAriaLabel}
                   actions={actions}
                 />
               );
@@ -904,6 +962,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
           title={detailEntry.item.label ?? detailEntry.item.id}
           labels={labels}
           returnFocus={detailReturnFocus.current}
+          inertRoot={frameRef.current}
           onClose={() => setDetailItemId(null)}
         >
           {typeof detail === 'function' ? (
@@ -949,6 +1008,7 @@ interface RowViewProps<RowMeta, ItemMeta> {
   renderRowLabel: ((row: VisibleRow<RowMeta>) => ReactNode) | undefined;
   renderItem: ((item: TimelineItem<ItemMeta>, context: ItemRenderContext<RowMeta>) => ReactNode) | undefined;
   getItemClassName: ((item: TimelineItem<ItemMeta>) => string | undefined) | undefined;
+  getItemAriaLabel: ((item: TimelineItem<ItemMeta>) => string) | undefined;
   actions: { readonly current: RowActions<RowMeta, ItemMeta> };
 }
 
@@ -979,8 +1039,10 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
   }
 
   const describe = (item: TimelineItem<ItemMeta>): string => {
-    const parts = [item.label ?? item.id];
-    if (item.group) parts.push(labels.group(item.group.count));
+    if (props.getItemAriaLabel) return props.getItemAriaLabel(item);
+    const group = item.group ? labels.group(item.group.count) : undefined;
+    const parts = [item.label || group || item.id];
+    if (group && item.label) parts.push(group);
     parts.push(isSpan(item) ? `${formatTime(item.start, mode)} – ${formatTime(item.end, mode)}` : formatTime(item.at, mode));
     return parts.join(', ');
   };

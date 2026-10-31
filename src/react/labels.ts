@@ -3,6 +3,8 @@ export interface TimelineLabels {
   timeline: string;
   rows: string;
   cursor: string;
+  /** Keyboard help linked to the cursor slider (key markers are reached with Page Up / Page Down). */
+  cursorHelp: string;
   zoomIn: string;
   zoomOut: string;
   zoomFit: string;
@@ -36,6 +38,7 @@ export const defaultLabels: TimelineLabels = {
   timeline: 'Timeline',
   rows: 'Rows',
   cursor: 'Current time',
+  cursorHelp: 'Arrow keys move the time, Page Up and Page Down jump to the previous or next key, plus and minus zoom.',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   zoomFit: 'Show the whole period',
@@ -69,6 +72,7 @@ export const frenchLabels: TimelineLabels = {
   timeline: 'Timeline',
   rows: 'Lignes',
   cursor: 'Temps courant',
+  cursorHelp: 'Les flèches déplacent le temps, Page précédente et Page suivante sautent à la clé précédente ou suivante, plus et moins zooment.',
   zoomIn: 'Zoomer',
   zoomOut: 'Dézoomer',
   zoomFit: 'Afficher toute la période',

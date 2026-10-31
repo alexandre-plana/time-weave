@@ -259,9 +259,9 @@ function App() {
 
           <section className="panel">
             <h2>Simulation</h2>
-            <label className="field">
+            <label className="field" htmlFor="ops-prepare-delay">
               Préparation de l’application
-              <select value={prepareDelay} onChange={(event) => setPrepareDelay(Number(event.target.value))}>
+              <select id="ops-prepare-delay" value={prepareDelay} onChange={(event) => setPrepareDelay(Number(event.target.value))}>
                 {DELAYS.map((delay) => (
                   <option key={delay} value={delay}>
                     {delay} ms
@@ -269,9 +269,9 @@ function App() {
                 ))}
               </select>
             </label>
-            <label className="field">
+            <label className="field" htmlFor="ops-load-delay">
               Chargement des fenêtres
-              <select value={loadDelay} onChange={(event) => setLoadDelay(Number(event.target.value))}>
+              <select id="ops-load-delay" value={loadDelay} onChange={(event) => setLoadDelay(Number(event.target.value))}>
                 {DELAYS.map((delay) => (
                   <option key={delay} value={delay}>
                     {delay} ms
@@ -279,13 +279,13 @@ function App() {
                 ))}
               </select>
             </label>
-            <label className="field">
+            <label className="field" htmlFor="ops-stream">
               Flux simulé (5 msg / 50 ms)
-              <input type="checkbox" checked={stream} onChange={(event) => setStream(event.target.checked)} />
+              <input id="ops-stream" type="checkbox" checked={stream} onChange={(event) => setStream(event.target.checked)} />
             </label>
-            <label className="field">
+            <label className="field" htmlFor="ops-follow">
               Suivre la lecture
-              <input type="checkbox" checked={snapshot.followPlayback} onChange={(event) => controller.setFollowPlayback(event.target.checked)} />
+              <input id="ops-follow" type="checkbox" checked={snapshot.followPlayback} onChange={(event) => controller.setFollowPlayback(event.target.checked)} />
             </label>
             <dl className="facts">
               <dt>Statut</dt>

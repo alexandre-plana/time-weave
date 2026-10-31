@@ -4,9 +4,10 @@
   --bg: #f7f8fa;
   --paper: #fff;
   --ink: #222832;
-  --muted: #7b8391;
+  --muted: #646c79;
   --line: #e6e9ee;
   --accent: #4772e9;
+  --accent-ink: #2f55c4;
   color-scheme: light dark;
 }
 
@@ -18,6 +19,7 @@
     --muted: #8e97a6;
     --line: #2a303a;
     --accent: #7b9cf5;
+    --accent-ink: #9db6f8;
   }
 }
 
@@ -162,6 +164,6 @@ dl.facts dd {
   padding: 1px 6px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  color: var(--accent-ink);
   font: 10px 'IBM Plex Mono', monospace;
 }

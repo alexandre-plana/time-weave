@@ -105,7 +105,8 @@ function App() {
       <span className="hist-item">
         {context.width > 40 && item.label}
         {context.width > 150 && (
-          <small>
+          <small aria-hidden="true">
+            {' '}
             {yearOf(item.start)}–{yearOf(item.end)}
           </small>
         )}
