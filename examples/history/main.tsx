@@ -1,6 +1,6 @@
 import { StrictMode, useCallback, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PlaybackControls, Timeline, frenchLabels, isSpan, useTimelineController, useTimelineSnapshot } from '@time-weave/react';
+import { PlaybackControls, Timeline, frenchLabels, isSpan, useTimelineController, useTimelineSelector } from '@time-weave/react';
 import type { TimeRequest, TimelineItem, TimelineKey, TimelineRow, VisibleRow } from '@time-weave/react';
 import '@time-weave/react/styles.css';
 import '../shared.css';
@@ -97,7 +97,8 @@ function App() {
     speed: 365 * 24 * 3600 * 1000 / 4, // four years per second
     prepareTime,
   });
-  const snapshot = useTimelineSnapshot(controller);
+  // Only the year is displayed: render again when it changes, not on every frame.
+  const currentYear = useTimelineSelector(controller, (s) => yearOf(s.time));
 
   const renderItem = useCallback((item: TimelineItem<Fact>, context: { width: number }) => {
     if (!isSpan(item)) return null;
@@ -130,7 +131,7 @@ function App() {
           <h1>Soixante-quinze ans d’une entreprise</h1>
           <p className="lead">Le même moteur sur plusieurs décennies : périodes, jalons, contenu personnalisé et fenêtre de détail.</p>
         </div>
-        <span className="badge">{yearOf(snapshot.time)}</span>
+        <span className="badge">{currentYear}</span>
       </header>
       <div className="layout">
         <Timeline

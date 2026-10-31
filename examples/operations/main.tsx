@@ -6,8 +6,9 @@ import {
   formatTimeReadout,
   frenchLabels,
   rangeContainsTime,
+  shallowEqual,
   useTimelineController,
-  useTimelineSnapshot,
+  useTimelineSelector,
 } from '@time-weave/react';
 import type { TimeRequest, TimelineController, TimelineItem, VisibleRow, WindowRequest } from '@time-weave/react';
 import '@time-weave/react/styles.css';
@@ -52,6 +53,48 @@ function computeState(store: CommunicationStore, time: number, cause: string): A
   recent.sort((a, b) => b.at - a.at);
   const incident = incidents.find((entry) => time >= entry.start && time < entry.end)?.label ?? null;
   return { time, cause, recent: recent.slice(0, 6), active, incident };
+}
+
+/**
+ * Controller facts of the simulation panel. The selection only changes when a
+ * displayed value changes, so this panel does not render on every playback frame.
+ */
+function ControllerFacts({ controller }: { controller: TimelineController<RowInfo, ItemInfo> }) {
+  const facts = useTimelineSelector(
+    controller,
+    (s) => ({
+      followPlayback: s.followPlayback,
+      status: s.status,
+      transport: s.transport,
+      loading: s.data.loading,
+      itemCount: s.items.length,
+      domainEnd: s.domain.end,
+      inViewport: rangeContainsTime(s.viewport, s.time),
+    }),
+    shallowEqual,
+  );
+  return (
+    <>
+      <label className="field" htmlFor="ops-follow">
+        Suivre la lecture
+        <input id="ops-follow" type="checkbox" checked={facts.followPlayback} onChange={(event) => controller.setFollowPlayback(event.target.checked)} />
+      </label>
+      <dl className="facts">
+        <dt>Statut</dt>
+        <dd>{facts.status}</dd>
+        <dt>Transport</dt>
+        <dd>{facts.transport}</dd>
+        <dt>Données</dt>
+        <dd>
+          {facts.loading ? 'chargement' : 'prêtes'} · {facts.itemCount} éléments
+        </dd>
+        <dt>Fin de période</dt>
+        <dd>{clock(facts.domainEnd)}</dd>
+        <dt>Dans la fenêtre</dt>
+        <dd>{facts.inViewport ? 'oui' : 'non'}</dd>
+      </dl>
+    </>
+  );
 }
 
 function App() {
@@ -105,16 +148,16 @@ function App() {
     prepareTime,
   });
   controllerRef.current = controller;
-  const snapshot = useTimelineSnapshot(controller);
+  // App only renders again when a selected value changes, not on every playback frame.
+  const viewportBin = useTimelineSelector(controller, (s) => binFor(s.viewport.end - s.viewport.start));
+  const expandedKey = useTimelineSelector(controller, (s) => Array.from(s.expanded).sort().join(','));
 
   // Grouping belongs to the application: ask for fresh data when the level changes.
   useEffect(() => {
-    const bin = binFor(snapshot.viewport.end - snapshot.viewport.start);
-    if (lastBin.current !== null && bin !== lastBin.current) controller.refresh();
-  }, [controller, snapshot.viewport]);
+    if (lastBin.current !== null && viewportBin !== lastBin.current) controller.refresh();
+  }, [controller, viewportBin]);
 
   // Expansion changes which connectors the provider details.
-  const expandedKey = Array.from(snapshot.expanded).sort().join(',');
   const firstExpansion = useRef(true);
   useEffect(() => {
     if (firstExpansion.current) {
@@ -244,7 +287,7 @@ function App() {
                     className="tw-button tw-button--text"
                     onClick={() => {
                       if (selectedTime === null) return;
-                      if (selectedTime < snapshot.time) controller.rewindTo(selectedTime);
+                      if (selectedTime < controller.getSnapshot().time) controller.rewindTo(selectedTime);
                       else controller.seek(selectedTime);
                     }}
                   >
@@ -283,24 +326,7 @@ function App() {
               Flux simulé (5 msg / 50 ms)
               <input id="ops-stream" type="checkbox" checked={stream} onChange={(event) => setStream(event.target.checked)} />
             </label>
-            <label className="field" htmlFor="ops-follow">
-              Suivre la lecture
-              <input id="ops-follow" type="checkbox" checked={snapshot.followPlayback} onChange={(event) => controller.setFollowPlayback(event.target.checked)} />
-            </label>
-            <dl className="facts">
-              <dt>Statut</dt>
-              <dd>{snapshot.status}</dd>
-              <dt>Transport</dt>
-              <dd>{snapshot.transport}</dd>
-              <dt>Données</dt>
-              <dd>
-                {snapshot.data.loading ? 'chargement' : 'prêtes'} · {snapshot.items.length} éléments
-              </dd>
-              <dt>Fin de période</dt>
-              <dd>{clock(snapshot.domain.end)}</dd>
-              <dt>Dans la fenêtre</dt>
-              <dd>{rangeContainsTime(snapshot.viewport, snapshot.time) ? 'oui' : 'non'}</dd>
-            </dl>
+            <ControllerFacts controller={controller} />
           </section>
 
           <section className="panel">

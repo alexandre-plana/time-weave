@@ -246,6 +246,20 @@ By default `liveTime` follows the end of the period; as soon as your application
 - `useTimelineController(options)` creates one stable instance for the component's lifetime. Options are read once, except `prepareTime`, which always calls the latest function given. The hook uses a `requestAnimationFrame` scheduler (unless `scheduler` is given), starts the controller, suspends progression while the page is hidden or the component is unmounted, and follows `prefers-reduced-motion` unless `reducedMotion` is given.
 - `useTimelineHost(controller, { respectReducedMotion? })` connects an instance your application created with `createTimelineController`: start, page visibility and suspension on unmount. Unlike the hook above it does not install the animation-frame scheduler (pass `scheduler: createAnimationFrameScheduler()` yourself) and follows `prefers-reduced-motion` only with `respectReducedMotion: true`. Neither hook calls `dispose()`.
 
+- `useTimelineSnapshot(controller)` returns the whole snapshot, so the component renders on every playback frame. `useTimelineSelector(controller, selector, isEqual = Object.is)` returns `selector(snapshot)` and renders the component again only when the selected value changes according to `isEqual` (no tearing, StrictMode-safe, React 18.3 and 19). The selector may be an inline function. When it builds an object or array, pass `shallowEqual` (one-level comparison).
+
+```tsx
+import { shallowEqual, useTimelineSelector } from '@time-weave/react';
+import type { TimelineController } from '@time-weave/react';
+
+function Status({ controller }: { controller: TimelineController }) {
+  // One render per second of playback, not one per frame.
+  const seconds = useTimelineSelector(controller, (s) => Math.floor(s.time / 1000));
+  const { status, transport } = useTimelineSelector(controller, (s) => ({ status: s.status, transport: s.transport }), shallowEqual);
+  return <p>{transport} · {status} · {seconds} s</p>;
+}
+```
+
 ```tsx
 import { useEffect, useState } from 'react';
 import {

@@ -149,6 +149,18 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 
 - `useTimelineController(options)` crée une instance stable. Les options sont lues une fois, sauf `prepareTime` qui appelle toujours la dernière fonction fournie. Le hook démarre le contrôleur, suspend la progression quand la page est masquée et suit `prefers-reduced-motion` sauf si `reducedMotion` est donné.
 - `useTimelineHost(controller, { respectReducedMotion? })` raccorde une instance créée par l'application avec `createTimelineController` : démarrage et suspension quand la page est masquée. Contrairement au hook précédent, il ne remplace pas l'ordonnanceur (passer `scheduler: createAnimationFrameScheduler()` à la création) et ne suit `prefers-reduced-motion` qu'avec `respectReducedMotion: true`.
+- `useTimelineSnapshot(controller)` renvoie l'instantané complet : le composant se rend à chaque image de lecture. `useTimelineSelector(controller, selector, isEqual = Object.is)` renvoie `selector(snapshot)` et ne rend le composant que si la valeur choisie change selon `isEqual` (sans déchirement, compatible StrictMode, React 18.3 et 19). Le sélecteur peut être une fonction en ligne. Pour un objet ou un tableau construit par le sélecteur, passer `shallowEqual` (comparaison à un niveau).
+
+  ```tsx
+  import { shallowEqual, useTimelineSelector } from '@time-weave/react';
+
+  function Etat({ controller }: { controller: TimelineController }) {
+    // Un rendu par seconde de lecture, pas un par image.
+    const secondes = useTimelineSelector(controller, (s) => Math.floor(s.time / 1000));
+    const { status, transport } = useTimelineSelector(controller, (s) => ({ status: s.status, transport: s.transport }), shallowEqual);
+    return <p>{transport} · {status} · {secondes} s</p>;
+  }
+  ```
 - Aucun des deux hooks n'appelle `dispose()` au démontage : ils suspendent la progression (`setActive(false)`), ce qui reste compatible avec StrictMode et `<Activity>`. Le propriétaire d'une instance partagée appelle `dispose()` lui-même.
 - `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`, `rowsHeader`, `theme` (`'auto'` par défaut, voir Styles), `initialTrackWidth` (largeur avant la première mesure), `className`, `style`.
 - `getItemAriaLabel(item)` remplace le nom accessible des éléments (par défaut : libellé, ou « Groupe de N » pour un groupe sans libellé, puis l'heure). Avec un `renderItem` qui affiche du texte, le nom doit contenir ce texte visible (WCAG 2.5.3, « Étiquette dans le nom »). Sans cette prop, le comportement par défaut est conservé.
