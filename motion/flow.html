@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Time Weave — flux ordonné</title>
+<style>
+  @font-face { font-family: 'Inter'; font-weight: 400; src: url('fonts/inter-latin-400-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; font-weight: 500; src: url('fonts/inter-latin-500-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; font-weight: 600; src: url('fonts/inter-latin-600-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'IBM Plex Mono'; font-weight: 500; src: url('fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'IBM Plex Mono'; font-weight: 600; src: url('fonts/ibm-plex-mono-latin-600-normal.woff2') format('woff2'); }
+  html, body { margin: 0; background: #F7F8FA; }
+  canvas { display: block; width: 100%; max-width: 1600px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1600" height="540"></canvas>
+<script>
+/*
+ * Animation « flux ordonné » (9 s, en boucle) : des événements arrivent dans le désordre,
+ * le moteur les trie et les répartit dans leurs lignes et pistes, puis le curseur les
+ * parcourt et confirme chaque instant auprès de l'application (prepareTime).
+ * Image = fonction pure du temps : frameAt(t).
+ */
+'use strict';
+const W = 1600, H = 540, LOOP = 9;
+const ctx = document.getElementById('c').getContext('2d');
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const inv = (a, b, v) => clamp((v - a) / (b - a));
+const outCubic = (k) => 1 - Math.pow(1 - k, 3);
+const inOutCubic = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const C = { bg: '#F7F8FA', panel: '#FFFFFF', surface: '#F9FAFB', line: '#E6E9EE', grid: '#F0F2F5', ink: '#222832', muted: '#646C79', faint: '#9AA1AD', accent: '#4772E9', accentSoft: '#EDF2FF', key: '#C08A22', ok: '#2E8B57', okSoft: '#E8F5EE' };
+const TINT = {
+  blue: { bg: '#EDF4FF', bd: '#B9CFF0', ink: '#2F5D9B', dot: '#4772E9' },
+  green: { bg: '#EAF6EF', bd: '#B3DCC3', ink: '#2D7650', dot: '#3E9C68' },
+  amber: { bg: '#FBF3E2', bd: '#EACB8E', ink: '#87601A', dot: '#C8952F' },
+};
+const FI = (w, s) => `${w} ${s}px Inter`, FM = (w, s) => `${w} ${s}px "IBM Plex Mono"`;
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w), Math.max(0, h), Math.min(r, w / 2, h / 2)); }
+function txt(s, x, y, o = {}) { ctx.font = o.font || FI(500, 14); ctx.fillStyle = o.color || C.ink; ctx.textAlign = o.align || 'left'; ctx.textBaseline = 'middle'; ctx.letterSpacing = (o.ls || 0) + 'px'; ctx.fillText(s, x, y); ctx.letterSpacing = '0px'; }
+function tw(s, f) { ctx.font = f; return ctx.measureText(s).width; }
+function panel(x, y, w, h) { ctx.save(); ctx.shadowColor = 'rgba(34,40,60,0.07)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 8; rr(x, y, w, h, 14); ctx.fillStyle = C.panel; ctx.fill(); ctx.restore(); rr(x + 0.5, y + 0.5, w - 1, h - 1, 14); ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.stroke(); }
+const pad = (n) => String(n).padStart(2, '0');
+const clock = (s) => `14:${pad(Math.floor(s / 60))}:${pad(Math.floor(s % 60))}`;
+
+// Données : secondes depuis 14:00:00, ligne, durée, libellé
+const LANES = [{ id: 'cap', label: 'Capteurs', tint: 'blue' }, { id: 'res', label: 'Réseau', tint: 'green' }, { id: 'alr', label: 'Alertes', tint: 'amber' }];
+const EV = [
+  [35, 'cap', 70, 'Mesure'], [62, 'res', 95, 'Cycle 04'], [118, 'alr', 0, 'Latence'], [150, 'cap', 60, 'Mesure'], [178, 'cap', 80, 'Mesure'],
+  [214, 'res', 110, 'Cycle 05'], [262, 'alr', 0, 'Seuil'], [300, 'cap', 65, 'Mesure'], [338, 'res', 90, 'Cycle 06'], [372, 'cap', 75, 'Mesure'],
+  [430, 'alr', 0, 'Reconnexion'], [470, 'res', 70, 'Cycle 07'],
+].map(([t, lane, d, label], i) => ({ i, t, lane, d, label }));
+const ORDER = [5, 0, 9, 2, 7, 11, 3, 1, 10, 6, 4, 8]; // ordre d'arrivée, volontairement désordonné
+EV.forEach((e) => { e.arrive = 0.25 + ORDER.indexOf(e.i) * 0.27; e.fly = e.arrive + 0.55; });
+// pistes : chevauchements empilés
+for (const L of LANES) { const ends = []; for (const e of EV.filter((q) => q.lane === L.id).sort((a, b) => a.t - b.t)) { let k = ends.findIndex((x) => x <= e.t - 4); if (k < 0) { k = ends.length; ends.push(0); } ends[k] = e.t + Math.max(e.d, 50); e.track = k; } }
+const KEYS = [118, 262, 430];
+const slotY = (e) => QA.y + 92 + (ORDER.indexOf(e.i) % 6) * 50;
+
+// Mise en page
+const QA = { x: 40, y: 92, w: 330, h: 420 };       // flux entrant
+const TL = { x: 430, y: 92, w: 760, h: 420 };      // timeline
+const AP = { x: 1250, y: 92, w: 310, h: 420 };     // application
+const AXY = TL.y + 100, PX0 = TL.x + 150, PW = TL.w - 150 - 24, SPAN = 540;
+const X = (s) => PX0 + s / SPAN * PW;
+const laneY = (k) => AXY + 12 + k * 100;
+const evPos = (e) => { const k = LANES.findIndex((l) => l.id === e.lane); return { x: X(e.t), y: laneY(k) + 26 + e.track * 36, w: e.d ? Math.max(40, e.d / SPAN * PW) : 0 }; };
+const CUR0 = 4.0, CUR1 = 7.9; const cursorS = (t) => lerp(10, 525, inOutCubic(inv(CUR0, CUR1, t)));
+
+function chipEv(e, x, y, a, active) {
+  const tn = TINT[LANES.find((l) => l.id === e.lane).tint];
+  ctx.save(); ctx.globalAlpha *= a;
+  const lab = `${clock(e.t)}  ${e.label}`; const w = tw(lab, FM(500, 13)) + 34;
+  rr(x, y - 15, w, 30, 8); ctx.fillStyle = tn.bg; ctx.fill(); ctx.strokeStyle = active ? tn.dot : tn.bd; ctx.lineWidth = active ? 1.5 : 1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 14, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = tn.dot; ctx.fill();
+  txt(lab, x + 24, y + 0.5, { font: FM(500, 13), color: tn.ink });
+  ctx.restore(); return w;
+}
+function pillEv(e, x, y, w, a, active) {
+  const tn = TINT[LANES.find((l) => l.id === e.lane).tint];
+  ctx.save(); ctx.globalAlpha *= a;
+  if (!e.d) { ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fillStyle = active ? tn.bd : tn.bg; ctx.fill(); ctx.strokeStyle = tn.dot; ctx.lineWidth = 1.8; ctx.stroke(); txt(e.label, x + 12, y + 0.5, { font: FI(500, 13), color: tn.ink }); }
+  else {
+    rr(x, y - 14, w, 28, 6); ctx.fillStyle = active ? '#DCE8FB' : tn.bg; if (active && e.lane === 'res') ctx.fillStyle = '#D6EEDF'; ctx.fill(); ctx.strokeStyle = active ? tn.dot : tn.bd; ctx.lineWidth = active ? 1.5 : 1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + 11, y, 3, 0, Math.PI * 2); ctx.fillStyle = tn.dot; ctx.fill();
+    if (w > 50) txt(e.label, x + 20, y + 0.5, { font: FI(500, 13), color: tn.ink });
+  }
+  ctx.restore();
+}
+
+function frameAt(t) {
+  t = ((t % LOOP) + LOOP) % LOOP;
+  const fadeOut = 1 - inv(8.2, 8.9, t);
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  // titres de colonnes
+  const head = (x, n, a, b) => { txt(n, x, 44, { font: FM(600, 14), color: C.accent, ls: 1 }); ctx.fillStyle = C.accent; ctx.fillRect(x + 28, 43, 18, 1.4); txt(a, x + 56, 44, { font: FM(500, 14), color: C.muted, ls: 2 }); txt(b, x, 70, { font: FI(500, 15), color: C.faint }); };
+  head(QA.x, '01', 'FLUX ENTRANT', 'Événements reçus dans le désordre'); head(TL.x, '02', 'ORDONNÉ ET RÉPARTI', 'Triés sur l’axe, rangés par ligne et par piste'); head(AP.x, '03', 'SYNCHRONISÉ', 'Chaque instant confirmé par l’application');
+  // flèches entre colonnes
+  for (const [x0, x1] of [[QA.x + QA.w + 10, TL.x - 10], [TL.x + TL.w + 10, AP.x - 10]]) { const y = QA.y + QA.h / 2; ctx.strokeStyle = '#CBD2DC'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1 - 2, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x1 - 8, y - 5); ctx.lineTo(x1, y); ctx.lineTo(x1 - 8, y + 5); ctx.stroke(); }
+
+  // 01 : file d'entrée
+  panel(QA.x, QA.y, QA.w, QA.h);
+  txt('source.push(…)', QA.x + 22, QA.y + 30, { font: FM(500, 13), color: C.faint });
+  ctx.fillStyle = C.line; ctx.fillRect(QA.x, QA.y + 56, QA.w, 1);
+  const queued = EV.filter((e) => t >= e.arrive && t < e.fly + 0.05);
+  queued.forEach((e) => {
+    const ka = outCubic(inv(e.arrive, e.arrive + 0.25, t)); const y = slotY(e) - (1 - ka) * 20;
+    chipEv(e, QA.x + 22 + (e.i % 3) * 14, y, ka * (1 - inv(e.fly - 0.05, e.fly + 0.05, t)));
+  });
+  const nRecv = EV.filter((e) => t >= e.arrive).length;
+  txt(`${nRecv} / ${EV.length} reçus`, QA.x + 22, QA.y + QA.h - 26, { font: FM(500, 12), color: C.faint });
+
+  // 02 : timeline
+  panel(TL.x, TL.y, TL.w, TL.h);
+  ctx.fillStyle = C.surface; ctx.fillRect(TL.x + 1, AXY, 150 - 1, TL.y + TL.h - AXY - 1);
+  txt('useTimelineController', TL.x + 22, TL.y + 30, { font: FM(500, 13), color: C.faint });
+  ctx.fillStyle = C.line; ctx.fillRect(TL.x, TL.y + 56, TL.w, 1); ctx.fillRect(TL.x, AXY, TL.w, 1); ctx.fillRect(PX0 - 1, TL.y + 56, 1, TL.h - 56);
+  for (let s = 0; s <= SPAN; s += 60) { const x = X(s); ctx.fillStyle = C.grid; ctx.fillRect(Math.round(x), AXY + 1, 1, TL.y + TL.h - AXY - 2); txt(`14:${pad(s / 60)}`, x + 5, AXY - 24, { font: FM(500, 12), color: C.muted }); }
+  LANES.forEach((L, k) => {
+    const y0 = laneY(k) + 4; const tn = TINT[L.tint];
+    if (k) { ctx.fillStyle = C.line; ctx.fillRect(TL.x, y0 - 16, TL.w, 1); }
+    rr(TL.x + 20, y0 + 22 - 10, 20, 20, 5); ctx.fillStyle = tn.bg; ctx.fill(); ctx.strokeStyle = tn.bd; ctx.stroke(); ctx.beginPath(); ctx.arc(TL.x + 30, y0 + 22, 3, 0, Math.PI * 2); ctx.fillStyle = tn.dot; ctx.fill();
+    txt(L.label, TL.x + 50, y0 + 22.5, { font: FI(600, 14) });
+    const n = EV.filter((e) => e.lane === L.id && t >= e.fly + 0.7).length;
+    txt(String(n), PX0 - 16, y0 + 22.5, { font: FM(500, 12), color: C.faint, align: 'right' });
+  });
+  // clés
+  for (const s of KEYS) { const x = X(s), y = AXY - 8; ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x + 5, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 5, y); ctx.closePath(); ctx.fillStyle = C.key; ctx.globalAlpha = fadeOut; ctx.fill(); ctx.globalAlpha = 1; }
+  const cs = cursorS(t); const curOn = t >= CUR0 - 0.3 && t < 8.6;
+  // éléments en vol puis placés
+  ctx.save(); ctx.globalAlpha *= fadeOut;
+  for (const e of EV) {
+    if (t < e.fly) continue;
+    const k = inOutCubic(inv(e.fly, e.fly + 0.7, t));
+    const p = evPos(e); const qx = QA.x + 36 + (e.i % 3) * 14, qy = slotY(e);
+    const x = lerp(qx, p.x, k), y = lerp(qy, p.y, k) - Math.sin(Math.PI * k) * 60;
+    const active = curOn && cs >= e.t && cs <= e.t + Math.max(e.d, 8);
+    if (k < 1) { ctx.save(); ctx.globalAlpha *= 0.35; ctx.setLineDash([3, 5]); ctx.strokeStyle = C.faint; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.restore(); }
+    pillEv(e, x, y, lerp(e.d ? 60 : 0, p.w, k), 1, active);
+    if (k >= 1 && t < e.fly + 1.2) { const r = inv(e.fly + 0.7, e.fly + 1.2, t); ctx.save(); ctx.globalAlpha *= 1 - r; ctx.beginPath(); ctx.arc(p.x, p.y, 6 + 16 * r, 0, Math.PI * 2); ctx.strokeStyle = C.accent; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
+  }
+  ctx.restore();
+  // curseur
+  if (curOn) {
+    const a = inv(CUR0 - 0.3, CUR0, t) * (1 - inv(8.2, 8.6, t)); const x = X(cs);
+    ctx.save(); ctx.globalAlpha *= a;
+    ctx.fillStyle = C.accent; ctx.fillRect(x - 1, AXY + 6, 2, TL.y + TL.h - AXY - 8);
+    const lab = clock(cs); const w = tw(lab, FM(500, 12)) + 16; rr(x - w / 2, AXY - 34, w, 22, 6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x - 5, AXY - 12.5); ctx.lineTo(x, AXY - 7); ctx.lineTo(x + 5, AXY - 12.5); ctx.fill();
+    txt(lab, x, AXY - 22.5, { font: FM(500, 12), color: '#FFFFFF', align: 'center' });
+    ctx.restore();
+  }
+
+  // 03 : application
+  panel(AP.x, AP.y, AP.w, AP.h);
+  txt('prepareTime(request)', AP.x + 22, AP.y + 30, { font: FM(500, 13), color: C.faint });
+  ctx.fillStyle = C.line; ctx.fillRect(AP.x, AP.y + 56, AP.w, 1);
+  const crossed = EV.filter((e) => curOn && cs >= e.t).sort((a, b) => b.t - a.t);
+  const appA = inv(CUR0 - 0.3, CUR0, t) * (1 - inv(8.2, 8.7, t));
+  ctx.save(); ctx.globalAlpha *= appA;
+  txt('État affiché', AP.x + 22, AP.y + 92, { font: FI(500, 13), color: C.muted });
+  txt(clock(cs), AP.x + 22, AP.y + 126, { font: FM(600, 32), color: C.ink });
+  rr(AP.x + 22, AP.y + 160, 118, 28, 14); ctx.fillStyle = C.okSoft; ctx.fill(); ctx.strokeStyle = 'rgba(46,139,87,0.4)'; ctx.stroke();
+  ctx.strokeStyle = C.ok; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(AP.x + 36, AP.y + 174); ctx.lineTo(AP.x + 40, AP.y + 178); ctx.lineTo(AP.x + 47, AP.y + 170); ctx.stroke();
+  txt('Synchronisé', AP.x + 55, AP.y + 174.5, { font: FI(600, 12.5), color: C.ok });
+  ctx.fillStyle = C.line; ctx.fillRect(AP.x + 22, AP.y + 214, AP.w - 44, 1);
+  txt('Derniers éléments franchis', AP.x + 22, AP.y + 240, { font: FI(600, 13) });
+  crossed.slice(0, 4).forEach((e, idx) => {
+    const tn = TINT[LANES.find((l) => l.id === e.lane).tint]; const y = AP.y + 276 + idx * 34;
+    txt(clock(e.t), AP.x + 22, y, { font: FM(500, 13), color: C.muted });
+    ctx.beginPath(); ctx.arc(AP.x + 112, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = tn.dot; ctx.fill();
+    txt(e.label, AP.x + 124, y + 0.5, { font: FI(500, 13), color: C.ink });
+  });
+  ctx.restore();
+  // impulsion vers l'application quand le curseur franchit un élément
+  for (const e of EV) {
+    const tc = CUR0 + inOutInv(e.t) * (CUR1 - CUR0);
+    const r = inv(tc, tc + 0.45, t); if (r <= 0 || r >= 1 || !curOn) continue;
+    const p = evPos(e); const x = lerp(p.x, AP.x + 10, inOutCubic(r)), y = lerp(p.y, AP.y + 126, inOutCubic(r)) - Math.sin(Math.PI * r) * 40;
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fillStyle = C.accent; ctx.globalAlpha = Math.sin(Math.PI * r); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  return document.getElementById('c').toDataURL('image/png');
+}
+// instant où le curseur atteint la seconde s (inverse de cursorS)
+function inOutInv(s) { const target = clamp((s - 10) / 515); let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (inOutCubic(m) < target) lo = m; else hi = m; } return lo; }
+window.frameAt = frameAt;
+window.ready = (async () => { await Promise.all(['500 16px Inter', '600 16px Inter', '500 16px "IBM Plex Mono"', '600 16px "IBM Plex Mono"'].map((f) => document.fonts.load(f))); frameAt(5); return true; })();
+</script>
+</body>
+</html>

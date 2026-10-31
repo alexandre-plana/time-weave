@@ -1,89 +1,152 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
-    <img src="docs/assets/logo.svg" alt="Time Weave" width="420">
+    <img src="docs/assets/logo.svg" alt="Time Weave" width="440">
   </picture>
 </p>
 
-<p align="center"><strong>Des timelines interactives qui restent synchronisées avec votre application.</strong><br>
-TypeScript · React 18.3 et 19 · licence MIT</p>
+<h3 align="center">Des timelines interactives qui restent synchronisées avec votre application.</h3>
 
 <p align="center">
-  <a href="https://alexandre-plana.github.io/time-weave/">Démo en ligne</a> ·
-  <a href="docs/GUIDE.md">Guide d'utilisation</a> ·
-  <a href="docs/en/README.md">English</a> ·
-  <a href="motion/out/time-weave-demo.mp4">Film de présentation</a>
+  <a href="https://github.com/alexandre-plana/time-weave/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/alexandre-plana/time-weave/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="LICENSE"><img alt="Licence MIT" src="https://img.shields.io/badge/licence-MIT-4772E9"></a>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
+  <img alt="React 18.3 et 19" src="https://img.shields.io/badge/React-18.3%20%7C%2019-61DAFB?logo=react&logoColor=222832">
+  <img alt="Statut" src="https://img.shields.io/badge/statut-0.x%20·%20non%20publié-C08A22">
 </p>
 
----
+<p align="center">
+  <a href="https://alexandre-plana.github.io/time-weave/"><b>Démo en ligne</b></a> ·
+  <a href="docs/GUIDE.md">Guide</a> ·
+  <a href="docs/en/README.md">English</a> ·
+  <a href="examples/README.md">Exemples</a> ·
+  <a href="CHANGELOG.md">Journal des versions</a>
+</p>
 
-Time Weave affiche plusieurs lignes hiérarchiques sur un axe du temps, de la milliseconde aux décennies. Son curseur pilote le reste de votre interface : carte, tableau de bord, vidéo, journal… La lecture **attend que votre application soit prête** avant de confirmer un instant, si bien que la timeline et l'écran ne se désynchronisent jamais, que l'on rejoue le passé ou que l'on suive le Direct.
+<p align="center">
+  <a href="https://alexandre-plana.github.io/time-weave/"><img alt="Ouvrir la démo en ligne" src="https://img.shields.io/badge/%E2%96%B6%20Ouvrir%20la%20d%C3%A9mo%20en%20ligne-alexandre--plana.github.io%2Ftime--weave-4772E9?style=for-the-badge"></a>
+</p>
 
-## Le film
+<br>
 
 https://github.com/user-attachments/assets/902d3060-0dcb-45dd-8415-b2aee7ceac4d
 
-Le film dure 60 secondes, en 1080p à 60 i/s, avec une bande-son. Il est découpé en sept chapitres : hiérarchie, échelles, **rejeu**, synchronisation, Direct, **thèmes**, clavier. Sa note d'intention et son découpage se trouvent dans [`motion/`](motion/README.md). Il est entièrement généré par le code de ce dépôt.
+<p align="center"><sub>Film de présentation · 60 s · généré par le code de ce dépôt (<a href="motion/README.md">note d'intention</a>)</sub></p>
 
-## Rejouer une situation passée
+## Pourquoi Time Weave
 
-![Rejeu d'une intervention : timeline et carte synchronisées](docs/assets/rejeu.gif)
+<table>
+  <tr>
+    <td width="33%" valign="top"><b>Le temps reste partagé</b><br>Le curseur pilote votre interface (carte, tableau de bord, vidéo, journal) et n'est confirmé que lorsque l'application a fini de se préparer. Fini les écrans en décalage.</td>
+    <td width="33%" valign="top"><b>De la milliseconde aux décennies</b><br>Un seul composant pour une rafale de capteurs, une journée d'opérations ou l'histoire d'une entreprise, en temps calendrier ou relatif.</td>
+    <td width="33%" valign="top"><b>Rejouer, suivre, comprendre</b><br>Rejeu à vitesse choisie, sauts entre étapes clés, boucle, mode Direct et retour à l'historique, avec un moteur testable sans React.</td>
+  </tr>
+</table>
 
-L'usage pour lequel Time Weave a été conçu, c'est **revivre un enchaînement passé**. On rejoue une journée d'opérations ou une intervention, on saute d'une étape clé à la suivante, et on boucle sur la période. À chaque instant, l'application montre l'état correspondant : ici, les positions et les traces des unités sur une carte.
+## Comment ça marche
 
-## Ce que fait la bibliothèque
+<p align="center"><img src="docs/assets/flux.gif" alt="Flux ordonné : événements reçus dans le désordre, triés et répartis par ligne, puis confirmés par l'application" width="100%"></p>
 
-| | |
-| --- | --- |
-| **Lignes hiérarchiques** | Lignes dépliables sur plusieurs niveaux, libellés et contenus personnalisables, limitation au visible. |
-| **Toutes les échelles** | Temps calendrier (UTC) ou relatif (`0 ms`), zoom et déplacement libres de la milliseconde aux décennies, graduations adaptées. |
-| **Lecture** | Lecture, pause, arrêt, vitesse, clé précédente/suivante, boucle sur la période complète, saut à un instant. |
-| **Synchronisation** | Contrat `prepareTime(request)` : la timeline montre une cible en attente (pointillés) et ne confirme le curseur que lorsque l'application est prête. Les requêtes périmées sont annulées par `request.signal`. |
-| **Données par fenêtre** | Sources en mémoire ou par fenêtre temporelle, remplaçables au zoom. Le regroupement reste à l'application, qui fournit des éléments individuels ou groupés. |
-| **Direct** | Suivi de la dernière position fournie par l'application, retour dans l'historique puis retour au Direct. Collections modifiables pendant l'utilisation. |
-| **Accessibilité** | Curseur `role="slider"`, navigation au clavier dans les éléments, fenêtre de détail en portail avec arrière-plan `inert`, contrastes vérifiés, textes français et anglais. |
-| **Moteur séparé** | `@time-weave/react/core` fonctionne sans React ni DOM et reste testable sur une horloge contrôlée. |
+1. **Flux entrant.** L'application fournit ses éléments, en mémoire ou par fenêtre temporelle, dans n'importe quel ordre et à n'importe quel moment.
+2. **Ordonné et réparti.** Le moteur les valide, les place sur l'axe, les range par ligne et les empile en pistes quand ils se chevauchent. Les clés servent de repères de navigation.
+3. **Synchronisé.** À chaque instant demandé (lecture, clic, clavier, Direct), `prepareTime(request)` laisse l'application se mettre à jour. Le curseur n'est confirmé qu'une fois la promesse résolue, et les requêtes périmées sont annulées par `request.signal`.
 
-## Démarrage
+## En images
 
-Le paquet `@time-weave/react` n'est pas encore publié sur npm. Pour l'essayer depuis ce dépôt :
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Hiérarchie dépliable</b><br><sub>Lignes sur plusieurs niveaux, libellés et contenus personnalisables, limitation au visible.</sub><br><br>
+      <img src="docs/assets/hierarchie.gif" alt="Lignes hiérarchiques qui se déplient" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Toutes les échelles</b><br><sub>Zoom continu de 23 ms à 46 ans ; l'application fournit des groupes avec compteur selon le zoom.</sub><br><br>
+      <img src="docs/assets/echelles.gif" alt="Zoom continu de la milliseconde aux décennies" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <b>Rejeu d'une situation passée</b><br><sub>Lecture, sauts entre étapes clés et boucle. La carte de l'application suit le curseur : positions, traces, état de l'incident.</sub><br><br>
+      <img src="docs/assets/rejeu.gif" alt="Rejeu d'une intervention : timeline et carte synchronisées" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Synchronisation</b><br><sub>Ligne d'attente en pointillés pendant que l'application charge, puis confirmation simultanée.</sub><br><br>
+      <img src="docs/assets/synchronisation.gif" alt="Cible en attente puis confirmation par l'application" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Mode Direct</b><br><sub>Frontière rouge suivie en continu, retour dans l'historique, puis « Revenir au Direct ».</sub><br><br>
+      <img src="docs/assets/direct.gif" alt="Flux en direct et retour à l'historique" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Entièrement thémable</b><br><sub>Variables <code>--tw-*</code> et <code>className</code> : couleurs, rayons, polices, bien au-delà du clair et du sombre.</sub><br><br>
+      <img src="docs/assets/themes.gif" alt="Thèmes Clair, Sombre, Océan et Papier" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Clavier et accessibilité</b><br><sub>Curseur <code>role="slider"</code>, navigation dans les éléments, fenêtre de détail en portail avec arrière-plan <code>inert</code>.</sub><br><br>
+      <img src="docs/assets/clavier.gif" alt="Navigation au clavier et fenêtre de détail" width="100%">
+    </td>
+  </tr>
+</table>
 
-```bash
-npm install
-npm run dev:examples  # exemples : http://localhost:5173/
-npm test              # règles du moteur (horloge contrôlée) et composants React (jsdom)
-npm run check         # typage, tests, build, isolation du moteur, archive installée, exemples
-```
+## Démarrage rapide
 
-Pour l'utiliser dans une autre application, lancez `npm pack` ici, puis `npm install chemin/vers/time-weave-react-0.1.0.tgz`.
+> Le paquet `@time-weave/react` n'est pas encore publié sur npm. En attendant, créez l'archive depuis ce dépôt avec `npm pack`, puis installez-la : `npm install chemin/vers/time-weave-react-0.1.0.tgz`.
 
 ```tsx
 import { PlaybackControls, Timeline, useTimelineController } from '@time-weave/react';
 import '@time-weave/react/styles.css';
 
-const controller = useTimelineController({
-  mode: 'calendar',
-  domain: { start: Date.UTC(2026, 9, 18), end: Date.UTC(2026, 9, 19) },
-  rows: [{ id: 'station', label: 'Station Nord' }],
-  source: [{ id: 'm1', rowId: 'station', at: Date.UTC(2026, 9, 18, 6), label: 'Mesure' }],
-  // La timeline attend cette promesse avant de confirmer l'instant demandé.
-  prepareTime: (request) => application.afficherEtatA(request.target, request.signal),
-});
+export function Rejeu() {
+  const controller = useTimelineController({
+    mode: 'calendar',
+    domain: { start: Date.UTC(2026, 9, 18), end: Date.UTC(2026, 9, 19) },
+    rows: [{ id: 'station', label: 'Station Nord' }],
+    source: [{ id: 'm1', rowId: 'station', at: Date.UTC(2026, 9, 18, 6), label: 'Mesure' }],
+    // La timeline attend cette promesse avant de confirmer l'instant demandé.
+    prepareTime: (request) => application.afficherEtatA(request.target, request.signal),
+  });
 
-<Timeline controller={controller} toolbar={<PlaybackControls controller={controller} showLive />} />;
+  return <Timeline controller={controller} toolbar={<PlaybackControls controller={controller} showLive />} />;
+}
 ```
 
-Le [guide d'utilisation](docs/GUIDE.md) décrit l'API complète : points d'entrée, temps, sources, préparation, commandes, Direct, clavier et styles.
+Pour travailler sur la bibliothèque :
+
+```bash
+npm install
+npm run dev:examples  # exemples sur http://localhost:5173/
+npm test              # moteur (horloge contrôlée) et composants React (jsdom)
+npm run check         # typage, tests, build, isolation du moteur, archive installée, e2e
+```
+
+## API en bref
+
+| Élément | Rôle |
+| --- | --- |
+| `useTimelineController(options)` | Crée le contrôleur : période, lignes, source, clés, `prepareTime`, Direct |
+| `<Timeline>` | Vue : axe, lignes, éléments, curseur, zoom et déplacement ; `highlights` pour colorer des périodes sur toutes les lignes |
+| `<PlaybackControls>` | Lecture, pause, arrêt, vitesse, clés, boucle, Direct |
+| `<TimelineOverview>` | Vue d'ensemble : densité, clés, curseur, fenêtre visible déplaçable et redimensionnable |
+| `<DetailModal>` | Fenêtre de détail accessible, utilisable seule |
+| `useTimelineSelector(controller, selector)` | Ne rend le composant que lorsque la valeur choisie change |
+| `controller.play()`, `seek(t)`, `nextKey()`, `zoomTo(d)`, `centerOn(t)`, `stepBy(d)`, `fitToItems()`, `goLive()`… | Commandes, aussi utilisables depuis l'application |
+| `@time-weave/react/core` | Moteur seul, sans React ni DOM |
+
+Le [guide d'utilisation](docs/GUIDE.md) détaille chaque option, le contrat de préparation, les sources par fenêtre, le clavier et les styles.
 
 ## Thèmes
 
-Le thème clair et le thème sombre (prop `theme`, ou `prefers-color-scheme`) ne sont que deux exemples : toute l'apparence passe par des variables CSS `--tw-*`, que l'on cible avec la prop `className`.
+Toute l'apparence passe par des variables CSS `--tw-*`. Le clair et le sombre (prop `theme` ou `prefers-color-scheme`) sont deux thèmes parmi d'autres :
 
 ```css
 .tw-timeline.theme-ocean {
-  --tw-bg: #0e2230;      --tw-ink: #e3f1f6;     --tw-accent: #2ec4b6;
-  --tw-live: #ff6b5a;    --tw-key: #f2c14e;     --tw-item-bg: #12344a;
-  --tw-radius: 11px;     --tw-font: Inter, sans-serif;
+  --tw-bg: #0e2230;    --tw-ink: #e3f1f6;   --tw-accent: #2ec4b6;
+  --tw-live: #ff6b5a;  --tw-key: #f2c14e;   --tw-item-bg: #12344a;
+  --tw-radius: 11px;   --tw-font: Inter, sans-serif;
 }
 ```
 
@@ -91,54 +154,60 @@ Le thème clair et le thème sombre (prop `theme`, ou `prefers-color-scheme`) ne
 <Timeline controller={controller} className="theme-ocean" />
 ```
 
-Les variables couvrent les couleurs, les éléments, les groupes, les clés, le Direct, le rayon, les polices, la hauteur de l'axe et la largeur des libellés. La fenêtre de détail est rendue dans `document.body` : il faut y redéfinir les mêmes variables (`.tw-modal-backdrop`). Pour aller plus loin, il y a les classes `tw-item`, `tw-item--group`… ainsi que `getItemClassName`, `renderItem` et `renderRowLabel`. Le film montre quatre thèmes : Clair, Sombre, Océan et Papier.
+<details>
+<summary>Aller plus loin</summary>
 
-## Premiers usages
+- Les variables couvrent les couleurs, les éléments, les groupes, les clés, le Direct, les bandes (`--tw-highlight-*`), le rayon, les polices, la hauteur de l'axe et la largeur des libellés.
+- La fenêtre de détail est rendue dans `document.body` : il faut y redéfinir les mêmes variables (`.tw-modal-backdrop`).
+- Les classes `tw-item`, `tw-item--group`, `tw-item--active`…, ainsi que `getItemClassName`, `renderItem` et `renderRowLabel`, permettent d'adapter le rendu élément par élément.
 
-- **Rejouer une journée d'opérations** : parcourir des communications de capteurs et piloter les autres éléments d'une application à partir du temps de lecture.
-- **Surveiller un flux** : mettre à jour les collections pendant l'utilisation et suivre le Direct, avec possibilité de revenir à l'historique.
-- **Présenter l'histoire d'une entreprise** : explorer des événements et des périodes sur plusieurs années ou décennies.
+</details>
 
-Les [exemples](examples/README.md) illustrent chacun de ces cas, ainsi qu'un banc d'essai en temps relatif et une page de mesure.
+## Exemples
+
+| Exemple | Ce qu'il montre | En ligne |
+| --- | --- | --- |
+| **Journée d'opérations** | 211 lignes, source par fenêtre, regroupement selon le zoom, `prepareTime` qui attend les données, flux simulé et Direct | [Ouvrir](https://alexandre-plana.github.io/time-weave/operations/) |
+| **Surveillance de site** | Plan de site portuaire : mobiles et leurs traces, caméras dont le champ se teinte à la détection, mosaïque vidéo, alarmes en clés et bandes, flux en direct | [Ouvrir](https://alexandre-plana.github.io/time-weave/surveillance/) |
+| **Histoire d'entreprise** | 75 ans de périodes et de jalons, contenu personnalisé, lecture à quatre ans par seconde | [Ouvrir](https://alexandre-plana.github.io/time-weave/history/) |
+| **Temps relatif** | Séquence de −2 s à 12 s autour d'un déclenchement, mesures à la milliseconde | [Ouvrir](https://alexandre-plana.github.io/time-weave/relative/) |
+| **Banc de mesure** | Scénarios du [jeu de référence](docs/JEU-REFERENCE.md), résultats dans [MESURES.md](docs/MESURES.md) | [Ouvrir](https://alexandre-plana.github.io/time-weave/bench/) |
+
+Toutes les pages sont publiées sur **[GitHub Pages](https://alexandre-plana.github.io/time-weave/)** à chaque push sur `main`. En local : `npm run dev:examples`.
 
 ## Documentation
 
-| Document | Contenu |
+| | |
 | --- | --- |
 | [Guide d'utilisation](docs/GUIDE.md) · [English guide](docs/en/GUIDE.md) | API, exemples de code, clavier, styles |
 | [Architecture](docs/ARCHITECTURE.md) | Séparation du moteur, de la vue React et des aides |
-| [Conception V1](docs/CONCEPTION-V1.md) | Comportements, données, synchronisation, critères de réalisation |
-| [Définition](docs/DEFINITION.md) | Besoins confirmés et limites de responsabilité |
-| [Plan de réalisation](docs/PLAN-REALISATION.md) | Outillage, étapes et journal |
-| [Mesures](docs/MESURES.md) · [Jeu de référence](docs/JEU-REFERENCE.md) | Performances et scénarios de mesure |
+| [Conception V1](docs/CONCEPTION-V1.md) · [Définition](docs/DEFINITION.md) | Comportements, données, synchronisation, limites de responsabilité |
+| [Plan de réalisation](docs/PLAN-REALISATION.md) · [Mesures](docs/MESURES.md) | Étapes, journal et performances |
 | [Questions ouvertes](docs/QUESTIONS-OUVERTES.md) · [Revue extérieure](docs/REVUE-V1.md) | Décisions restantes, regard critique |
-| [Journal des versions](CHANGELOG.md) | Évolutions |
 
-## Organisation du dépôt
+<details>
+<summary>Organisation du dépôt</summary>
 
 | Dossier | Contenu |
 | --- | --- |
 | `src/core/` | Moteur : modèle, validation, hiérarchie, clés, graduations, pistes, ordonnanceurs, contrôleur |
-| `src/react/` | `Timeline`, `PlaybackControls`, `DetailModal`, hooks, textes anglais et français |
+| `src/react/` | `Timeline`, `TimelineOverview`, `PlaybackControls`, `DetailModal`, hooks, textes anglais et français |
 | `src/styles.css` | Styles par défaut, variables `--tw-*`, thème sombre |
 | `tests/`, `e2e/` | Tests Vitest du moteur et des composants, tests de bout en bout Playwright |
-| `examples/` | Accueil, journée d'opérations, histoire d'entreprise, temps relatif, page de mesure |
+| `examples/` | Accueil, opérations, surveillance de site, histoire d'entreprise, temps relatif, page de mesure |
 | `scripts/` | Isolation du moteur, archive installée, vérification React 18.3, mesures |
-| `motion/` | Film de présentation : scène Canvas déterministe, rendu, bande-son synthétisée, logo |
-| `docs/assets/` | Logo (SVG clair, sombre, symbole), aperçus du film |
-| `mockups/` | Explorations visuelles qui ont guidé la présentation ([comparateur](mockups/propositions.html)) |
+| `motion/` | Film et animations du README : scènes Canvas déterministes, bande-son synthétisée, logo |
+| `docs/assets/` | Logo (SVG), GIF du README |
+| `mockups/` | Explorations visuelles qui ont guidé la présentation |
+
+</details>
 
 ## État du projet
 
-**31 octobre 2026 : première implémentation V1** de la [conception validée](docs/CONCEPTION-V1.md) le 18 octobre. Décisions de publication :
+**Première implémentation V1** (31 octobre 2026) de la [conception validée](docs/CONCEPTION-V1.md). Paquet `@time-weave/react`, licence MIT, React 18.3 et 19 vérifiés en CI, versions `0.x` jusqu'au premier retour d'usage. Aucune publication npm n'a encore été faite.
 
-- nom du paquet : `@time-weave/react` (l'organisation npm `time-weave` reste à créer) ;
-- licence [MIT](LICENSE) ;
-- React 18.3 et 19, vérifiés en CI ;
-- versions `0.x` jusqu'au premier retour d'usage.
-
-Aucune publication npm n'a encore été faite. Prochaines étapes : mesures sur un poste réel (`npm run bench -- --headed`), utilisation dans une première application, puis publication en `0.x`.
+**Prochaines étapes :** mesures sur un poste réel (`npm run bench -- --headed`), utilisation dans une première application, création de l'organisation npm `time-weave`, puis publication en `0.x`.
 
 ## Licence
 
-[MIT](LICENSE). Les polices Inter et IBM Plex Mono incluses dans `motion/fonts/` sont distribuées sous licence SIL OFL 1.1.
+[MIT](LICENSE) © 2026 Time Weave contributors. Les polices Inter et IBM Plex Mono incluses dans `motion/fonts/` sont distribuées sous licence SIL OFL 1.1.
