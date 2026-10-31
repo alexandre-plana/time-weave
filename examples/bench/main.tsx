@@ -206,7 +206,6 @@ async function runScenarios(controller: TimelineController, settings: { prepareD
   push('7. Rewind (300 ms actives)', `${ms(performance.now() - rewindStart)} · cible ${controller.getSnapshot().time === VIEWPORT.start ? 'exacte' : 'ÉCHEC'}`);
 
   window.__bench!.results = results;
-  window.__bench!.done = true;
 }
 
 async function dynamicScenario(push: (scenario: string, value: string) => void) {
@@ -323,6 +322,8 @@ function Bench() {
     await dynamicScenario((scenario, value) => extra.push({ scenario, value }));
     await liveScenario((scenario, value) => extra.push({ scenario, value }));
     window.__bench!.results.push(...extra);
+    // Done only once every scenario, including dynamic and live ones, has finished.
+    window.__bench!.done = true;
     setStarted(false);
     setResults([...window.__bench!.results]);
   };
