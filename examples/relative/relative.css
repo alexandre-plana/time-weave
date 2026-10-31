@@ -1,42 +1,55 @@
 .rel-clock {
-  font-family: 'IBM Plex Mono', monospace;
   font-variant-numeric: tabular-nums;
 }
 
 .tw-item.rel--phase {
-  --tw-item-bg: #f1f3f6;
-  --tw-item-border: #cfd5de;
-  --tw-item-ink: #4a5260;
+  --tw-item-bg: var(--gray-tint);
+  --tw-item-border: var(--gray-line);
+  --tw-item-ink: var(--gray-ink);
 }
 
 .tw-item.rel--actuator {
-  --tw-item-bg: #e9f6f0;
-  --tw-item-border: #a5d8c3;
-  --tw-item-ink: #1d6f5f;
+  --tw-item-bg: var(--green-tint);
+  --tw-item-border: var(--green-line);
+  --tw-item-ink: var(--green-ink);
 }
 
 .tw-item.rel--alarm {
-  --tw-item-bg: #fdecea;
-  --tw-item-border: #d9483b;
-  --tw-item-ink: #a3322a;
+  --tw-item-bg: var(--red-tint);
+  --tw-item-border: var(--red-line);
+  --tw-item-ink: var(--red-ink);
+  --tw-point: var(--red-dot);
+}
+
+.tw-item.rel--burst {
+  --tw-group-bg: var(--yellow-tint);
+  --tw-group-border: var(--yellow-line);
+  --tw-group-ink: var(--yellow-ink);
+  --tw-group-point: var(--yellow-dot);
 }
 
 .rel-gauges {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border-2);
+  list-style: none;
 }
 
 .rel-gauges li {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 2px 8px;
+  gap: 4px 8px;
+  font-size: 13px;
+}
+
+.rel-gauges span {
+  color: var(--text-2);
 }
 
 .rel-gauges strong {
-  font: 500 12px 'IBM Plex Mono', monospace;
+  font: 600 12px var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -44,24 +57,24 @@
   grid-column: 1 / -1;
   width: 100%;
   height: 8px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--bg-3);
+  appearance: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tw-item.rel--phase {
-    --tw-item-bg: #222730;
-    --tw-item-border: #3a414d;
-    --tw-item-ink: #c3cad6;
-  }
+.rel-gauges meter::-webkit-meter-bar {
+  border: 0;
+  border-radius: 99px;
+  background: var(--bg-3);
+}
 
-  .tw-item.rel--actuator {
-    --tw-item-bg: #183129;
-    --tw-item-border: #2e6b57;
-    --tw-item-ink: #8fd6bc;
-  }
+.rel-gauges meter::-webkit-meter-optimum-value {
+  border-radius: 99px;
+  background: var(--blue);
+}
 
-  .tw-item.rel--alarm {
-    --tw-item-bg: #3a1d1b;
-    --tw-item-border: #b8463c;
-    --tw-item-ink: #f2a59d;
-  }
+.rel-gauges meter::-moz-meter-bar {
+  border-radius: 99px;
+  background: var(--blue);
 }

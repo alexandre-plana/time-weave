@@ -13,6 +13,7 @@ import type { TimeMode, TimeRequest, TimelineItem, TimelineKey, TimelineRow } fr
 import '@time-weave/react/styles.css';
 import '../shared.css';
 import './relative.css';
+import { Box, RepoHeader, TopBar } from '../chrome';
 
 type Kind = 'phase' | 'actuator' | 'event' | 'alarm' | 'burst';
 interface Info {
@@ -133,16 +134,24 @@ function App() {
   const selectedTime = selected ? ('at' in selected ? selected.at : selected.start) : null;
 
   return (
-    <main className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Time Weave · exemple 03</p>
-          <h1>Banc d’essai — séquence de mise à feu</h1>
-          <p className="lead">Mode relatif : temps en millisecondes depuis le déclenchement, pré-déclenchement négatif, lecture au ralenti.</p>
-        </div>
-        <span className="badge rel-clock">{readout(snapshot.time)}</span>
-      </header>
+    <>
+      <TopBar current="relative" root="../" />
+      <main className="page">
+      <RepoHeader
+        slug="relative"
+        tag="Exemple 03"
+        title="Banc d’essai — séquence de mise à feu"
+        lead="Mode relatif : temps en millisecondes depuis le déclenchement, pré-déclenchement négatif, lecture au ralenti."
+        pills={[
+          ['relatif', 'green'],
+          ['milliseconde', 'blue'],
+          ['boucle', 'purple'],
+          ['ralenti', 'yellow'],
+        ]}
+        aside={<span className="badge rel-clock">{readout(snapshot.time)}</span>}
+      />
       <div className="layout">
+        <Box icon="⏱️" title="Chronologie" meta={<span className="counter">T−2 s → T+12 s</span>} className="tl-box">
         <Timeline
           controller={controller}
           height={460}
@@ -158,9 +167,12 @@ function App() {
           onItemClick={(item) => setSelected(item)}
           selectedItemId={selected?.id ?? null}
         />
+        </Box>
         <aside>
           <section className="panel" aria-live="off">
-            <h2>Mesures à l’instant confirmé</h2>
+            <h2>
+              <span aria-hidden="true">📈</span> Mesures à l’instant confirmé
+            </h2>
             {reading ? (
               <>
                 <dl className="facts">
@@ -188,7 +200,9 @@ function App() {
             )}
           </section>
           <section className="panel">
-            <h2>Inspecteur</h2>
+            <h2>
+              <span aria-hidden="true">🔍</span> Inspecteur
+            </h2>
             {selected && selectedTime !== null ? (
               <>
                 <dl className="facts">
@@ -221,7 +235,8 @@ function App() {
           </section>
         </aside>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

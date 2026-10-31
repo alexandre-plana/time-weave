@@ -14,6 +14,7 @@ import type { TimeRequest, TimelineController, TimelineItem, VisibleRow, WindowR
 import '@time-weave/react/styles.css';
 import '../shared.css';
 import './operations.css';
+import { Box, RepoHeader, TopBar } from '../chrome';
 import {
   CommunicationStore,
   DAY_START,
@@ -209,19 +210,25 @@ function App() {
   const selectedTime = selected ? ('at' in selected ? selected.at : selected.start) : null;
 
   return (
-    <main className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Time Weave · exemple 01</p>
-          <h1>Journée d’opérations — Station Nord</h1>
-          <p className="lead">
-            211 lignes, communications regroupées par l’application selon le zoom, préparation asynchrone et flux simulé.
-          </p>
-        </div>
-        <span className="badge">{store.size.toLocaleString('fr-FR')} communications en mémoire</span>
-      </header>
+    <>
+      <TopBar current="operations" root="../" />
+      <main className="page">
+      <RepoHeader
+        slug="operations"
+        tag="Exemple 01"
+        title="Journée d’opérations — Station Nord"
+        lead="211 lignes, communications regroupées par l’application selon le zoom, préparation asynchrone et flux simulé."
+        pills={[
+          ['calendaire', 'blue'],
+          ['direct', 'red'],
+          ['fenêtré', 'purple'],
+          ['prepareTime', 'green'],
+        ]}
+        aside={<span className="badge">{store.size.toLocaleString('fr-FR')} communications en mémoire</span>}
+      />
 
       <div className="layout">
+        <Box icon="🛰️" title="Chronologie" meta={<span className="counter">211 lignes</span>} className="tl-box">
         <Timeline
           controller={controller}
           height={620}
@@ -235,10 +242,13 @@ function App() {
           onItemClick={onItemClick}
           selectedItemId={selected?.id ?? null}
         />
+        </Box>
 
         <aside>
           <section className="panel" aria-live="off">
-            <h2>État de l’application</h2>
+            <h2>
+              <span aria-hidden="true">🧭</span> État de l’application
+            </h2>
             {appState ? (
               <dl className="facts">
                 <dt>Instant confirmé</dt>
@@ -264,7 +274,9 @@ function App() {
           </section>
 
           <section className="panel">
-            <h2>Inspecteur</h2>
+            <h2>
+              <span aria-hidden="true">🔍</span> Inspecteur
+            </h2>
             {selected ? (
               <>
                 <dl className="facts">
@@ -301,7 +313,9 @@ function App() {
           </section>
 
           <section className="panel">
-            <h2>Simulation</h2>
+            <h2>
+              <span aria-hidden="true">⚙️</span> Simulation
+            </h2>
             <label className="field" htmlFor="ops-prepare-delay">
               Préparation de l’application
               <select id="ops-prepare-delay" value={prepareDelay} onChange={(event) => setPrepareDelay(Number(event.target.value))}>
@@ -330,7 +344,9 @@ function App() {
           </section>
 
           <section className="panel">
-            <h2>Journal des confirmations</h2>
+            <h2>
+              <span aria-hidden="true">📜</span> Journal des confirmations
+            </h2>
             <ul className="log">
               {log.map((entry, index) => (
                 <li key={index}>{entry}</li>
@@ -339,7 +355,8 @@ function App() {
           </section>
         </aside>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

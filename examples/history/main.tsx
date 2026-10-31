@@ -5,6 +5,7 @@ import type { TimeRequest, TimelineItem, TimelineKey, TimelineRow, VisibleRow } 
 import '@time-weave/react/styles.css';
 import '../shared.css';
 import './history.css';
+import { Box, RepoHeader, TopBar } from '../chrome';
 
 type Category = 'direction' | 'product' | 'site' | 'milestone';
 
@@ -22,13 +23,13 @@ const yearOf = (time: number) => new Date(time).getUTCFullYear();
 const longDate = (time: number) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(time);
 
 const rows: TimelineRow<RowInfo>[] = [
-  { id: 'direction', label: 'Direction', meta: { color: '#8770bc' } },
-  { id: 'products', label: 'Produits', meta: { color: '#238976' } },
-  { id: 'p-mech', label: 'Mécanique', parentId: 'products', meta: { color: '#238976' } },
-  { id: 'p-elec', label: 'Électronique', parentId: 'products', meta: { color: '#238976' } },
-  { id: 'p-soft', label: 'Logiciel', parentId: 'products', meta: { color: '#238976' } },
-  { id: 'sites', label: 'Implantations', meta: { color: '#b08027' } },
-  { id: 'events', label: 'Jalons', meta: { color: '#4772e9' } },
+  { id: 'direction', label: 'Direction', meta: { color: 'var(--purple-dot)' } },
+  { id: 'products', label: 'Produits', meta: { color: 'var(--green-dot)' } },
+  { id: 'p-mech', label: 'Mécanique', parentId: 'products', meta: { color: 'var(--green-dot)' } },
+  { id: 'p-elec', label: 'Électronique', parentId: 'products', meta: { color: 'var(--green-dot)' } },
+  { id: 'p-soft', label: 'Logiciel', parentId: 'products', meta: { color: 'var(--green-dot)' } },
+  { id: 'sites', label: 'Implantations', meta: { color: 'var(--yellow-dot)' } },
+  { id: 'events', label: 'Jalons', meta: { color: 'var(--blue-dot)' } },
 ];
 
 const span = (id: string, rowId: string, start: number, end: number, label: string, category: Category, story: string): TimelineItem<Fact> => ({
@@ -115,7 +116,7 @@ function App() {
 
   const renderRowLabel = useCallback(
     (row: VisibleRow<RowInfo>) => (
-      <span className="hist-row">
+      <span className="row-label">
         <i style={{ ['--swatch' as string]: row.row.meta?.color }} />
         {row.row.label}
       </span>
@@ -124,16 +125,24 @@ function App() {
   );
 
   return (
-    <main className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Time Weave · exemple 02</p>
-          <h1>Soixante-quinze ans d’une entreprise</h1>
-          <p className="lead">Le même moteur sur plusieurs décennies : périodes, jalons, contenu personnalisé et fenêtre de détail.</p>
-        </div>
-        <span className="badge">{currentYear}</span>
-      </header>
+    <>
+      <TopBar current="history" root="../" />
+      <main className="page">
+      <RepoHeader
+        slug="history"
+        tag="Exemple 02"
+        title="Soixante-quinze ans d’une entreprise"
+        lead="Le même moteur sur plusieurs décennies : périodes, jalons, contenu personnalisé et fenêtre de détail."
+        pills={[
+          ['calendaire', 'blue'],
+          ['décennies', 'purple'],
+          ['renderItem', 'yellow'],
+          ['dialogue', 'gray'],
+        ]}
+        aside={<span className="badge">{currentYear}</span>}
+      />
       <div className="layout">
+        <Box icon="🏛️" title="Chronologie" meta={<span className="counter">1950 → 2027</span>} className="tl-box">
         <Timeline
           controller={controller}
           height={540}
@@ -154,8 +163,11 @@ function App() {
             </div>
           )}
         />
+        </Box>
         <aside className="panel hist-story" aria-live="polite">
-          <h2>Chapitre en cours</h2>
+          <h2>
+            <span aria-hidden="true">📖</span> Chapitre en cours
+          </h2>
           {chapter ? (
             <>
               <strong>{chapter.label}</strong>
@@ -166,7 +178,8 @@ function App() {
           )}
         </aside>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

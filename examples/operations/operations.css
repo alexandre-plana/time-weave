@@ -5,43 +5,30 @@
 }
 
 .ops-row--connector {
-  font: 11px 'IBM Plex Mono', monospace;
   color: var(--tw-muted);
+  font: 11px var(--font-mono);
 }
 
 .ops-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #238976;
+  background: var(--green-dot);
 }
 
 .tw-item.ops-incident {
-  --tw-item-bg: #fcf4df;
-  --tw-item-border: #e5c77f;
-  --tw-item-ink: #8a6418;
+  --tw-item-bg: var(--yellow-tint);
+  --tw-item-border: var(--yellow-line);
+  --tw-item-ink: var(--yellow-ink);
 }
 
 .tw-item.ops-summary {
-  --tw-group-bg: #e9f6f0;
-  --tw-group-border: #a5d8c3;
-  --tw-group-ink: #1d6f5f;
+  --tw-group-bg: var(--green-tint);
+  --tw-group-border: var(--green-line);
+  --tw-group-ink: var(--green-ink);
 }
 
 .tw-item.ops-alarm {
-  --tw-item-border: #d9483b;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tw-item.ops-incident {
-    --tw-item-bg: #3a2f17;
-    --tw-item-border: #806322;
-    --tw-item-ink: #f0cf86;
-  }
-
-  .tw-item.ops-summary {
-    --tw-group-bg: #183129;
-    --tw-group-border: #2e6b57;
-    --tw-group-ink: #8fd6bc;
-  }
+  --tw-item-border: var(--red-dot);
+  --tw-point: var(--red-dot);
 }

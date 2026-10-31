@@ -4,9 +4,10 @@ import { PlaybackControls, Timeline, frenchLabels, isSpan, useTimelineController
 import type { TimeRequest, TimelineItem, TimelineKey, TimelineRow, VisibleRow } from '@time-weave/react';
 import '@time-weave/react/styles.css';
 import '../shared.css';
+import { Box, Logo, Pill, REPOSITORY, StatusPill, TopBar } from '../chrome';
+import type { Tone } from '../chrome';
 import './home.css';
 
-type Tone = 'blue' | 'green' | 'amber' | 'purple';
 
 interface RowInfo {
   readonly tone: Tone;
@@ -26,9 +27,9 @@ const rows: TimelineRow<RowInfo>[] = [
   { id: 'design', label: 'Design', parentId: 'product', meta: { tone: 'purple' } },
   { id: 'dev', label: 'Développement', parentId: 'product', meta: { tone: 'blue' } },
   { id: 'qa', label: 'Qualité', parentId: 'product', meta: { tone: 'green' } },
-  { id: 'infra', label: 'Infrastructure', meta: { tone: 'amber' } },
+  { id: 'infra', label: 'Infrastructure', meta: { tone: 'yellow' } },
   { id: 'deploy', label: 'Déploiement', parentId: 'infra', meta: { tone: 'blue' } },
-  { id: 'watch', label: 'Supervision', parentId: 'infra', meta: { tone: 'amber' } },
+  { id: 'watch', label: 'Supervision', parentId: 'infra', meta: { tone: 'yellow' } },
   { id: 'comms', label: 'Communication', meta: { tone: 'purple' } },
 ];
 
@@ -58,12 +59,12 @@ const items: TimelineItem<ItemInfo>[] = [
   span('v3', 'dev', at(14, 30), at(17, 30), 'Correctif 2.4.1', 'blue'),
   span('q1', 'qa', at(9), at(12), 'Recette', 'green'),
   span('q2', 'qa', at(17, 30), at(19), 'Non-régression', 'green'),
-  span('i1', 'infra', at(11, 30), at(14, 30), 'Fenêtre de déploiement', 'amber'),
+  span('i1', 'infra', at(11, 30), at(14, 30), 'Fenêtre de déploiement', 'yellow'),
   span('e1', 'deploy', at(12), at(13), 'Canari 5 %', 'blue'),
   span('e2', 'deploy', at(13), at(14, 30), 'Trafic 100 %', 'blue'),
   point('e3', 'deploy', at(18, 10), 'Correctif en ligne', 'blue'),
-  { id: 'w1', rowId: 'watch', at: at(12, 40), label: '14 alertes', group: { count: 14 }, meta: { tone: 'amber' } },
-  { id: 'w2', rowId: 'watch', start: at(15), end: at(17), label: '38 alertes', group: { count: 38 }, meta: { tone: 'amber' } },
+  { id: 'w1', rowId: 'watch', at: at(12, 40), label: '14 alertes', group: { count: 14 }, meta: { tone: 'yellow' } },
+  { id: 'w2', rowId: 'watch', start: at(15), end: at(17), label: '38 alertes', group: { count: 38 }, meta: { tone: 'yellow' } },
   point('w3', 'watch', at(19, 30), 'Retour au calme', 'green'),
   span('c1', 'comms', at(9, 30), at(11), 'Embargo presse', 'purple'),
   point('c2', 'comms', at(15), 'Annonce publique', 'purple'),
@@ -131,8 +132,8 @@ function HeroTimeline() {
 
   const renderRowLabel = useCallback(
     (row: VisibleRow<RowInfo>) => (
-      <span className="home-row">
-        <i data-tone={row.row.meta?.tone} />
+      <span className="row-label">
+        <i style={{ ['--swatch' as string]: `var(--${row.row.meta?.tone ?? 'blue'}-dot)` }} />
         {row.row.label}
       </span>
     ),
@@ -142,20 +143,21 @@ function HeroTimeline() {
   const active = items.filter((item) => (isSpan(item) ? snapshot.time >= item.start && snapshot.time < item.end : false)).length;
 
   return (
-    <div className="home-demo">
-      <div className="home-demo__bar">
-        <span className="home-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-        <span className="home-demo__title">Jour de lancement · 18 novembre</span>
-        <span className="home-chip home-chip--live">Démo en direct</span>
-      </div>
+    <Box
+      icon="📌"
+      className="home-demo"
+      title={
+        <>
+          <span className="repo-link">time-weave/lancement</span>
+          <span className="home-demo__date">Jour de lancement · 18 novembre</span>
+        </>
+      }
+      meta={<Pill tone="gray">boucle de 21 s</Pill>}
+    >
       <Timeline
         controller={controller}
         height={narrow ? 432 : 372}
-        labelWidth={180}
+        labelWidth={narrow ? 150 : 172}
         locale="fr-FR"
         labels={frenchLabels}
         rowsHeader="Équipes"
@@ -171,7 +173,7 @@ function HeroTimeline() {
         }
         formatTime={clock}
         renderRowLabel={renderRowLabel}
-        getItemClassName={(item) => `home-tone--${item.meta?.tone ?? 'blue'}`}
+        getItemClassName={(item) => `tone-${item.meta?.tone ?? 'blue'}`}
       />
       <div className="home-demo__status" aria-live="polite">
         <span className="home-clock">{clock(snapshot.time)}</span>
@@ -179,129 +181,340 @@ function HeroTimeline() {
           <strong>{phase.label}</strong>
           <span>{phase.text}</span>
         </div>
-        <span className="home-chip">
+        <span className="counter">
           {active} période{active > 1 ? 's' : ''} en cours
         </span>
       </div>
-    </div>
+    </Box>
   );
 }
 
-const examples = [
+interface Example {
+  readonly href: string;
+  readonly slug: string;
+  readonly tag: string;
+  readonly title: string;
+  readonly text: string;
+  readonly pills: readonly (readonly [string, Tone])[];
+  readonly lang: readonly [string, Tone];
+  readonly facts: string;
+}
+
+const examples: readonly Example[] = [
   {
     href: './operations/index.html',
+    slug: 'operations',
     tag: 'Exemple 01',
-    tone: 'blue',
-    title: 'Journée d’opérations',
-    text: 'Rejeu, flux simulé, mode Direct, fenêtres chargées à la demande et groupes.',
+    title: 'Journée d’opérations — Station Nord',
+    text: 'Rejeu, flux simulé, mode Direct, fenêtres chargées à la demande et regroupement selon le zoom.',
+    pills: [
+      ['direct', 'red'],
+      ['fenêtré', 'blue'],
+      ['prepareTime', 'green'],
+    ],
+    lang: ['calendaire', 'blue'],
+    facts: '211 lignes · ≈ 90 000 messages',
   },
   {
     href: './history/index.html',
+    slug: 'history',
     tag: 'Exemple 02',
-    tone: 'purple',
-    title: 'Histoire d’entreprise',
-    text: 'Soixante-quinze ans de périodes et de jalons, avec contenu personnalisé.',
+    title: 'Soixante-quinze ans d’une entreprise',
+    text: 'Périodes et jalons sur plusieurs décennies, contenu personnalisé et fenêtre de détail.',
+    pills: [
+      ['décennies', 'purple'],
+      ['renderItem', 'yellow'],
+      ['dialogue', 'gray'],
+    ],
+    lang: ['calendaire', 'blue'],
+    facts: '7 lignes · 1950 → 2027',
   },
   {
     href: './relative/index.html',
+    slug: 'relative',
     tag: 'Exemple 03',
-    tone: 'green',
-    title: 'Temps relatif',
-    text: 'Une séquence de −2 s à 12 s à la milliseconde, phases et rafales regroupées.',
+    title: 'Banc d’essai — séquence de mise à feu',
+    text: 'Une séquence de −2 s à 12 s à la milliseconde, phases, mesures et rafales regroupées.',
+    pills: [
+      ['milliseconde', 'green'],
+      ['boucle', 'purple'],
+      ['ralenti', 'yellow'],
+    ],
+    lang: ['relatif', 'green'],
+    facts: '8 lignes · T−2 s → T+12 s',
   },
   {
     href: './bench/index.html',
+    slug: 'bench',
     tag: 'Banc',
-    tone: 'amber',
     title: 'Banc de performance',
     text: 'Des milliers d’éléments pour mesurer le rendu, le zoom et la lecture.',
+    pills: [
+      ['mesures', 'yellow'],
+      ['5 000 éléments', 'gray'],
+    ],
+    lang: ['calendaire', 'blue'],
+    facts: '211 lignes · 10 scénarios',
   },
-] as const;
+];
 
 const features = [
-  { tone: 'blue', label: 'Échelle', title: 'Des millisecondes aux décennies', text: 'Graduations calendaires ou relatives, adaptées à chaque niveau de zoom.' },
-  { tone: 'purple', label: 'Transport', title: 'Lecture, clés et boucle', text: 'Lecture à vitesse variable, navigation par moments clés, boucle sur la période.' },
-  { tone: 'green', label: 'prepareTime', title: 'Synchronisation explicite', text: 'L’application prépare son état avant que la timeline confirme une position.' },
-  { tone: 'amber', label: 'Direct', title: 'Mode Direct', text: 'Suit la frontière du temps réel et étend la période au fil de l’eau.' },
-  { tone: 'blue', label: 'Données', title: 'Collections dynamiques', text: 'Mises à jour atomiques en mémoire ou chargement par fenêtre visible.' },
-  { tone: 'green', label: 'A11y', title: 'Accessibilité clavier', text: 'Navigation au clavier, noms accessibles et respect du mouvement réduit.' },
+  { icon: '📏', label: 'Échelle', title: 'Des millisecondes aux décennies', text: 'Graduations calendaires ou relatives, adaptées à chaque niveau de zoom.' },
+  { icon: '⏯️', label: 'Transport', title: 'Lecture, clés et boucle', text: 'Lecture à vitesse variable, navigation par moments clés, boucle sur la période.' },
+  { icon: '🔗', label: 'Préparation', title: 'Synchronisation explicite', text: 'L’application prépare son état avant que la timeline confirme une position.' },
+  { icon: '🔴', label: 'Direct', title: 'Mode Direct', text: 'Suit la frontière du temps réel et étend la période au fil de l’eau.' },
+  { icon: '🗃️', label: 'Données', title: 'Collections dynamiques', text: 'Mises à jour atomiques en mémoire ou chargement par fenêtre visible.' },
+  { icon: '♿', label: 'Accessibilité', title: 'Accessibilité clavier', text: 'Navigation au clavier, noms accessibles et respect du mouvement réduit.' },
 ] as const;
 
-function App() {
+const stack: { label: string; pills: (readonly [string, Tone])[] }[] = [
+  {
+    label: 'Langages',
+    pills: [
+      ['typescript', 'blue'],
+      ['react', 'blue'],
+      ['css', 'purple'],
+    ],
+  },
+  {
+    label: 'Modes de temps',
+    pills: [
+      ['calendaire', 'blue'],
+      ['relatif', 'green'],
+      ['direct', 'red'],
+    ],
+  },
+  {
+    label: 'Outillage',
+    pills: [
+      ['vite', 'purple'],
+      ['vitest', 'green'],
+      ['playwright', 'yellow'],
+    ],
+  },
+];
+
+type TabId = 'apercu' | 'exemples' | 'fonctionnalites';
+
+const tabs: { id: TabId; icon: string; label: string; count?: number }[] = [
+  { id: 'apercu', icon: '📋', label: 'Aperçu' },
+  { id: 'exemples', icon: '🗂️', label: 'Exemples', count: examples.length },
+  { id: 'fonctionnalites', icon: '✨', label: 'Fonctionnalités', count: features.length },
+];
+
+const tabFromHash = (): TabId => {
+  const hash = typeof location !== 'undefined' ? location.hash.slice(1) : '';
+  return tabs.some((tab) => tab.id === hash) ? (hash as TabId) : 'apercu';
+};
+
+function RepoCard({ example, compact = false }: { example: Example; compact?: boolean }) {
   return (
-    <div className="home">
-      <header className="home-nav">
-        <a className="home-brand" href="./index.html">
-          <span className="home-logo" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-          Time Weave
+    <a className={`repo-card${compact ? ' repo-card--compact' : ''}`} href={example.href}>
+      <span className="repo-card__top">
+        <span aria-hidden="true">📁</span>
+        <span className="repo-link">time-weave/{example.slug}</span>
+        <span className="visibility">{example.tag}</span>
+      </span>
+      <strong className="repo-card__title">{example.title}</strong>
+      <span className="repo-card__text">{example.text}</span>
+      {!compact && (
+        <span className="pills">
+          {example.pills.map(([label, tone]) => (
+            <Pill key={label} tone={tone}>
+              {label}
+            </Pill>
+          ))}
+        </span>
+      )}
+      <span className="repo-card__meta">
+        <span className="repo-card__lang">
+          <i style={{ ['--swatch' as string]: `var(--${example.lang[1]}-dot)` }} aria-hidden="true" />
+          {example.lang[0]}
+        </span>
+        <span>{example.facts}</span>
+      </span>
+    </a>
+  );
+}
+
+function Sidebar() {
+  return (
+    <aside className="profile" aria-label="Le projet">
+      <div className="profile__avatar">
+        <span className="profile__ring">
+          <Logo size={112} />
+        </span>
+        <StatusPill>Démo en direct</StatusPill>
+      </div>
+      <h1 className="profile__name">time-weave</h1>
+      <p className="profile__handle">@time-weave/react</p>
+      <p className="profile__title">Timelines interactives pour React</p>
+      <p className="profile__subtitle">Calendaire · Relatif · Direct · Accessible</p>
+      <p className="profile__bio">Des timelines interactives qui restent synchronisées avec votre application.</p>
+      <div className="profile__buttons">
+        <a className="btn btn--primary" href="./operations/index.html">
+          Ouvrir la démo
         </a>
-        <nav aria-label="Sections">
-          <a href="#exemples">Exemples</a>
-          <a href="#fonctionnalites">Fonctionnalités</a>
-        </nav>
-      </header>
-
-      <main>
-        <section className="home-hero">
-          <p className="eyebrow">Bibliothèque React · TypeScript</p>
-          <h1>Time Weave</h1>
-          <p className="home-tagline">Des timelines interactives qui restent synchronisées avec votre application.</p>
-          <div className="home-cta">
-            <a className="home-button home-button--primary" href="#exemples">
-              Voir les exemples
-            </a>
-            <a className="home-button" href="./operations/index.html">
-              Ouvrir la démo d’opérations
-            </a>
+        <a className="btn" href={REPOSITORY}>
+          Code source
+        </a>
+      </div>
+      <ul className="profile__meta">
+        <li>
+          <span aria-hidden="true">📦</span>Version 0.1.0 · non publiée
+        </li>
+        <li>
+          <span aria-hidden="true">⚛️</span>React 18.3 et 19
+        </li>
+        <li>
+          <span aria-hidden="true">🧩</span>TypeScript strict, sans dépendance
+        </li>
+        <li>
+          <span aria-hidden="true">🌍</span>Libellés français et anglais
+        </li>
+        <li>
+          <span aria-hidden="true">⚖️</span>Licence MIT
+        </li>
+      </ul>
+      <section className="profile__section">
+        <h2 className="profile__label">Stack</h2>
+        {stack.map((group) => (
+          <div key={group.label} className="profile__group">
+            <p className="eyebrow">{group.label}</p>
+            <p className="pills">
+              {group.pills.map(([label, tone]) => (
+                <Pill key={label} tone={tone}>
+                  {label}
+                </Pill>
+              ))}
+            </p>
           </div>
-          <HeroTimeline />
-        </section>
+        ))}
+      </section>
+    </aside>
+  );
+}
 
-        <section id="exemples" className="home-section">
-          <div className="home-section__head">
-            <p className="eyebrow">Exemples</p>
-            <h2>Trois applications, un même moteur</h2>
+function App() {
+  const [tab, setTab] = useState<TabId>(tabFromHash);
+
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
+  const select = (id: TabId, focus = false) => {
+    setTab(id);
+    history.replaceState(null, '', id === 'apercu' ? location.pathname + location.search : `#${id}`);
+    if (focus) document.getElementById(`tab-${id}`)?.focus();
+  };
+
+  const onTabKey = (event: React.KeyboardEvent) => {
+    const index = tabs.findIndex((entry) => entry.id === tab);
+    let next = -1;
+    if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+    else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    if (next < 0) return;
+    event.preventDefault();
+    select(tabs[next]!.id, true);
+  };
+
+  return (
+    <>
+      <TopBar current="home" root="./" />
+      <div className="home">
+        <Sidebar />
+
+        <main className="home-main">
+          <h2 className="section-title">
+            <span aria-hidden="true">👤</span> À propos
+          </h2>
+          <div className="about">
+            <p>
+              <strong>Time Weave</strong> est une bibliothèque React pour afficher des lignes hiérarchiques d’éléments dans le temps — périodes,
+              instants, groupes — et les rejouer. Sa particularité : la timeline ne confirme une position qu’une fois l’application prête,
+              grâce à <code>prepareTime</code>. Le même moteur couvre une séquence à la milliseconde, une journée d’opérations en direct ou
+              trois quarts de siècle d’histoire.
+            </p>
           </div>
-          <div className="home-cards">
-            {examples.map((example) => (
-              <a key={example.href} className="home-card" href={example.href}>
-                <span className={`home-pill home-pill--${example.tone}`}>{example.tag}</span>
-                <strong>{example.title}</strong>
-                <span className="home-card__text">{example.text}</span>
-                <span className="home-card__go" aria-hidden="true">
-                  Ouvrir →
-                </span>
-              </a>
+
+          <div className="tabs" role="tablist" aria-label="Contenu" onKeyDown={onTabKey}>
+            {tabs.map((entry) => (
+              <button
+                key={entry.id}
+                id={`tab-${entry.id}`}
+                type="button"
+                role="tab"
+                className="tab"
+                aria-selected={tab === entry.id}
+                aria-controls={`panel-${entry.id}`}
+                tabIndex={tab === entry.id ? 0 : -1}
+                onClick={() => select(entry.id)}
+              >
+                <span aria-hidden="true">{entry.icon}</span>
+                {entry.label}
+                {entry.count !== undefined && <span className="counter">{entry.count}</span>}
+              </button>
             ))}
           </div>
-        </section>
 
-        <section id="fonctionnalites" className="home-section">
-          <div className="home-section__head">
-            <p className="eyebrow">Fonctionnalités</p>
-            <h2>Ce que la bibliothèque prend en charge</h2>
-          </div>
-          <div className="home-features">
-            {features.map((feature) => (
-              <article key={feature.title} className="home-feature">
-                <span className={`home-pill home-pill--${feature.tone}`}>{feature.label}</span>
-                <h3>{feature.title}</h3>
-                <p>{feature.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      </main>
+          {tab === 'apercu' && (
+            <div id="panel-apercu" role="tabpanel" aria-labelledby="tab-apercu" className="tab-panel">
+              <HeroTimeline />
+              <h2 className="section-title">
+                <span aria-hidden="true">📌</span> Exemples épinglés
+              </h2>
+              <div className="pinned">
+                {examples.slice(0, 4).map((example) => (
+                  <RepoCard key={example.slug} example={example} compact />
+                ))}
+              </div>
+            </div>
+          )}
 
+          {tab === 'exemples' && (
+            <div id="panel-exemples" role="tabpanel" aria-labelledby="tab-exemples" className="tab-panel">
+              <h2 className="section-title">
+                <span aria-hidden="true">🗂️</span> Trois applications, un même moteur
+              </h2>
+              <div className="repo-list">
+                {examples.map((example) => (
+                  <RepoCard key={example.slug} example={example} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 'fonctionnalites' && (
+            <div id="panel-fonctionnalites" role="tabpanel" aria-labelledby="tab-fonctionnalites" className="tab-panel">
+              <h2 className="section-title">
+                <span aria-hidden="true">✨</span> Ce que la bibliothèque prend en charge
+              </h2>
+              <div className="features">
+                {features.map((feature) => (
+                  <article key={feature.title} className="feature">
+                    <p className="feature__label">
+                      <span aria-hidden="true">{feature.icon}</span>
+                      {feature.label}
+                    </p>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.text}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
       <footer className="home-footer">
-        <span>Time Weave</span>
+        <Logo size={16} />
+        <span>time-weave</span>
         <span>TypeScript · React · version 0.1.0 non publiée</span>
       </footer>
-    </div>
+    </>
   );
 }
 
