@@ -102,3 +102,4 @@ L'avancement est tenu dans la section « Journal » ci-dessous et dans le README
 - 31 octobre 2026 : étape 4 livrée (hooks, `Timeline`, `PlaybackControls`, `DetailModal`, styles), tests jsdom.
 - 31 octobre 2026 : étape 5 livrée (exemples opérations et histoire d'entreprise).
 - 31 octobre 2026 : étape 6 engagée : page de mesure et [première série](MESURES.md) ; vérification de l'archive installée dans une application distincte ; CI GitHub Actions. Une mesure a révélé une perte de 15 % du temps de lecture, corrigée.
+- 31 octobre 2026, après-midi : décisions de publication (`@time-weave/react`, MIT, React 18.3 et 19, `0.x`) et des cinq comportements ouverts ; démo GitHub Pages ; tests de bout en bout, de robustesse et de compatibilité React 18 en CI ; vue d'ensemble, bandes, commandes de navigation, `useTimelineSelector` ; exemples de surveillance et documentation d'intégration en ligne.
