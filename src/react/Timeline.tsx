@@ -320,16 +320,15 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
 
   const duration = viewport.end - viewport.start;
   const msPerPixel = duration / Math.max(1, trackWidth);
-  const toX = useCallback((time: number) => ((time - viewport.start) / duration) * trackWidth, [viewport.start, duration, trackWidth]);
-  const timeAtClientX = useCallback(
-    (clientX: number): number => {
-      const rect = axisElement.current?.getBoundingClientRect();
-      const left = rect?.left ?? 0;
-      const width = rect && rect.width > 0 ? rect.width : trackWidth;
-      return viewport.start + ((clientX - left) / width) * duration;
-    },
-    [viewport.start, duration, trackWidth],
-  );
+  // Plain functions, not memoised callbacks: callbacks memoised with different
+  // dependencies kept each other's render scopes alive in a growing chain.
+  const toX = (time: number): number => ((time - viewport.start) / duration) * trackWidth;
+  const timeAtClientX = (clientX: number): number => {
+    const rect = axisElement.current?.getBoundingClientRect();
+    const left = rect?.left ?? 0;
+    const width = rect && rect.width > 0 ? rect.width : trackWidth;
+    return viewport.start + ((clientX - left) / width) * duration;
+  };
 
   // ------------------------------------------------------------------ layout
   // Each cache keeps only the rows of the latest computation; equivalent rows
@@ -634,16 +633,18 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     [controller],
   );
 
+  const rowLayoutsRef = useRef(rowLayouts);
+  rowLayoutsRef.current = rowLayouts;
   const revealRow = useCallback(
     (rowIndex: number) => {
       const body = bodyRef.current;
-      const row = rowLayouts.rows[rowIndex];
+      const row = rowLayoutsRef.current.rows[rowIndex];
       if (!body || !row) return;
       if (row.top < body.scrollTop) body.scrollTop = row.top;
       else if (row.top + row.height > body.scrollTop + body.clientHeight) body.scrollTop = row.top + row.height - body.clientHeight;
       setScrollTop(body.scrollTop);
     },
-    [rowLayouts],
+    [],
   );
 
   const onAxisKeyDown = (event: ReactKeyboardEvent<HTMLElement>): void => {
