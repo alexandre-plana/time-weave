@@ -1,23 +1,3 @@
-  --tw-bg: #0d1117;
-  --tw-surface: #161b22;
-  --tw-ink: #e6edf3;
-  --tw-muted: #9198a1;
-  --tw-line: #30363d;
-  --tw-grid: #1b2028;
-  --tw-grid-major: #2a3038;
-  --tw-accent: #4493f8;
-  --tw-accent-soft: #12263f;
-  --tw-live: #f85149;
-  --tw-item-bg: #0f2440;
-  --tw-item-border: #1f4c85;
-  --tw-item-ink: #79c0ff;
-  --tw-group-bg: #231a3a;
-  --tw-group-border: #4f3a7f;
-  --tw-group-ink: #d2a8ff;
-  --tw-point: #4493f8;
-  --tw-group-point: #ab7df8;
-  --tw-key: #f78166;
-  --tw-focus: #4493f8;
 /* Time Weave — default styles. Override the --tw-* variables or the tw-* classes. */
 
 /* The variables are also defined on the detail dialog, rendered in document.body. */

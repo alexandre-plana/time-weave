@@ -17,7 +17,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": [],
+    "types": ["node"],
     "paths": {
       "@time-weave/react": [
         "./src/react/index.ts"
