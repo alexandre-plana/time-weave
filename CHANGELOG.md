@@ -14,4 +14,5 @@ Première implémentation de la [conception V1](docs/CONCEPTION-V1.md).
 - Performance : lignes mémorisées (60 images/s en lecture sur le jeu de référence), réutilisation des lignes inchangées au remplacement d'un lot.
 - `update()` ne valide que les éléments modifiés (0,11 ms au lieu de 3,4 ms sur 20 000 éléments) ; correction d'une rétention mémoire de la vue en mode Direct.
 - Troisième exemple en temps relatif, page d'accueil des exemples avec timeline animée ; documentation anglaise dans `docs/en/`.
+- Film de présentation de 60 s (`motion/`), logo vectoriel (`docs/assets/`) et README réécrit.
 - Vérifications : tests de règles sur horloge manuelle, tests aléatoires d'invariants, tests jsdom, tests de bout en bout Playwright, isolation du moteur, archive installée dans une application distincte avec React 19 et React 18.3, CI.
