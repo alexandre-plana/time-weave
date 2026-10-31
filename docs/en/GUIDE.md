@@ -430,14 +430,14 @@ Import `@time-weave/react/styles.css`. Colours and sizes are `--tw-*` custom pro
 
 The classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` and `tw-item--active` (item under the confirmed cursor) let you adapt the display; `getItemClassName` adds classes per item. The frame also exposes `data-status` and `data-transport` attributes.
 
-## Implementation choices to be confirmed
+## Behaviours settled on 31 October 2026
 
-The design does not settle these behaviours explicitly; the implementation uses the option shown.
+These behaviours, not settled by the initial design, were approved and recorded in the (French) design document.
 
-| Situation | Current behaviour | Alternative |
-| --- | --- | --- |
-| Play from live mode while the frontier is the end of the period | Applies "Play at the end": back to the start, then play | Stay at the frontier, playback ends immediately |
-| Pause during a loop return, then extension of the period | The return in progress completes (Pause lets the current preparation finish) | Cancel the return, stay at the old end |
-| Manual navigation of the viewport | A new generation is created at most once per task (microtask), to group one gesture | Synchronous invalidation on every move |
-| Window batch citing a row removed while it was loading | Batch rejected with a structured error, previous batch kept | Silently drop items of missing rows |
-| Keys outside the complete period | Ignored by navigation; become destinations again if the period grows | — |
+| Situation | Behaviour |
+| --- | --- |
+| Play from live mode | Replay from the current position, never back to the start, even if the frontier is the end of the period |
+| Pause during a loop return, then extension of the period | The return in progress completes (Pause lets the current preparation finish) |
+| Manual navigation of the viewport | A new generation is created at most once per task, to group one gesture |
+| Window batch citing a row removed while it was loading | Items of that row are dropped; `unknown-row` error only for a row unknown when the request was made |
+| Keys outside the complete period | Ignored by navigation; become destinations again if the period grows |

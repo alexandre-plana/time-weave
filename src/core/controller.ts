@@ -204,6 +204,8 @@ interface ActiveLoad {
   readonly generation: number;
   readonly range: TimeRange;
   readonly abort: AbortController;
+  /** Rows known when the request was issued (row trees are immutable, so this is a cheap reference). */
+  readonly rowsAtRequest: ReadonlyMap<string, unknown>;
 }
 
 interface CoverageWaiter {
@@ -503,8 +505,17 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
         this.rewind = null;
         if (this.prep?.cause === 'rewind') this.abortPreparation();
       }
+      // Play from live starts a replay from the current position, never from the start:
+      // at the end, playback simply ends (or follows the normal loop rule).
+      const fromLive = this.transport === 'live';
       this.transport = 'playing';
-      if (!this.prep && this.time >= this.domain.end) this.beginPreparation(this.domain.start, 'play');
+      if (fromLive) {
+        if (!this.prep && this.time >= this.domain.end) {
+          if (this.loop) this.beginPreparation(this.domain.start, 'loop');
+          else this.transport = 'paused';
+        }
+        // A pending live destination keeps going; frames then play (or end) from there.
+      } else if (!this.prep && this.time >= this.domain.end) this.beginPreparation(this.domain.start, 'play');
       // Play while the pending destination is the end: restart from the start once it is confirmed.
       else if (this.prep && this.prep.cause !== 'play' && this.prep.target >= this.domain.end) this.restartOnConfirm = this.prep;
       this.lastFrameNow = this.scheduler.now();
@@ -1316,6 +1327,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       generation: this.generation,
       range: this.desiredRange(),
       abort: new AbortController(),
+      rowsAtRequest: this.rowTree.nodes,
     };
     this.activeLoad = load;
     this.nextLoadWanted = false;
@@ -1356,9 +1368,13 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
         this.emit('dataError', { error: this.dataError });
       }
     } else {
+      // Rows removed while the load was in flight: their items are dropped silently.
+      // Only a row unknown both at request time and now makes the batch fail.
+      const current = this.rowTree.nodes;
+      const known = { has: (id: string) => current.has(id) || load.rowsAtRequest.has(id) };
       const issues = [
         ...validateRange(batch.range, this.mode, 'batch.range'),
-        ...(Array.isArray(batch.items) ? validateItems(batch.items, this.rowTree.nodes, this.mode) : [
+        ...(Array.isArray(batch.items) ? validateItems(batch.items, known as ReadonlySet<string>, this.mode) : [
           { code: 'invalid-option' as const, path: 'batch.items', message: 'Batch items must be an array' },
         ]),
       ];
@@ -1366,7 +1382,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
         this.dataError = new TimelineValidationError(issues);
         this.emit('dataError', { error: this.dataError });
       } else {
-        this.items = batch.items.slice();
+        this.items = batch.items.filter((item) => current.has(item.rowId));
         this.dataError = null;
         this.setCoverage({ start: batch.range.start, end: batch.range.end });
       }

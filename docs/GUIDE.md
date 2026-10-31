@@ -187,14 +187,14 @@ Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la 
 
 Importer `@time-weave/react/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et la prop `theme` de `Timeline` (`'light' | 'dark' | 'auto'`, `'auto'` par défaut) force un thème quelle que soit la préférence du système : elle pose `data-theme="light"` ou `"dark"` sur l'élément `.tw-timeline` et sur la fenêtre de détail (`'auto'` n'en pose pas). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
 
-## Choix d'implémentation à valider
+## Comportements fixés le 31 octobre 2026
 
-Ces comportements ne sont pas tranchés explicitement par la conception ; l'implémentation retient l'option indiquée.
+Ces comportements, que la conception initiale ne tranchait pas, ont été validés par l'utilisateur ; ils sont reportés dans la [conception](CONCEPTION-V1.md), section « Décisions complémentaires du 31 octobre 2026 ».
 
-| Situation | Comportement actuel | Alternative |
-| --- | --- | --- |
-| Lecture depuis le Direct alors que la frontière est la fin de période | Applique « Lecture à la fin » : retour au début puis lecture | Rester à la frontière, lecture immédiatement terminée |
-| Pause pendant un retour de boucle, puis extension de la période | Le retour engagé se termine (Pause laisse finir la préparation en cours) | Annuler le retour, rester à l'ancienne fin |
-| Navigation manuelle de la fenêtre | Nouvelle génération créée au plus une fois par tâche (microtâche), pour regrouper un geste | Invalidation synchrone à chaque déplacement |
-| Lot de fenêtre citant une ligne supprimée pendant son chargement | Lot refusé avec erreur structurée, lot précédent conservé | Écarter silencieusement les éléments de lignes absentes |
-| Clés hors de la période complète | Ignorées par la navigation ; redeviennent des destinations si la période s'étend | — |
+| Situation | Comportement |
+| --- | --- |
+| Lecture depuis le Direct | Rejeu depuis la position courante, sans retour au début, même si la frontière est la fin de période |
+| Pause pendant un retour de boucle, puis extension de la période | Le retour engagé se termine (Pause laisse finir la préparation en cours) |
+| Navigation manuelle de la fenêtre | Nouvelle génération créée au plus une fois par tâche, pour regrouper un geste |
+| Lot de fenêtre citant une ligne supprimée pendant son chargement | Éléments de cette ligne écartés ; erreur `unknown-row` seulement pour une ligne inconnue lors de la demande |
+| Clés hors de la période complète | Ignorées par la navigation ; redeviennent des destinations si la période s'étend |
