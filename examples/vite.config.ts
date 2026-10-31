@@ -23,6 +23,7 @@ export default defineConfig({
         index: fileURLToPath(new URL('index.html', import.meta.url)),
         operations: fileURLToPath(new URL('operations/index.html', import.meta.url)),
         history: fileURLToPath(new URL('history/index.html', import.meta.url)),
+        bench: fileURLToPath(new URL('bench/index.html', import.meta.url)),
       },
     },
   },

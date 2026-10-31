@@ -412,3 +412,37 @@ describe('rewind', () => {
     expect(snap().lastCause).toBe('rewind');
   });
 });
+
+describe('frame reference', () => {
+  it('does not lose playback time spent rendering a synchronous confirmation', () => {
+    const scheduler = createManualScheduler();
+    let inFrame = false;
+    const slowScheduler = {
+      now: () => scheduler.now() + (inFrame ? 5 : 0),
+      requestFrame: (callback: (now: number) => void) =>
+        scheduler.requestFrame((now) => {
+          inFrame = true;
+          try {
+            callback(now);
+          } finally {
+            inFrame = false;
+          }
+        }),
+    };
+    const controller = createTimelineController({ mode: 'relative', domain: { start: 0, end: 10_000 }, scheduler: slowScheduler });
+    controller.play();
+    scheduler.advance(160, 16);
+    expect(controller.getSnapshot().time).toBeCloseTo(160, 6);
+  });
+
+  it('measures from the confirmation after a real wait', async () => {
+    const { controller, scheduler, last, resolveLast } = setup({}, true);
+    controller.play();
+    await resolveLast();
+    scheduler.frame(16);
+    scheduler.setTime(scheduler.now() + 300);
+    await resolveLast();
+    scheduler.frame(16);
+    expect(last().request.target).toBeCloseTo(32);
+  });
+});

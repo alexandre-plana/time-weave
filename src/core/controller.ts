@@ -162,7 +162,7 @@ export interface TimelineControllerOptions<RowMeta = unknown, ItemMeta = unknown
   /** Largest elapsed time taken into account between two pulses. Defaults to 250 ms. */
   maxFrameDelta?: number;
   /** Lets the application prepare its state before a time is confirmed. */
-  prepareTime?: (request: TimeRequest) => void | PromiseLike<void>;
+  prepareTime?: (request: TimeRequest) => void | PromiseLike<unknown>;
   scheduler?: FrameScheduler;
 }
 
@@ -281,6 +281,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
   private scheduler: FrameScheduler;
   private cancelFrame: (() => void) | null = null;
   private lastFrameNow: number | null = null;
+  /** Timestamp of the frame being processed, so a synchronous confirmation keeps it as reference. */
+  private frameNow: number | null = null;
   private active = true;
   private started = false;
   private disposed = false;
@@ -998,7 +1000,7 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       signal: prep.abort.signal,
       isCurrent: () => this.prep === prep && !prep.abort.signal.aborted,
     };
-    let result: void | PromiseLike<void>;
+    let result: void | PromiseLike<unknown>;
     try {
       result = this.prepareTime?.(request);
     } catch (error) {
@@ -1022,7 +1024,9 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     this.time = prep.target;
     this.lastCause = prep.cause;
     this.initialized = true;
-    this.lastFrameNow = this.scheduler.now();
+    // A confirmation received during the frame that requested it did not wait:
+    // keep the frame time as reference so rendering work is not lost from playback.
+    this.lastFrameNow = this.frameNow ?? this.scheduler.now();
     this.changed();
     this.emit('time', { time: this.time, previous, cause: prep.cause, requestId: prep.id });
 
@@ -1082,7 +1086,17 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       this.ensureFrame();
       return;
     }
-    this.batch(() => {
+    this.frameNow = now;
+    try {
+      this.batch(() => this.advanceFrame(delta));
+    } finally {
+      this.frameNow = null;
+    }
+    this.ensureFrame();
+  };
+
+  private advanceFrame(delta: number): void {
+    {
       const rewind = this.rewind;
       if (rewind) {
         rewind.elapsed += delta;
@@ -1101,9 +1115,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
           }
         }
       }
-      this.ensureFrame();
-    });
-  };
+    }
+  }
 
   // ---------------------------------------------------------------- viewport following
 
