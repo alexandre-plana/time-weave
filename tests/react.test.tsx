@@ -542,3 +542,38 @@ describe('narrow spans', () => {
     expect(item('tiny-group').getAttribute('aria-label')).toMatch(/^Lot 2, Group of 123, /);
   });
 });
+
+describe('final review regressions', () => {
+  it('a pointer press on an item near the edge does not move the view', () => {
+    const { controller } = makeController({ source: [{ id: 'edge', rowId: 'a', at: 5100, label: 'Bord' }] });
+    act(() => controller.setViewport({ start: 0, end: 5000 }));
+    render(<Timeline controller={controller} />);
+    const button = screen.getByRole('button', { name: /Bord/ });
+    fireEvent.pointerDown(button);
+    act(() => button.focus());
+    expect(controller.getSnapshot().viewport).toEqual({ start: 0, end: 5000 });
+    act(() => button.blur());
+    act(() => button.focus());
+    expect(controller.getSnapshot().viewport.end).toBeGreaterThanOrEqual(5100);
+  });
+
+  it('auto theme ignores ancestors for the detail dialog', () => {
+    const { controller } = makeController();
+    render(
+      <div data-theme="light">
+        <Timeline controller={controller} detail />
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Cycle/ }));
+    expect(document.querySelector('.tw-modal-backdrop')?.getAttribute('data-theme')).toBeNull();
+  });
+
+  it('focus follows an item moved to another row', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} />);
+    act(() => screen.getByRole('button', { name: /Mesure 1/ }).focus());
+    act(() => controller.update({ items: { upsert: [{ id: 'i1', rowId: 'b', at: 1000, label: 'Mesure 1' }] } }));
+    expect(document.activeElement?.getAttribute('data-item-id')).toBe('i1');
+    expect(document.activeElement?.closest('[data-row-id]')?.getAttribute('data-row-id')).toBe('b');
+  });
+});

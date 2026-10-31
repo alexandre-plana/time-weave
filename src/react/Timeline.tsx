@@ -399,6 +399,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const pendingFocus = useRef<string | null>(null);
   /** Whether an item button holds the keyboard focus (cleared on blur). */
   const itemHasFocus = useRef(false);
+  const itemPointerDown = useRef(false);
+  /** Row of the focused item at the last render, to follow it when it moves. */
+  const focusedRowId = useRef<string | null>(null);
   const [hovered, setHovered] = useState<{ id: string; x: number; y: number } | null>(null);
   const [detailItemId, setDetailItemId] = useState<string | null>(null);
   const detailReturnFocus = useRef<HTMLElement | null>(null);
@@ -408,6 +411,17 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     for (const item of snapshot.items) map.set(item.id, { item, rowId: item.rowId });
     return map;
   }, [snapshot.items]);
+
+  const focusPendingItem = (): void => {
+    const id = pendingFocus.current;
+    if (!id) return;
+    const candidates = frameRef.current?.querySelectorAll<HTMLElement>('[data-item-id]') ?? [];
+    const element = Array.from(candidates).find((candidate) => candidate.dataset.itemId === id);
+    if (element) {
+      pendingFocus.current = null;
+      element.focus({ preventScroll: true });
+    }
+  };
 
   // An item removed from the collections leaves focus, tooltip and dialog.
   useEffect(() => {
@@ -419,21 +433,19 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
       setFocusedId(null);
       if (hadFocus) axisElement.current?.focus();
     }
+    // The focused item moved to another row: its button is recreated there.
+    const rowId = focusedId ? (itemIndex.get(focusedId)?.rowId ?? null) : null;
+    if (focusedId && rowId && focusedRowId.current && rowId !== focusedRowId.current && itemHasFocus.current) {
+      pendingFocus.current = focusedId;
+      focusPendingItem();
+    }
+    focusedRowId.current = rowId;
     if (hovered && !itemIndex.has(hovered.id)) setHovered(null);
     if (detailItemId && !itemIndex.has(detailItemId)) setDetailItemId(null);
     if (internalSelection && !itemIndex.has(internalSelection)) setInternalSelection(null);
   }, [itemIndex, focusedId, hovered, detailItemId, internalSelection]);
 
-  useLayoutEffect(() => {
-    const id = pendingFocus.current;
-    if (!id) return;
-    const candidates = frameRef.current?.querySelectorAll<HTMLElement>('[data-item-id]') ?? [];
-    const element = Array.from(candidates).find((candidate) => candidate.dataset.itemId === id);
-    if (element) {
-      pendingFocus.current = null;
-      element.focus({ preventScroll: true });
-    }
-  });
+  useLayoutEffect(() => focusPendingItem());
 
   // ------------------------------------------------------------------ vertical virtualisation
   const firstRow = useMemo(() => {
@@ -837,8 +849,14 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     focus: (item, element) => {
       itemHasFocus.current = true;
       setFocusedId(item.id);
-      revealItem(item);
+      // A pointer press focuses the button before the click: moving the view
+      // then would pull the item from under the pointer and lose the click.
+      if (!itemPointerDown.current) revealItem(item);
+      itemPointerDown.current = false;
       showTooltip(item, element);
+    },
+    pointerDown: () => {
+      itemPointerDown.current = true;
     },
     hover: showTooltip,
     leave: (item) => setHovered((current) => (current?.id === item.id ? null : current)),
@@ -1101,6 +1119,7 @@ interface RowActions<RowMeta, ItemMeta> {
   hover(item: TimelineItem<ItemMeta>, element: HTMLElement): void;
   leave(item: TimelineItem<ItemMeta>): void;
   blur(item: TimelineItem<ItemMeta>): void;
+  pointerDown(): void;
   toggle(rowId: string): void;
 }
 
@@ -1236,6 +1255,7 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
               style={{ left, width, top, height: itemHeight }}
               onClick={(event) => actions.current.activate(item, visible, event)}
               onKeyDown={(event) => actions.current.keyDown(event, item, layout)}
+              onPointerDown={() => actions.current.pointerDown()}
               onFocus={(event) => actions.current.focus(item, event.currentTarget)}
               onBlur={() => actions.current.blur(item)}
               onMouseEnter={(event) => actions.current.hover(item, event.currentTarget)}

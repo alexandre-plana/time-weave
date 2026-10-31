@@ -39,7 +39,8 @@ export function DetailModal(props: DetailModalProps): ReactNode {
   onCloseRef.current = onClose;
 
   const inertRoot = props.inertRoot ?? null;
-  const readTheme = () => inertRoot?.closest('[data-theme]')?.getAttribute('data-theme') ?? undefined;
+  // Only the timeline's own attribute counts: its CSS ignores ancestors' data-theme.
+  const readTheme = () => inertRoot?.getAttribute('data-theme') ?? undefined;
   const [inheritedTheme, setInheritedTheme] = useState(readTheme);
   // Read again after each commit: during render, the attribute of the parent may not be updated yet.
   useLayoutEffect(() => setInheritedTheme(readTheme()));
