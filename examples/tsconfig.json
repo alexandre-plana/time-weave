@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"],
+    "paths": {
+      "time-weave": ["../src/react/index.ts"],
+      "time-weave/core": ["../src/core/index.ts"]
+    }
+  },
+  "include": ["."]
+}

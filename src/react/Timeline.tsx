@@ -598,8 +598,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     const start = itemStart(item);
     const end = itemEnd(item);
     const lane = layout.lanes.get(item.id) ?? 0;
-    const top = ROW_PADDING + lane * laneHeight + 2;
     const span = isSpan(item);
+    const itemHeight = span ? laneHeight - 4 : POINT_SIZE;
+    const top = ROW_PADDING + lane * laneHeight + (laneHeight - itemHeight) / 2;
     let left: number;
     let width: number;
     if (span) {
@@ -634,7 +635,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
         aria-label={describeItem(item)}
         aria-pressed={selected}
         aria-describedby={hovered?.id === item.id ? tooltipId : undefined}
-        style={{ left, width, top, height: laneHeight - 4 }}
+        style={{ left, width, top, height: itemHeight }}
         onClick={(event) => activateItem(item, layout.visible, event)}
         onKeyDown={(event) => onItemKeyDown(event, item, layout)}
         onFocus={(event) => {

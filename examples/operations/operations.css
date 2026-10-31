@@ -1,0 +1,47 @@
+.ops-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ops-row--connector {
+  font: 11px 'IBM Plex Mono', monospace;
+  color: var(--tw-muted);
+}
+
+.ops-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #238976;
+}
+
+.tw-item.ops-incident {
+  --tw-item-bg: #fcf4df;
+  --tw-item-border: #e5c77f;
+  --tw-item-ink: #8a6418;
+}
+
+.tw-item.ops-summary {
+  --tw-group-bg: #e9f6f0;
+  --tw-group-border: #a5d8c3;
+  --tw-group-ink: #1d6f5f;
+}
+
+.tw-item.ops-alarm {
+  --tw-item-border: #d9483b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tw-item.ops-incident {
+    --tw-item-bg: #3a2f17;
+    --tw-item-border: #806322;
+    --tw-item-ink: #f0cf86;
+  }
+
+  .tw-item.ops-summary {
+    --tw-group-bg: #183129;
+    --tw-group-border: #2e6b57;
+    --tw-group-ink: #8fd6bc;
+  }
+}
