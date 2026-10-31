@@ -1,9 +1,23 @@
 # Architecture proposée
 
 Date : 18 octobre 2026.
-Statut : synthèse initiale ; le découpage consolidé est retenu dans la conception V1 validée le 18 octobre 2026.
+Statut : synthèse initiale ; le découpage consolidé est retenu dans la conception V1 validée le 18 octobre 2026 et implémenté le 31 octobre 2026.
 
 La [conception V1 consolidée](CONCEPTION-V1.md) développe ce découpage, les contrats et les comportements. Relue par Astra et validée par l'utilisateur, elle constitue la référence pour le prochain plan. La présente page conserve la synthèse architecturale initiale.
+
+## Mise en œuvre (31 octobre 2026)
+
+Le découpage proposé ci-dessous est implémenté dans un package unique à deux points d'entrée :
+
+| Partie | Emplacement | Points notables |
+| --- | --- | --- |
+| Moteur | `src/core/` (`time-weave/core`) | `TimelineController` unique propriétaire de l'état ; instantanés immuables et abonnement compatibles `useSyncExternalStore` ; ordonnanceur injecté (`FrameScheduler`) pour des tests sur horloge manuelle ; aucune dépendance à React ni au DOM, vérifiée par `npm run check:core` |
+| Intégration React | `src/react/useTimelineController.ts` | Instance stable, démarrage, suspension à la page masquée, `prefers-reduced-motion`, ordonnanceur `requestAnimationFrame` |
+| Vue | `src/react/Timeline.tsx` | Axe SVG, lignes et marqueurs HTML, lignes mémorisées et réutilisées entre lots, pistes déterministes (`src/core/layout.ts`), limitation au visible |
+| Aides | `PlaybackControls.tsx`, `DetailModal.tsx`, `labels.ts` | Remplaçables ; textes anglais et français |
+| Styles | `src/styles.css` | Variables `--tw-*`, thème sombre, prop `theme` |
+
+Les choix d'outillage sont dans le [plan de réalisation](PLAN-REALISATION.md), l'API dans le [guide](GUIDE.md) et les performances relevées dans [MESURES.md](MESURES.md).
 
 ## Objectif
 

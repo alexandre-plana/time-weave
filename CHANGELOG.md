@@ -12,5 +12,6 @@ Première implémentation de la [conception V1](docs/CONCEPTION-V1.md).
 - Prop `theme` (`light`, `dark`, `auto`), prop `getItemAriaLabel`, fenêtre de détail en portail avec arrière-plan `inert`.
 - Accessibilité : contrastes conformes en thèmes clair et sombre, repères de clés hors du curseur accessible, noms accessibles des groupes, annonces d'attente différées.
 - Performance : lignes mémorisées (60 images/s en lecture sur le jeu de référence), réutilisation des lignes inchangées au remplacement d'un lot.
-- Troisième exemple en temps relatif ; documentation anglaise dans `docs/en/`.
+- `update()` ne valide que les éléments modifiés (0,11 ms au lieu de 3,4 ms sur 20 000 éléments) ; correction d'une rétention mémoire de la vue en mode Direct.
+- Troisième exemple en temps relatif, page d'accueil des exemples avec timeline animée ; documentation anglaise dans `docs/en/`.
 - Vérifications : tests de règles sur horloge manuelle, tests aléatoires d'invariants, tests jsdom, tests de bout en bout Playwright, isolation du moteur, archive installée dans une application distincte avec React 19 et React 18.3, CI.
