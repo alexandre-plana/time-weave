@@ -62,6 +62,7 @@ La séparation d'un moteur temporel indépendant de React et de la vue React est
 ## Documents
 
 - [Guide d'utilisation](docs/GUIDE.md) : API implémentée, exemples de code, clavier et styles.
+- [English usage guide](docs/en/GUIDE.md) : guide et [présentation](docs/en/README.md) en anglais pour les futurs utilisateurs.
 - [Plan de réalisation](docs/PLAN-REALISATION.md) : outillage, étapes et journal.
 - [Mesures](docs/MESURES.md) : première série sur le jeu de référence et environnement.
 - [Conception V1 validée](docs/CONCEPTION-V1.md) : lecture rapide, comportements, données, synchronisation et critères de réalisation.
