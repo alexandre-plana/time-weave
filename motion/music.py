@@ -170,8 +170,8 @@ CH = {
 }
 SECTIONS = [
     (0, 6, "Am9"), (6, 12, "Fmaj9"), (12, 16, "Am9"), (16, 20, "Cmaj9"), (20, 24, "Fmaj9"), (24, 28, "G6"),
-    (28, 32, "Am9"), (32, 36, "Fmaj9"), (36, 40, "Dm9"), (40, 44, "Fmaj9"), (44, 48, "Am9"), (48, 52.2, "Em7"),
-    (52.2, 54.35, "Fmaj9"), (54.35, 60, "Cmaj9"),
+    (28, 32, "Am9"), (32, 36, "Fmaj9"), (36, 40, "Dm9"), (40, 44, "Fmaj9"), (44, 48, "Am9"), (48, 53.2, "Em7"),
+    (53.2, 55.35, "Fmaj9"), (55.35, 60, "Cmaj9"),
 ]
 
 
@@ -211,7 +211,7 @@ for a, b, name in SECTIONS:
 def in_ranges(t, ranges):
     return any(x0 <= t < x1 for x0, x1 in ranges)
 
-KICK_ON = [(8.0, 12.0), (14.5, 44.5), (45.5, 52.2)]
+KICK_ON = [(8.0, 12.0), (14.5, 53.2)]
 K = kick()
 kick_times = []
 for i in range(int(60 / BEAT)):
@@ -219,7 +219,7 @@ for i in range(int(60 / BEAT)):
     if in_ranges(t, KICK_ON):
         drums.add(t, K, 0.3)
         kick_times.append(t)
-HAT_ON = [(8.0, 52.2)]
+HAT_ON = [(8.0, 53.2)]
 for i in range(int(60 / (BEAT / 2))):
     t = i * BEAT / 2
     if not in_ranges(t, HAT_ON):
@@ -227,18 +227,18 @@ for i in range(int(60 / (BEAT / 2))):
     off = (i % 2) == 1
     if off:
         drums.add(t, hat(0.09, open_=(i % 8 == 7)), 0.08 if 12 <= t < 14.5 else 0.12, pan=0.25)
-    elif t >= 20 and t < 52:
+    elif t >= 20 and t < 53:
         drums.add(t, hat(0.04), 0.035, pan=-0.3)
 for i in range(int(60 / BEAT)):
     t = i * BEAT
-    if 20 <= t < 52 and (i % 4) in (1, 3) and not (44.5 <= t < 45.5):
+    if 20 <= t < 53 and (i % 4) in (1, 3):
         drums.add(t, rim(), 0.08, pan=-0.15)
         verb_send.add(t, rim(), 0.05)
 
 # Basse sur les contretemps
 for i in range(int(60 / (BEAT / 2))):
     t = i * BEAT / 2
-    if not (8.0 <= t < 52.2) or (i % 2) == 0:
+    if not (8.0 <= t < 53.2) or (i % 2) == 0:
         continue
     if 12.0 <= t < 14.5 and i % 4 != 1:
         continue
@@ -254,7 +254,7 @@ for i in range(int(60 / (BEAT / 2))):
 arp_r = np.random.default_rng(11)
 for i in range(int(60 / (BEAT / 4))):
     t = i * BEAT / 4
-    if not (12.0 <= t < 52.2):
+    if not (12.0 <= t < 53.2):
         continue
     step = i % 16
     pattern = [1, 0, 0.6, 0, 0.8, 0, 0.5, 0.4, 1, 0, 0.6, 0.3, 0.8, 0, 0.5, 0]
@@ -357,7 +357,7 @@ for c in CUES:
         sfx.add(t, b, 0.05)
     elif ty == "arrive":
         m = PENTA[int(abs(hash(round(t * 100))) % len(PENTA))] + 12
-        pan = {"tmp": -0.6, "prs": -0.2, "sta": 0.2, "lrl": 0.6, "inc": 0.0}[c["row"]]
+        pan = {"calls": -0.5, "radio": 0.4, "alerts": 0.0}.get(c["row"], 0.0)
         s = np.sin(2 * np.pi * hz(m) * tline(int(0.25 * SR))) * np.exp(-tline(int(0.25 * SR)) / 0.05)
         sfx.add(t, s, 0.018, pan=pan)
         verb_send.add(t, s, 0.02)
@@ -371,6 +371,30 @@ for c in CUES:
         sfx.add(t, s, 0.07)
         b = bell(hz(81 + 12), 1.4, 0.5, 0.6)
         sfx.add(t + c["d"], b, 0.05)
+    elif ty == "swap":
+        n = int(c["d"] * SR)
+        s = sweep_noise(c["d"], 800, 3200, 1.3) * np.hanning(n)
+        sfx.add(t, s, 0.05)
+        for j, m in enumerate([72, 79]):
+            sfx.add(t + 0.3 + j * 0.08, pluck(hz(m), 0.6, 0.15, 0.5), 0.05, pan=(j - 0.5) * 0.6)
+    elif ty == "mapIn":
+        n = int(0.8 * SR)
+        s = sweep_noise(0.8, 2500, 500, 1.0) * np.hanning(n)
+        sfx.add(t, s, 0.06, pan=0.5)
+        b = bell(hz(81), 1.5, 0.6, 0.5)
+        sfx.add(t + 0.35, b, 0.05, pan=0.5)
+        verb_send.add(t + 0.35, b, 0.06)
+    elif ty == "theme":
+        d = c["d"]
+        n = int((d + 0.3) * SR)
+        s = sweep_noise(d + 0.3, 5000, 400, 0.9) * np.sin(np.pi * np.linspace(0, 1, n))
+        sfx.add(t - 0.05, s, 0.08, pan=-0.3 + 0.3 * c["i"])
+        m = [76, 79, 84][c["i"]]
+        b = bell(hz(m + 12), 1.8, 0.7, 0.6)
+        sfx.add(t + d * 0.6, b, 0.06, pan=-0.3 + 0.3 * c["i"])
+        verb_send.add(t + d * 0.6, b, 0.08)
+        tb = tline(int(1.0 * SR))
+        sfx.add(t, np.sin(2 * np.pi * np.cumsum(70 * np.exp(-tb * 1.5) + 35) / SR) * np.exp(-tb / 0.4) * np.minimum(1, tb / 0.05), 0.12)
     elif ty == "wipe":
         d = c["d"]
         n = int((d + 0.6) * SR)
