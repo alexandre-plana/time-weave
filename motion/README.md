@@ -74,6 +74,7 @@ python3 music.py                           # bande-son → out/music.wav
 node render.cjs video 60                   # 3 600 images → out/time-weave-demo.mp4 (H.264 + AAC)
 node render.cjs stills 2,24,46,50 out/img  # images de contrôle
 python3 logo.py                            # logo SVG → docs/assets/ (nécessite fonttools)
+node render-anim.cjs flow.html ../docs/assets/flux.gif 9 15 1100   # animation « flux ordonné » du README
 ```
 
 Il faut Node 18 ou plus, Playwright avec Chromium, ffmpeg (libx264), ainsi que Python 3 et numpy. Les polices Inter et IBM Plex Mono sont incluses dans `fonts/` (licence SIL OFL 1.1). Toutes les données affichées (opérations, intervention, unités, positions) sont fictives.
