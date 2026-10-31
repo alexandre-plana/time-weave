@@ -84,6 +84,7 @@ const ROW_PADDING = 5;
 const OVERSCAN_PX = 200;
 const DRAG_THRESHOLD = 4;
 const ZOOM_STEP = 1.6;
+const ANNOUNCE_DELAY = 400;
 
 function useElementWidth(fallback: number): [(element: HTMLElement | null) => void, number] {
   const [width, setWidth] = useState(fallback);
@@ -274,6 +275,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const selectedId = props.selectedItemId !== undefined ? props.selectedItemId : internalSelection;
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const pendingFocus = useRef<string | null>(null);
+  /** Whether an item button holds the keyboard focus (cleared on blur). */
+  const itemHasFocus = useRef(false);
   const [hovered, setHovered] = useState<{ id: string; x: number; y: number } | null>(null);
   const [detailItemId, setDetailItemId] = useState<string | null>(null);
   const detailReturnFocus = useRef<HTMLElement | null>(null);
@@ -289,7 +292,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     if (focusedId && !itemIndex.has(focusedId)) {
       // The removed button took focus with it: focus falls back to the body.
       const active = document.activeElement;
-      const hadFocus = !active || active === document.body || (frameRef.current?.contains(active) ?? false);
+      const hadFocus = itemHasFocus.current && (!active || active === document.body);
+      itemHasFocus.current = false;
       setFocusedId(null);
       if (hadFocus) axisElement.current?.focus();
     }
@@ -393,7 +397,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     if (event.button !== 0) return;
     event.stopPropagation();
     drag.current = { kind: 'cursor', pointerId: event.pointerId };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    // Capture on the axis: the handle may unmount while the cursor leaves the view.
+    axisElement.current?.setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLElement>): void => {
@@ -410,6 +415,11 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
       return;
     }
     if (state.pointerId !== event.pointerId) return;
+    if (event.pointerType !== 'touch' && event.buttons === 0) {
+      // The release was missed (lost capture): the drag is over.
+      drag.current = null;
+      return;
+    }
     if (state.kind === 'cursor') {
       controller.seek(Math.min(domain.end, Math.max(domain.start, timeAtClientX(event.clientX))));
       return;
@@ -535,12 +545,17 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     if (!item) return;
     pendingFocus.current = item.id;
     setFocusedId(item.id);
+    revealItem(item);
+  };
+
+  const revealItem = (item: TimelineItem<ItemMeta>): void => {
     revealTime(isSpan(item) ? Math.max(item.start, Math.min(item.end, viewport.start)) : item.at);
     const index = rowIndexById.get(item.rowId);
     if (index !== undefined) revealRow(index);
   };
 
   const activateItem = (item: TimelineItem<ItemMeta>, row: VisibleRow<RowMeta>, event: ReactMouseEvent | ReactKeyboardEvent): void => {
+    revealItem(item);
     if (props.selectedItemId === undefined) setInternalSelection(item.id);
     setFocusedId(item.id);
     onItemClick?.(item, { event, controller, row });
@@ -600,7 +615,8 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
 
   // The roving tab stop: the focused item, or the first rendered one.
   const tabStopId = useMemo(() => {
-    if (focusedId && itemIndex.has(focusedId)) return focusedId;
+    const focused = focusedId ? itemIndex.get(focusedId)?.item : undefined;
+    if (focused && (itemHasFocus.current || (itemEnd(focused) >= viewport.start && itemStart(focused) <= viewport.end))) return focused.id;
     for (const layout of visibleRowSlice) {
       const first = layout.items.find((item) => itemEnd(item) >= viewport.start && itemStart(item) <= viewport.end);
       if (first) return first.id;
@@ -609,16 +625,26 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   }, [focusedId, itemIndex, visibleRowSlice, viewport]);
 
   // ------------------------------------------------------------------ status
+  // A wait is announced only if it lasts: dragging the cursor or holding an
+  // arrow key would otherwise announce every intermediate destination.
+  const [slowPendingId, setSlowPendingId] = useState<number | null>(null);
+  const pendingId = snapshot.pending?.id ?? null;
+  useEffect(() => {
+    if (pendingId === null) return;
+    const timer = setTimeout(() => setSlowPendingId(pendingId), ANNOUNCE_DELAY);
+    return () => clearTimeout(timer);
+  }, [pendingId]);
+
   const statusMessage = useMemo(() => {
     if (snapshot.status === 'initializing') return labels.initializing;
     if (snapshot.status === 'error' && snapshot.error) return labels.preparationError(formatTime(snapshot.error.target, mode));
-    if (snapshot.pending && (snapshot.pending.cause === 'seek' || snapshot.pending.cause === 'key' || snapshot.pending.cause === 'stop')) {
+    if (snapshot.pending && snapshot.pending.id === slowPendingId && (snapshot.pending.cause === 'seek' || snapshot.pending.cause === 'key' || snapshot.pending.cause === 'stop')) {
       return labels.preparing(formatTime(snapshot.pending.target, mode));
     }
     if (snapshot.data.error) return labels.dataError;
     return '';
     // Playback frames are deliberately not announced.
-  }, [snapshot.status, snapshot.error, snapshot.pending, snapshot.data.error, labels, mode, formatTime]);
+  }, [snapshot.status, snapshot.error, snapshot.pending, slowPendingId, snapshot.data.error, labels, mode, formatTime]);
 
   // The slider value is not updated on every playback frame, so assistive
   // technologies do not announce each image; it follows pauses and jumps.
@@ -660,11 +686,17 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     activate: activateItem,
     keyDown: onItemKeyDown,
     focus: (item, element) => {
+      itemHasFocus.current = true;
       setFocusedId(item.id);
+      revealItem(item);
       showTooltip(item, element);
     },
     hover: showTooltip,
     leave: (item) => setHovered((current) => (current?.id === item.id ? null : current)),
+    blur: (item) => {
+      itemHasFocus.current = false;
+      setHovered((current) => (current?.id === item.id ? null : current));
+    },
     toggle: (rowId) => controller.toggle(rowId),
   };
 
@@ -740,6 +772,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
+          onLostPointerCapture={(event) => {
+            if (drag.current && drag.current.kind !== 'pinch' && drag.current.pointerId === event.pointerId) drag.current = null;
+          }}
         >
           <svg className="tw-axis-svg" width={trackWidth} height="100%" aria-hidden="true">
             {coverage && (
@@ -780,11 +815,6 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
               className="tw-cursor-handle"
               style={{ left: cursorX }}
               onPointerDown={onCursorPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={(event) => {
-                drag.current = null;
-                event.currentTarget.releasePointerCapture?.(event.pointerId);
-              }}
               aria-hidden="true"
             />
           )}
@@ -893,6 +923,7 @@ interface RowActions<RowMeta, ItemMeta> {
   focus(item: TimelineItem<ItemMeta>, element: HTMLElement): void;
   hover(item: TimelineItem<ItemMeta>, element: HTMLElement): void;
   leave(item: TimelineItem<ItemMeta>): void;
+  blur(item: TimelineItem<ItemMeta>): void;
   toggle(rowId: string): void;
 }
 
@@ -1024,7 +1055,7 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
               onClick={(event) => actions.current.activate(item, visible, event)}
               onKeyDown={(event) => actions.current.keyDown(event, item, layout)}
               onFocus={(event) => actions.current.focus(item, event.currentTarget)}
-              onBlur={() => actions.current.leave(item)}
+              onBlur={() => actions.current.blur(item)}
               onMouseEnter={(event) => actions.current.hover(item, event.currentTarget)}
               onMouseLeave={() => actions.current.leave(item)}
             >

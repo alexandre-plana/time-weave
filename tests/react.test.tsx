@@ -202,7 +202,7 @@ describe('pointer gestures', () => {
     act(() => controller.zoomBy(2));
     const before = controller.getSnapshot().viewport.start;
     fireEvent.pointerDown(axis, { pointerId: 2, button: 0, clientX: 400 });
-    fireEvent.pointerMove(axis, { pointerId: 2, clientX: 300 });
+    fireEvent.pointerMove(axis, { pointerId: 2, clientX: 300, buttons: 1 });
     fireEvent.pointerUp(axis, { pointerId: 2, button: 0, clientX: 300 });
     expect(controller.getSnapshot().viewport.start).toBeGreaterThan(before);
     expect(controller.getSnapshot().time).toBe(5000);
@@ -280,6 +280,8 @@ describe('axis', () => {
     const { container } = render(<Timeline controller={controller} />);
     act(() => controller.seek(6000));
     expect(container.querySelector('.tw-pending-line')).not.toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('');
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 450)));
     expect(screen.getByRole('status').textContent).toMatch(/Preparing/);
     await act(async () => release());
     expect(container.querySelector('.tw-pending-line')).toBeNull();
@@ -315,5 +317,51 @@ describe('DetailModal', () => {
     expect(document.activeElement).toBe(link);
     fireEvent.mouseDown(document.querySelector('.tw-modal-backdrop')!);
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('review regressions (React)', () => {
+  function rect(element: Element) {
+    (element as HTMLElement).getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 800, bottom: 40, width: 800, height: 40, x: 0, y: 0, toJSON() {} }) as DOMRect;
+  }
+
+  it('a cursor drag seeks once per move and stops when no button is pressed', () => {
+    const seeks: number[] = [];
+    const { controller } = makeController({ prepareTime: (r) => void (r.cause === 'seek' && seeks.push(r.target)) });
+    const { container } = render(<Timeline controller={controller} />);
+    const axis = screen.getByRole('slider');
+    rect(axis);
+    const handle = container.querySelector('.tw-cursor-handle')!;
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 0 });
+    fireEvent.pointerMove(axis, { pointerId: 1, clientX: 400, buttons: 1 });
+    expect(seeks).toEqual([5000]);
+    fireEvent.pointerMove(axis, { pointerId: 1, clientX: 600, buttons: 0 });
+    fireEvent.pointerMove(axis, { pointerId: 1, clientX: 700, buttons: 0 });
+    expect(seeks).toEqual([5000]);
+  });
+
+  it('removing an item does not steal focus from another control', () => {
+    const { controller } = makeController();
+    render(<Timeline controller={controller} toolbar={<input aria-label="filtre" />} />);
+    act(() => screen.getByRole('button', { name: /Mesure 1/ }).focus());
+    const input = screen.getByRole('textbox', { name: 'filtre' });
+    act(() => input.focus());
+    act(() => controller.update({ items: { remove: ['i1'] } }));
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('an off-screen item is revealed before activation', () => {
+    const { controller } = makeController();
+    const onItemClick = vi.fn();
+    render(<Timeline controller={controller} onItemClick={onItemClick} />);
+    const item = screen.getByRole('button', { name: /Mesure 1/ });
+    act(() => item.focus());
+    act(() => controller.setViewport({ start: 6000, end: 10_000 }));
+    fireEvent.keyDown(document.activeElement!, { key: 'Enter' });
+    expect(onItemClick).toHaveBeenCalled();
+    const viewport = controller.getSnapshot().viewport;
+    expect(viewport.start).toBeLessThanOrEqual(1000);
+    expect(viewport.end).toBeGreaterThanOrEqual(1000);
   });
 });
