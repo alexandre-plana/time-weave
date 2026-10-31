@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type {
   CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
@@ -176,7 +176,10 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const tooltipId = `tw-tooltip-${useId().replace(/:/g, '')}`;
   const snapshot = useTimelineSnapshot(controller);
   const { viewport, domain, mode } = snapshot;
-  const formatTime = props.formatTime ?? ((time: number, timeMode: TimeMode) => formatTimeReadout(time, timeMode, locale));
+  const formatTime = useMemo(
+    () => props.formatTime ?? ((time: number, timeMode: TimeMode) => formatTimeReadout(time, timeMode, locale)),
+    [props.formatTime, locale],
+  );
 
   const [axisRef, trackWidth] = useElementWidth(initialTrackWidth);
   const [frameWidthRef, frameWidth] = useElementWidth(initialTrackWidth + preferredLabelWidth);
@@ -637,13 +640,6 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const detailEntry = detailItemId ? itemIndex.get(detailItemId) : undefined;
   const detailRow = detailEntry ? rowLayouts.rows[rowIndexById.get(detailEntry.rowId) ?? -1]?.visible : undefined;
 
-  const describeItem = (item: TimelineItem<ItemMeta>): string => {
-    const parts = [item.label ?? item.id];
-    if (item.group) parts.push(labels.group(item.group.count));
-    parts.push(isSpan(item) ? `${formatTime(item.start, mode)} – ${formatTime(item.end, mode)}` : formatTime(item.at, mode));
-    return parts.join(', ');
-  };
-
   const showTooltip = (item: TimelineItem<ItemMeta>, element: HTMLElement): void => {
     if (!tooltip) return;
     const frame = frameRef.current?.getBoundingClientRect();
@@ -651,71 +647,37 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     setHovered({ id: item.id, x: rect.left - (frame?.left ?? 0) + rect.width / 2, y: rect.bottom - (frame?.top ?? 0) + 6 });
   };
 
-  const renderItemElement = (item: TimelineItem<ItemMeta>, layout: RowLayout<RowMeta, ItemMeta>): ReactNode => {
-    const start = itemStart(item);
-    const end = itemEnd(item);
-    const lane = layout.lanes.get(item.id) ?? 0;
-    const span = isSpan(item);
-    const itemHeight = span ? laneHeight - 4 : POINT_SIZE;
-    const top = ROW_PADDING + lane * laneHeight + (laneHeight - itemHeight) / 2;
-    let left: number;
-    let width: number;
-    if (span) {
-      const x1 = Math.max(-2, toX(Math.max(start, domain.start)));
-      const x2 = Math.min(trackWidth + 2, toX(Math.min(end, domain.end)));
-      left = x1;
-      width = Math.max(3, x2 - x1);
-    } else {
-      left = toX(start) - POINT_SIZE / 2;
-      width = POINT_SIZE;
-    }
-    const selected = item.id === selectedId;
-    const active = span ? snapshot.time >= start && snapshot.time < end : Math.abs(snapshot.time - start) <= msPerPixel * 2;
-    const classes = [
-      'tw-item',
-      span ? 'tw-item--span' : 'tw-item--point',
-      item.group ? 'tw-item--group' : '',
-      selected ? 'tw-item--selected' : '',
-      active ? 'tw-item--active' : '',
-      getItemClassName?.(item) ?? '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-    const context: ItemRenderContext<RowMeta> = { row: layout.visible, width, selected, active };
-    return (
-      <button
-        key={item.id}
-        type="button"
-        className={classes}
-        data-item-id={item.id}
-        tabIndex={item.id === tabStopId ? 0 : -1}
-        aria-label={describeItem(item)}
-        aria-pressed={selected}
-        aria-describedby={hovered?.id === item.id ? tooltipId : undefined}
-        style={{ left, width, top, height: itemHeight }}
-        onClick={(event) => activateItem(item, layout.visible, event)}
-        onKeyDown={(event) => onItemKeyDown(event, item, layout)}
-        onFocus={(event) => {
-          setFocusedId(item.id);
-          showTooltip(item, event.currentTarget);
-        }}
-        onBlur={() => setHovered((current) => (current?.id === item.id ? null : current))}
-        onMouseEnter={(event) => showTooltip(item, event.currentTarget)}
-        onMouseLeave={() => setHovered((current) => (current?.id === item.id ? null : current))}
-      >
-        {renderItem ? (
-          renderItem(item, context)
-        ) : span ? (
-          <span className="tw-item-label">
-            {item.label}
-            {item.group ? <span className="tw-item-count">{item.group.count}</span> : null}
-          </span>
-        ) : item.group ? (
-          <span className="tw-item-count tw-item-count--point">{item.group.count}</span>
-        ) : null}
-      </button>
-    );
+  // Handlers read through a stable ref so memoised rows do not re-render when they change.
+  const actions = useRef<RowActions<RowMeta, ItemMeta>>(null as unknown as RowActions<RowMeta, ItemMeta>);
+  actions.current = {
+    activate: activateItem,
+    keyDown: onItemKeyDown,
+    focus: (item, element) => {
+      setFocusedId(item.id);
+      showTooltip(item, element);
+    },
+    hover: showTooltip,
+    leave: (item) => setHovered((current) => (current?.id === item.id ? null : current)),
+    toggle: (rowId) => controller.toggle(rowId),
   };
+
+  // Items under the cursor, per row; rows re-render only when this changes.
+  const activeByRow = useMemo(() => {
+    const result = new Map<string, string>();
+    const time = snapshot.time;
+    const tolerance = msPerPixel * 2;
+    for (const layout of visibleRowSlice) {
+      const limit = lowerBound(layout.starts, time + tolerance + Number.EPSILON);
+      let ids = '';
+      for (let i = 0; i < limit; i++) {
+        const item = layout.items[i]!;
+        const active = isSpan(item) ? time >= item.start && time < item.end : Math.abs(time - item.at) <= tolerance;
+        if (active) ids += `${item.id}\u0000`;
+      }
+      if (ids) result.set(layout.visible.row.id, ids);
+    }
+    return result;
+  }, [visibleRowSlice, snapshot.time, msPerPixel]);
 
   const frameStyle = {
     '--tw-label-width': `${labelWidth}px`,
@@ -840,52 +802,33 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
         >
           <div className="tw-rows" role="list" aria-label={labels.rows} style={{ height: rowLayouts.total }}>
             {visibleRowSlice.map((layout) => {
-              const { visible } = layout;
-              const firstIndex = lowerBound(layout.starts, viewport.start - duration * 0.05 - (POINT_SIZE * msPerPixel));
-              const rendered: TimelineItem<ItemMeta>[] = [];
-              // Spans that started before the viewport may still cross it.
-              for (let i = 0; i < firstIndex; i++) {
-                const item = layout.items[i]!;
-                if (itemEnd(item) >= viewport.start || item.id === focusedId) rendered.push(item);
-              }
-              const limit = viewport.end + duration * 0.05 + POINT_SIZE * msPerPixel;
-              for (let i = firstIndex; i < layout.items.length; i++) {
-                const item = layout.items[i]!;
-                if (itemStart(item) > limit) {
-                  if (focusedId && layout.items.slice(i).some((rest) => rest.id === focusedId)) {
-                    rendered.push(layout.items.find((rest) => rest.id === focusedId)!);
-                  }
-                  break;
-                }
-                rendered.push(item);
-              }
-              const inDomain = rendered.filter((item) => itemEnd(item) >= domain.start && itemStart(item) <= domain.end);
+              const rowId = layout.visible.row.id;
+              const inRow = (id: string | null | undefined): string | null => (id && itemIndex.get(id)?.rowId === rowId ? id : null);
               return (
-                <div
-                  key={visible.row.id}
-                  className={`tw-row tw-row--depth-${Math.min(visible.depth, 5)}`}
-                  role="listitem"
-                  style={{ top: layout.top, height: layout.height }}
-                  data-row-id={visible.row.id}
-                >
-                  <div className="tw-row-label" style={{ paddingLeft: 6 + visible.depth * indent }}>
-                    {visible.hasChildren ? (
-                      <button
-                        type="button"
-                        className="tw-toggle"
-                        aria-expanded={visible.expanded}
-                        aria-label={visible.expanded ? labels.collapseRow(visible.row.label) : labels.expandRow(visible.row.label)}
-                        onClick={() => controller.toggle(visible.row.id)}
-                      >
-                        <span aria-hidden="true" className="tw-chevron" />
-                      </button>
-                    ) : (
-                      <span className="tw-toggle-spacer" />
-                    )}
-                    <span className="tw-row-text">{renderRowLabel ? renderRowLabel(visible) : visible.row.label}</span>
-                  </div>
-                  <div className="tw-row-track">{inDomain.map((item) => renderItemElement(item, layout))}</div>
-                </div>
+                <RowView<RowMeta, ItemMeta>
+                  key={layout.visible.row.id}
+                  layout={layout}
+                  viewportStart={viewport.start}
+                  duration={duration}
+                  trackWidth={trackWidth}
+                  domainStart={domain.start}
+                  domainEnd={domain.end}
+                  laneHeight={laneHeight}
+                  indent={indent}
+                  mode={mode}
+                  activeKey={activeByRow.get(layout.visible.row.id) ?? ''}
+                  selectedId={inRow(selectedId)}
+                  tabStopId={inRow(tabStopId)}
+                  focusedId={inRow(focusedId)}
+                  describedId={inRow(hovered?.id)}
+                  tooltipId={tooltipId}
+                  labels={labels}
+                  formatTime={formatTime}
+                  renderRowLabel={renderRowLabel}
+                  renderItem={renderItem}
+                  getItemClassName={getItemClassName}
+                  actions={actions}
+                />
               );
             })}
           </div>
@@ -936,6 +879,167 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     </div>
   );
 }
+
+interface RowActions<RowMeta, ItemMeta> {
+  activate(item: TimelineItem<ItemMeta>, row: VisibleRow<RowMeta>, event: ReactMouseEvent | ReactKeyboardEvent): void;
+  keyDown(event: ReactKeyboardEvent<HTMLElement>, item: TimelineItem<ItemMeta>, layout: RowLayout<RowMeta, ItemMeta>): void;
+  focus(item: TimelineItem<ItemMeta>, element: HTMLElement): void;
+  hover(item: TimelineItem<ItemMeta>, element: HTMLElement): void;
+  leave(item: TimelineItem<ItemMeta>): void;
+  toggle(rowId: string): void;
+}
+
+interface RowViewProps<RowMeta, ItemMeta> {
+  layout: RowLayout<RowMeta, ItemMeta>;
+  viewportStart: number;
+  duration: number;
+  trackWidth: number;
+  domainStart: number;
+  domainEnd: number;
+  laneHeight: number;
+  indent: number;
+  mode: TimeMode;
+  /** Ids of the items under the cursor, joined; a change re-renders the row. */
+  activeKey: string;
+  selectedId: string | null;
+  tabStopId: string | null;
+  focusedId: string | null;
+  describedId: string | null;
+  tooltipId: string;
+  labels: TimelineLabels;
+  formatTime: (time: number, mode: TimeMode) => string;
+  renderRowLabel: ((row: VisibleRow<RowMeta>) => ReactNode) | undefined;
+  renderItem: ((item: TimelineItem<ItemMeta>, context: ItemRenderContext<RowMeta>) => ReactNode) | undefined;
+  getItemClassName: ((item: TimelineItem<ItemMeta>) => string | undefined) | undefined;
+  actions: { readonly current: RowActions<RowMeta, ItemMeta> };
+}
+
+function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>): ReactNode {
+  const { layout, viewportStart, duration, trackWidth, domainStart, domainEnd, laneHeight, indent, mode, labels, formatTime, actions } = props;
+  const { visible } = layout;
+  const msPerPixel = duration / Math.max(1, trackWidth);
+  const toX = (time: number): number => ((time - viewportStart) / duration) * trackWidth;
+  const viewportEnd = viewportStart + duration;
+  const active = useMemo(() => new Set(props.activeKey.split('\u0000').filter(Boolean)), [props.activeKey]);
+
+  // Items crossing the viewport (with a small margin), plus the focused item so focus is never lost.
+  const margin = duration * 0.05 + POINT_SIZE * msPerPixel;
+  const rendered: TimelineItem<ItemMeta>[] = [];
+  const firstIndex = lowerBound(layout.starts, viewportStart - margin);
+  for (let i = 0; i < firstIndex; i++) {
+    const item = layout.items[i]!;
+    if (itemEnd(item) >= viewportStart || item.id === props.focusedId) rendered.push(item);
+  }
+  for (let i = firstIndex; i < layout.items.length; i++) {
+    const item = layout.items[i]!;
+    if (itemStart(item) > viewportEnd + margin) {
+      const focused = props.focusedId ? layout.items.slice(i).find((rest) => rest.id === props.focusedId) : undefined;
+      if (focused) rendered.push(focused);
+      break;
+    }
+    rendered.push(item);
+  }
+
+  const describe = (item: TimelineItem<ItemMeta>): string => {
+    const parts = [item.label ?? item.id];
+    if (item.group) parts.push(labels.group(item.group.count));
+    parts.push(isSpan(item) ? `${formatTime(item.start, mode)} – ${formatTime(item.end, mode)}` : formatTime(item.at, mode));
+    return parts.join(', ');
+  };
+
+  return (
+    <div
+      className={`tw-row tw-row--depth-${Math.min(visible.depth, 5)}`}
+      role="listitem"
+      style={{ top: layout.top, height: layout.height }}
+      data-row-id={visible.row.id}
+    >
+      <div className="tw-row-label" style={{ paddingLeft: 6 + visible.depth * indent }}>
+        {visible.hasChildren ? (
+          <button
+            type="button"
+            className="tw-toggle"
+            aria-expanded={visible.expanded}
+            aria-label={visible.expanded ? labels.collapseRow(visible.row.label) : labels.expandRow(visible.row.label)}
+            onClick={() => actions.current.toggle(visible.row.id)}
+          >
+            <span aria-hidden="true" className="tw-chevron" />
+          </button>
+        ) : (
+          <span className="tw-toggle-spacer" />
+        )}
+        <span className="tw-row-text">{props.renderRowLabel ? props.renderRowLabel(visible) : visible.row.label}</span>
+      </div>
+      <div className="tw-row-track">
+        {rendered.map((item) => {
+          const start = itemStart(item);
+          const end = itemEnd(item);
+          if (end < domainStart || start > domainEnd) return null;
+          const lane = layout.lanes.get(item.id) ?? 0;
+          const span = isSpan(item);
+          const itemHeight = span ? laneHeight - 4 : POINT_SIZE;
+          const top = ROW_PADDING + lane * laneHeight + (laneHeight - itemHeight) / 2;
+          let left: number;
+          let width: number;
+          if (span) {
+            const x1 = Math.max(-2, toX(Math.max(start, domainStart)));
+            const x2 = Math.min(trackWidth + 2, toX(Math.min(end, domainEnd)));
+            left = x1;
+            width = Math.max(3, x2 - x1);
+          } else {
+            left = toX(start) - POINT_SIZE / 2;
+            width = POINT_SIZE;
+          }
+          const selected = item.id === props.selectedId;
+          const isActive = active.has(item.id);
+          const classes = [
+            'tw-item',
+            span ? 'tw-item--span' : 'tw-item--point',
+            item.group ? 'tw-item--group' : '',
+            selected ? 'tw-item--selected' : '',
+            isActive ? 'tw-item--active' : '',
+            props.getItemClassName?.(item) ?? '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          const context: ItemRenderContext<RowMeta> = { row: visible, width, selected, active: isActive };
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={classes}
+              data-item-id={item.id}
+              tabIndex={item.id === props.tabStopId ? 0 : -1}
+              aria-label={describe(item)}
+              aria-pressed={selected}
+              aria-describedby={props.describedId === item.id ? props.tooltipId : undefined}
+              style={{ left, width, top, height: itemHeight }}
+              onClick={(event) => actions.current.activate(item, visible, event)}
+              onKeyDown={(event) => actions.current.keyDown(event, item, layout)}
+              onFocus={(event) => actions.current.focus(item, event.currentTarget)}
+              onBlur={() => actions.current.leave(item)}
+              onMouseEnter={(event) => actions.current.hover(item, event.currentTarget)}
+              onMouseLeave={() => actions.current.leave(item)}
+            >
+              {props.renderItem ? (
+                props.renderItem(item, context)
+              ) : span ? (
+                <span className="tw-item-label">
+                  {item.label}
+                  {item.group ? <span className="tw-item-count">{item.group.count}</span> : null}
+                </span>
+              ) : item.group ? (
+                <span className="tw-item-count tw-item-count--point">{item.group.count}</span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const RowView = memo(RowViewImpl) as typeof RowViewImpl;
 
 function DefaultDetail<RowMeta, ItemMeta>(props: {
   item: TimelineItem<ItemMeta>;
