@@ -13,14 +13,14 @@ Les scénarios suivent le [jeu de référence](JEU-REFERENCE.md). La page `examp
 | Machine | Conteneur Linux, 4 cœurs virtuels Intel Xeon 2,1 GHz, sans GPU |
 | Vue | 1440 × 900, densité 1, hauteur de timeline 640 px |
 | Rendu | Lignes et marqueurs HTML/CSS, axe SVG, limitation verticale et horizontale au visible |
-| Build | Mode développement de React (plus lent que la production) |
+| Build | Séries 1 et 2 : serveur de développement Vite, React en mode développement ; colonne production : `vite build` servi par `vite preview` |
 
 Les durées mesurées incluent deux images d'affichage après la commande (`requestAnimationFrame` ×2) : leur plancher est d'environ 33 ms. Le navigateur sans interface cadence les images entre 30 et 60 par seconde.
 
 ## Volumes obtenus
 
 | Mesure | Jeu de référence | Obtenu |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Lignes totales | 211 | 211 |
 | Lignes visibles au départ | 51 | 51 |
 | Éléments transmis pour la fenêtre avec marge | 5 000 | 5 000 |
@@ -31,26 +31,26 @@ Les durées mesurées incluent deux images d'affichage après la commande (`requ
 
 Série 2 : après la mémorisation des lignes et les corrections de la relecture. La série 1 (vue redessinée entièrement à chaque image) est conservée pour comparaison.
 
-| Scénario | Série 1 | Série 2 |
-| --- | --- | --- |
-| 1. Affichage initial (montage jusqu'à deux images) | 232 ms | 235 ms |
-| 1. Dépliage ou repliage d'un type, médiane | 69 ms | 49 ms |
-| 2. Zoom par pas, médiane / p95 | 34 / 64 ms | 33 / 56 ms |
-| 2. Déplacement horizontal, médiane / p95 | 34 / 53 ms | 34 / 50 ms |
-| 2. Défilement vertical, médiane | 46 ms | 33 ms |
-| 3. Remplacement des 5 000 éléments (source immédiate, génération du lot incluse) | 33 ms (1 essai) | médiane 67 ms, max 83 ms (5 essais) |
-| 4. Lecture 1×, 60×, 600× : images/s | 48 à 49 | 60 |
-| 4. Lecture : p95 de durée d'image, images > 50 ms sur 2 s | 50 ms, 1 à 3 | 16,7 ms, 0 |
-| 4. Rendu React de la timeline par mise à jour, médiane / p95 | 6,6 à 7,1 / 47 à 53 ms | 3,1 à 5,0 / 7 à 8,6 ms |
-| 4. Boucle complète | retour au début confirmé | idem |
-| 5. Avance logique / temps réel, préparation 0 ms | 99 % (85 % avant correction) | 100 % |
-| 5. Avance logique / temps réel, préparation 50 ms | 20 % | 23 % |
-| 5. Avance logique / temps réel, préparation 200 ms | 4 % | 6 % |
-| 6. Pause, saut et Stop pendant une attente de 200 ms | dernière destination appliquée | idem |
-| 7. Rewind de 300 ms actives | 318 ms réelles, cible exacte | 319 ms, cible exacte |
-| 8. Collections dynamiques, 5 modifications / 50 ms, jusqu'à l'image | médiane 24 ms, p95 30 ms | 16 / 17 ms |
-| 9. Direct, source lente (200 ms), rafraîchissements toutes les 50 ms pendant 3 s | 14 lots sur 15 demandes, écart 1 s simulée | idem |
-| 10. Historique puis retour au Direct | aucune reprise involontaire | idem |
+| Scénario | Série 1 | Série 2 | Série 2, build de production |
+| --- | --- | --- | --- |
+| 1. Affichage initial (montage jusqu'à deux images) | 232 ms | 235 ms | 148 ms |
+| 1. Dépliage ou repliage d'un type, médiane | 69 ms | 49 ms | 33 ms |
+| 2. Zoom par pas, médiane / p95 | 34 / 64 ms | 33 / 56 ms | 33 / 34 ms |
+| 2. Déplacement horizontal, médiane / p95 | 34 / 53 ms | 34 / 50 ms | 33 / 35 ms |
+| 2. Défilement vertical, médiane | 46 ms | 33 ms | 33 ms |
+| 3. Remplacement des 5 000 éléments (source immédiate, génération du lot incluse) | 33 ms (1 essai) | médiane 67 ms, max 83 ms (5 essais) | médiane 50 ms, max 50 ms |
+| 4. Lecture 1×, 60×, 600× : images/s | 48 à 49 | 60 | 60 |
+| 4. Lecture : p95 de durée d'image, images > 50 ms sur 2 s | 50 ms, 1 à 3 | 16,7 ms, 0 | 16,8 ms, 0 |
+| 4. Rendu React de la timeline par mise à jour, médiane / p95 | 6,6 à 7,1 / 47 à 53 ms | 3,1 à 5,0 / 7 à 8,6 ms | non mesuré (`Profiler` inactif en production) |
+| 4. Boucle complète | retour au début confirmé | idem | idem |
+| 5. Avance logique / temps réel, préparation 0 ms | 99 % (85 % avant correction) | 100 % | 100 % |
+| 5. Avance logique / temps réel, préparation 50 ms | 20 % | 23 % | 23 % |
+| 5. Avance logique / temps réel, préparation 200 ms | 4 % | 6 % | 7 % |
+| 6. Pause, saut et Stop pendant une attente de 200 ms | dernière destination appliquée | idem | idem |
+| 7. Rewind de 300 ms actives | 318 ms réelles, cible exacte | 319 ms, cible exacte | 311 ms, cible exacte |
+| 8. Collections dynamiques, 5 modifications / 50 ms, jusqu'à l'image | médiane 24 ms, p95 30 ms | 16 / 17 ms | 16 / 17 ms |
+| 9. Direct, source lente (200 ms), rafraîchissements toutes les 50 ms pendant 3 s | 14 lots sur 15 demandes, écart 1 s simulée | idem | idem |
+| 10. Historique puis retour au Direct | aucune reprise involontaire | idem | idem |
 
 ## Lecture des résultats
 
@@ -63,6 +63,6 @@ Série 2 : après la mémorisation des lignes et les corrections de la relecture
 
 ## À compléter
 
-- Même série sur un poste de travail réel (navigateur avec écran, build de production) et sur un navigateur WebKit ou Firefox.
+- Même série sur un poste de travail réel (navigateur avec écran) et sur un navigateur WebKit ou Firefox.
 - Mémoire : non mesurée dans cette série.
-- Profilage du remplacement de lot en build de production, pour séparer validation, pistes et rendu.
+- Profilage du remplacement de lot (50 ms en production), pour séparer validation, pistes et rendu.
