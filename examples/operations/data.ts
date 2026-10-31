@@ -150,9 +150,10 @@ function lowerIndex(list: readonly Communication[], time: number): number {
 
 const BINS = [1_000, 5_000, 15_000, 30_000, MINUTE, 5 * MINUTE, 15 * MINUTE, 30 * MINUTE, HOUR, 2 * HOUR];
 
-/** Grouping chosen by the application for a visible duration: about 70 bins across the view. */
+/** Grouping chosen by the application for a visible duration: one bin per ~16 px of screen, at most 70. */
 export function binFor(visibleDuration: number): number {
-  const wanted = visibleDuration / 70;
+  const bins = typeof innerWidth === 'number' ? Math.max(16, Math.min(70, Math.round((innerWidth - 300) / 16))) : 70;
+  const wanted = visibleDuration / bins;
   if (wanted < 500) return 0;
   return BINS.find((bin) => bin >= wanted) ?? BINS[BINS.length - 1]!;
 }

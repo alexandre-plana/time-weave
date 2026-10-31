@@ -649,3 +649,23 @@
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------- narrow screens */
+
+.tw-timeline[data-narrow] .tw-toolbar {
+  gap: 6px;
+  padding: 6px;
+}
+
+.tw-timeline[data-narrow] .tw-zoom .tw-button--text {
+  display: none;
+}
+
+.tw-timeline[data-narrow] .tw-readout {
+  margin-left: 0;
+  flex-basis: 100%;
+}
+
+.tw-timeline[data-narrow] .tw-corner {
+  padding: 0 8px;
+}

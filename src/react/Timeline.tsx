@@ -156,7 +156,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     controller,
     height = 420,
     laneHeight = 26,
-    labelWidth = 220,
+    labelWidth: preferredLabelWidth = 220,
     initialTrackWidth = 800,
     locale,
     formatTick,
@@ -179,9 +179,21 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   const formatTime = props.formatTime ?? ((time: number, timeMode: TimeMode) => formatTimeReadout(time, timeMode, locale));
 
   const [axisRef, trackWidth] = useElementWidth(initialTrackWidth);
+  const [frameWidthRef, frameWidth] = useElementWidth(initialTrackWidth + preferredLabelWidth);
+  // On narrow screens the label column gives room to the track.
+  const narrow = frameWidth < 640;
+  const labelWidth = narrow ? Math.min(preferredLabelWidth, Math.max(96, Math.round(frameWidth * 0.34))) : preferredLabelWidth;
+  const indent = narrow ? 10 : 16;
   const [bodySizeRef, bodyHeight] = useElementHeight(300);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const setFrameRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      frameRef.current = element;
+      frameWidthRef(element);
+    },
+    [frameWidthRef],
+  );
   const axisElement = useRef<HTMLDivElement | null>(null);
   const setAxisRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -713,13 +725,14 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
 
   return (
     <div
-      ref={frameRef}
+      ref={setFrameRef}
       className={['tw-timeline', className].filter(Boolean).join(' ')}
       style={frameStyle}
       role="region"
       aria-label={labels.timeline}
       data-status={snapshot.status}
       data-transport={snapshot.transport}
+      data-narrow={narrow || undefined}
     >
       {(toolbar || showZoomControls) && (
         <div className="tw-toolbar">
@@ -855,7 +868,7 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
                   style={{ top: layout.top, height: layout.height }}
                   data-row-id={visible.row.id}
                 >
-                  <div className="tw-row-label" style={{ paddingLeft: 10 + visible.depth * 16 }}>
+                  <div className="tw-row-label" style={{ paddingLeft: 6 + visible.depth * indent }}>
                     {visible.hasChildren ? (
                       <button
                         type="button"
