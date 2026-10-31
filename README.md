@@ -21,8 +21,7 @@ Time Weave affiche plusieurs lignes hiérarchiques sur un axe du temps, de la mi
 
 ## Le film
 
-<!-- LECTEUR VIDÉO : remplacer l'image ci-dessous par l'adresse https://github.com/user-attachments/assets/… obtenue en déposant motion/out/time-weave-demo-web.mp4 sur GitHub. -->
-[![Voir le film de présentation (60 s)](docs/assets/film-preview.png)](motion/out/time-weave-demo.mp4)
+https://github.com/user-attachments/assets/902d3060-0dcb-45dd-8415-b2aee7ceac4d
 
 Le film dure 60 secondes, en 1080p à 60 i/s, avec une bande-son. Il est découpé en sept chapitres : hiérarchie, échelles, **rejeu**, synchronisation, Direct, **thèmes**, clavier. Sa note d'intention et son découpage se trouvent dans [`motion/`](motion/README.md). Il est entièrement généré par le code de ce dépôt.
 
