@@ -198,9 +198,12 @@ describe('TimelineOverview', () => {
     });
     const { controller, scheduler } = makeController({ source: counted, viewport: { start: 0, end: 10_000 }, followPlayback: false });
     const commits: string[] = [];
+    // The strip formats its window text on every render of its own.
+    let stripRenders = 0;
+    const labels = { overviewRange: (start: string, end: string) => (stripRenders += 1, `${start}–${end}`) };
     const { container } = render(
       <Profiler id="overview" onRender={(_id, phase) => commits.push(phase)}>
-        <TimelineOverview controller={controller} />
+        <TimelineOverview controller={controller} labels={labels} />
       </Profiler>,
     );
     const cursor = container.querySelector('.tw-overview-cursor') as HTMLElement;
@@ -209,10 +212,12 @@ describe('TimelineOverview', () => {
     act(() => controller.play());
     act(() => scheduler.frame(16));
     reads = 0;
+    stripRenders = 0;
     const commitsBefore = commits.length;
     for (let i = 0; i < 20; i += 1) act(() => scheduler.frame(16));
     expect(controller.getSnapshot().time).toBeGreaterThan(300);
     expect(reads).toBe(0);
+    expect(stripRenders).toBe(0);
     // One commit per frame, each from the cursor alone.
     expect(commits.length - commitsBefore).toBeLessThanOrEqual(20);
     expect(cursor.style.transform).toMatch(/translateX\(2[0-9.]+px\)/);
