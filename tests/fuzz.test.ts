@@ -275,9 +275,7 @@ async function runSequence(config: Config, cmds: readonly Cmd[]): Promise<{ step
     if (!(viewport.start >= domain.start && viewport.end <= domain.end)) {
       fail(`viewport [${viewport.start}, ${viewport.end}] outside domain [${domain.start}, ${domain.end}]`);
     }
-    // Known violation (see the it.fails case below): extendDomain does not re-fit a viewport
-    // that was capped by the previous domain length, so the bound uses the initial domain.
-    const minDuration = Math.min(s.minViewportDuration, domain.end - domain.start, config.domainEnd);
+    const minDuration = Math.min(s.minViewportDuration, domain.end - domain.start);
     if (!(viewport.end - viewport.start >= minDuration - 1e-9)) {
       fail(`viewport duration ${viewport.end - viewport.start} < ${minDuration}`);
     }
@@ -637,9 +635,8 @@ describe('fuzz: controller invariants', () => {
   // duration larger than the domain, the viewport is capped to the whole domain; after
   // extendDomain it keeps the old length instead of growing to min(minViewportDuration,
   // new domain length). Suspected location: TimelineController.extendDomain, which
-  // updates `domain` without re-fitting `viewport` (fitViewport). Kept as `it.fails`
-  // until the controller is fixed; the main fuzz bound uses the initial domain length.
-  it.fails('keeps viewport duration >= min(minViewportDuration, domain length) after extendDomain', () => {
+  // updated `domain` without re-fitting `viewport`. Fixed; kept as a regression test.
+  it('keeps viewport duration >= min(minViewportDuration, domain length) after extendDomain', () => {
     const controller = createTimelineController({
       mode: 'relative',
       domain: { start: 0, end: 1000 },

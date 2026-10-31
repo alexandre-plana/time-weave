@@ -705,6 +705,8 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       const previousEnd = this.domain.end;
       if (end > previousEnd) {
         this.domain = { start: this.domain.start, end };
+        // The minimum viewport duration may have been capped by the former domain length.
+        this.viewport = fitViewport(this.viewport, this.domain, this.minViewportDuration);
         this.keyInstantsCache = this.keyInstantsInDomain(this.keys);
         if (this.source.kind === 'static') this.setCoverage(this.domain);
         if (this.prep?.cause === 'loop' && this.transport === 'playing') {
