@@ -1,7 +1,7 @@
 # Plan de réalisation V1
 
 Date : 31 octobre 2026.
-Statut : plan rédigé à partir de la [conception V1 validée](CONCEPTION-V1.md) ; exécution engagée le même jour.
+Statut : plan rédigé à partir de la [conception V1 validée](CONCEPTION-V1.md) ; étapes 1 à 5 livrées, étape 6 engagée (voir le journal).
 
 Ce plan séquence les livraisons vérifiables. Chaque étape se termine par des tests qui passent et un commit poussé. Le package reste marqué `private` : aucune publication npm n'est prévue par ce plan.
 
@@ -98,3 +98,7 @@ L'avancement est tenu dans la section « Journal » ci-dessous et dans le README
 ## Journal
 
 - 31 octobre 2026 : plan rédigé ; étapes 1 à 3 engagées.
+- 31 octobre 2026 : étapes 1 à 3 livrées (moteur, données, Direct, collections dynamiques), avec tests de règles sur horloge manuelle.
+- 31 octobre 2026 : étape 4 livrée (hooks, `Timeline`, `PlaybackControls`, `DetailModal`, styles), tests jsdom.
+- 31 octobre 2026 : étape 5 livrée (exemples opérations et histoire d'entreprise).
+- 31 octobre 2026 : étape 6 engagée : page de mesure et [première série](MESURES.md) ; vérification de l'archive installée dans une application distincte ; CI GitHub Actions. Une mesure a révélé une perte de 15 % du temps de lecture, corrigée.
