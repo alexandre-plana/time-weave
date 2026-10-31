@@ -102,8 +102,8 @@ export interface TimelineProps<RowMeta = unknown, ItemMeta = unknown, KeyMeta = 
   /** Header of the row column. */
   rowsHeader?: ReactNode;
   /**
-   * Colour theme. `'auto'` (default) follows `prefers-color-scheme`; `'light'`
-   * or `'dark'` sets `data-theme` on the frame and on the detail dialog.
+   * Colour theme, written to `data-theme` on the frame and the detail dialog.
+   * `'light'` (default), `'dark'`, or `'auto'` to follow `prefers-color-scheme`.
    */
   theme?: 'light' | 'dark' | 'auto';
   /**
@@ -326,12 +326,12 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     showZoomControls = true,
     toolbar,
     rowsHeader,
-    theme = 'auto',
+    theme = 'light',
     highlights = EMPTY_HIGHLIGHTS,
     className,
     style,
   } = props;
-  const forcedTheme = theme === 'auto' ? undefined : theme;
+  const forcedTheme = theme;
   const labels = useMemo(() => ({ ...defaultLabels, ...props.labels }), [props.labels]);
   const baseId = useId().replace(/:/g, '');
   const tooltipId = `tw-tooltip-${baseId}`;

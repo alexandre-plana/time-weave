@@ -140,7 +140,7 @@ Le [guide d'utilisation](docs/GUIDE.md) détaille chaque option, le contrat de p
 
 ## Thèmes
 
-Toute l'apparence passe par des variables CSS `--tw-*`. Le clair et le sombre (prop `theme` ou `prefers-color-scheme`) sont deux thèmes parmi d'autres :
+Toute l'apparence passe par des variables CSS `--tw-*`. Le thème par défaut est clair, inspiré de GitHub ; le sombre s'active avec `theme="dark"`, ou `theme="auto"` pour suivre le système. Ce sont deux thèmes parmi d'autres :
 
 ```css
 .tw-timeline.theme-ocean {

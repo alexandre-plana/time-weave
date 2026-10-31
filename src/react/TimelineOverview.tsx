@@ -13,6 +13,8 @@ export interface TimelineOverviewProps<RowMeta = unknown, ItemMeta = unknown, Ke
   labels?: Partial<TimelineLabels>;
   locale?: string;
   formatTime?: (time: number, mode: TimeMode) => string;
+  /** Colour theme, as on `Timeline`: `'light'` (default), `'dark'` or `'auto'`. */
+  theme?: 'light' | 'dark' | 'auto';
   className?: string;
   /** Item density histogram. Defaults to `true`. */
   showDensity?: boolean;
@@ -279,6 +281,7 @@ export function TimelineOverview<RowMeta = unknown, ItemMeta = unknown, KeyMeta 
   return (
     <div
       className={['tw-overview', className].filter(Boolean).join(' ')}
+      data-theme={props.theme ?? 'light'}
       role="group"
       aria-label={labels.overview}
       style={{ height }}

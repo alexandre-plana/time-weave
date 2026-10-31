@@ -410,9 +410,8 @@ describe('accessibility audit', () => {
 
   it('the detail dialog is rendered in document.body and makes the timeline inert while open', () => {
     const { controller } = makeController();
-    const { container } = render(<Timeline controller={controller} detail />);
+    const { container } = render(<Timeline controller={controller} detail theme="dark" />);
     const frame = container.querySelector<HTMLElement>('.tw-timeline')!;
-    frame.setAttribute('data-theme', 'dark');
     const trigger = screen.getByRole('button', { name: /Cycle/ });
     act(() => trigger.focus());
     fireEvent.click(trigger);
@@ -428,13 +427,13 @@ describe('accessibility audit', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('theme sets data-theme on the frame only when forced', () => {
+  it('theme is light by default and always written to data-theme', () => {
     const { controller } = makeController();
     const { container, rerender } = render(<Timeline controller={controller} />);
     const frame = () => container.querySelector<HTMLElement>('.tw-timeline')!;
-    expect(frame().hasAttribute('data-theme')).toBe(false);
+    expect(frame().getAttribute('data-theme')).toBe('light');
     rerender(<Timeline controller={controller} theme="auto" />);
-    expect(frame().hasAttribute('data-theme')).toBe(false);
+    expect(frame().getAttribute('data-theme')).toBe('auto');
     rerender(<Timeline controller={controller} theme="light" />);
     expect(frame().getAttribute('data-theme')).toBe('light');
     rerender(<Timeline controller={controller} theme="dark" />);
@@ -450,7 +449,7 @@ describe('accessibility audit', () => {
     rerender(<Timeline controller={controller} detail theme="dark" />);
     expect(backdrop().getAttribute('data-theme')).toBe('dark');
     rerender(<Timeline controller={controller} detail />);
-    expect(backdrop().hasAttribute('data-theme')).toBe(false);
+    expect(backdrop().getAttribute('data-theme')).toBe('light');
   });
 
   it('keeps a compact "whole period" button on narrow screens', () => {
@@ -561,11 +560,11 @@ describe('final review regressions', () => {
     const { controller } = makeController();
     render(
       <div data-theme="light">
-        <Timeline controller={controller} detail />
+        <Timeline controller={controller} detail theme="auto" />
       </div>,
     );
     fireEvent.click(screen.getByRole('button', { name: /Cycle/ }));
-    expect(document.querySelector('.tw-modal-backdrop')?.getAttribute('data-theme')).toBeNull();
+    expect(document.querySelector('.tw-modal-backdrop')?.getAttribute('data-theme')).toBe('auto');
   });
 
   it('focus follows an item moved to another row', () => {

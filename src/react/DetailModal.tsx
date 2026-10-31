@@ -19,7 +19,7 @@ export interface DetailModalProps {
    */
   inertRoot?: HTMLElement | null;
   /** Forces the dialog theme; otherwise it is taken from `inertRoot` (see above). */
-  theme?: 'light' | 'dark';
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

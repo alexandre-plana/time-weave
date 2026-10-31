@@ -319,7 +319,7 @@ export function OwnedController() {
 | `showZoomControls` | `true` | Zoom out, zoom in, show whole period |
 | `toolbar` | none | Content placed in the toolbar, e.g. `<PlaybackControls />` |
 | `rowsHeader` | `labels.rows` | Header of the row column |
-| `theme` | `'auto'` | `'auto'` follows `prefers-color-scheme`; `'light'` or `'dark'` forces the theme (sets `data-theme` on the frame and on the detail dialog) |
+| `theme` | `'light'` | `'light'`, `'dark'`, or `'auto'` to follow `prefers-color-scheme`; written to `data-theme` on the frame and on the detail dialog |
 | `className`, `style` | none | Applied to the `.tw-timeline` frame |
 
 When `renderItem` displays text, the accessible name returned by `getItemAriaLabel` must contain that visible text (WCAG 2.5.3, "Label in Name"). Without this prop the default name is kept.
@@ -460,7 +460,7 @@ Items form a single tab stop. The arrow keys move within the row (← →) or to
 
 ## Styles
 
-Import `@time-weave/react/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). A dark theme follows `prefers-color-scheme`; a `data-theme="light"` or `"dark"` attribute on the `.tw-timeline` element itself forces a theme, whatever the system preference. Use the `theme` prop (`'light' | 'dark' | 'auto'`, default `'auto'`) to set it: it is applied to the frame and to the detail dialog. The variables can also be overridden through `className` / `style`.
+Import `@time-weave/react/styles.css`. Colours and sizes are `--tw-*` custom properties defined on `.tw-timeline` (and on `.tw-modal-backdrop` for the dialog). The default theme is light, in a GitHub-inspired palette (Mona Sans, JetBrains Mono, blue `#0969da`, borders `#d0d7de`). The `theme` prop of `Timeline` and `TimelineOverview` (`'light'` by default, `'dark'`, or `'auto'` to follow `prefers-color-scheme`) is written to `data-theme` on the element and the detail dialog. Fonts are not bundled: load Mona Sans and JetBrains Mono (e.g. from Google Fonts) or override `--tw-font` and `--tw-mono`. The variables can also be overridden through `className` / `style`.
 
 The classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` and `tw-item--active` (item under the confirmed cursor) let you adapt the display; `getItemClassName` adds classes per item. The frame also exposes `data-status` and `data-transport` attributes.
 

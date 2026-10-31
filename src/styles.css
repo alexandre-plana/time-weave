@@ -1,3 +1,23 @@
+  --tw-bg: #0d1117;
+  --tw-surface: #161b22;
+  --tw-ink: #e6edf3;
+  --tw-muted: #9198a1;
+  --tw-line: #30363d;
+  --tw-grid: #1b2028;
+  --tw-grid-major: #2a3038;
+  --tw-accent: #4493f8;
+  --tw-accent-soft: #12263f;
+  --tw-live: #f85149;
+  --tw-item-bg: #0f2440;
+  --tw-item-border: #1f4c85;
+  --tw-item-ink: #79c0ff;
+  --tw-group-bg: #231a3a;
+  --tw-group-border: #4f3a7f;
+  --tw-group-ink: #d2a8ff;
+  --tw-point: #4493f8;
+  --tw-group-point: #ab7df8;
+  --tw-key: #f78166;
+  --tw-focus: #4493f8;
 /* Time Weave — default styles. Override the --tw-* variables or the tw-* classes. */
 
 /* The variables are also defined on the detail dialog, rendered in document.body. */
@@ -5,27 +25,27 @@
 .tw-overview,
 .tw-modal-backdrop {
   --tw-bg: #ffffff;
-  --tw-surface: #f9fafb;
-  --tw-ink: #222832;
-  --tw-muted: #646c79;
-  --tw-line: #e6e9ee;
-  --tw-grid: #eef0f4;
-  --tw-grid-major: #dde1e8;
-  --tw-accent: #4772e9;
-  --tw-accent-soft: #edf2ff;
-  --tw-live: #d9483b;
-  --tw-item-bg: #edf4ff;
-  --tw-item-border: #b9cff0;
-  --tw-item-ink: #2f5d9b;
-  --tw-group-bg: #f1edf9;
-  --tw-group-border: #cdbfe9;
-  --tw-group-ink: #5f4999;
-  --tw-point: var(--tw-accent);
-  --tw-group-point: #9a85cf;
-  --tw-key: #b08027;
-  --tw-focus: #4772e9;
-  --tw-font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --tw-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  --tw-surface: #f6f8fa;
+  --tw-ink: #1f2328;
+  --tw-muted: #636c76;
+  --tw-line: #d0d7de;
+  --tw-grid: #eaeef2;
+  --tw-grid-major: #d8dee4;
+  --tw-accent: #0969da;
+  --tw-accent-soft: #ddf4ff;
+  --tw-live: #cf222e;
+  --tw-item-bg: #dbeafe;
+  --tw-item-border: #93c5fd;
+  --tw-item-ink: #1e40af;
+  --tw-group-bg: #ede9fe;
+  --tw-group-border: #c4b5fd;
+  --tw-group-ink: #5b21b6;
+  --tw-point: #0969da;
+  --tw-group-point: #8250df;
+  --tw-key: #e8663f;
+  --tw-focus: #0969da;
+  --tw-font: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --tw-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
   --tw-axis-height: 40px;
   --tw-label-width: 220px;
   --tw-radius: 6px;
@@ -34,10 +54,10 @@
   --tw-highlight-neutral-edge: #c3c8d1;
   --tw-highlight-neutral-tag: #eef0f3;
   --tw-highlight-neutral-ink: #3d4450;
-  --tw-highlight-info: rgb(71 114 233 / 0.08);
-  --tw-highlight-info-edge: #a9bff3;
-  --tw-highlight-info-tag: #e6edfd;
-  --tw-highlight-info-ink: #24489f;
+  --tw-highlight-info: rgb(9 105 218 / 0.07);
+  --tw-highlight-info-edge: #9cc5f4;
+  --tw-highlight-info-tag: #ddf4ff;
+  --tw-highlight-info-ink: #0550ae;
   --tw-highlight-success: rgb(34 148 90 / 0.09);
   --tw-highlight-success-edge: #9fd3b5;
   --tw-highlight-success-tag: #e2f3e9;
@@ -75,27 +95,31 @@
   box-sizing: border-box;
 }
 
+/* Light is the default. Dark applies with data-theme="dark", or "auto" on a dark system. */
 @media (prefers-color-scheme: dark) {
-  .tw-timeline:not([data-theme='light']),
-  .tw-overview:not([data-theme='light']),
-  .tw-modal-backdrop:not([data-theme='light']) {
-    --tw-bg: #15181d;
-    --tw-surface: #1b1f26;
-    --tw-ink: #e6e9ef;
-    --tw-muted: #8e97a6;
-    --tw-line: #2a303a;
-    --tw-grid: #20252d;
-    --tw-grid-major: #303744;
-    --tw-accent: #7b9cf5;
-    --tw-accent-soft: #232c45;
-    --tw-item-bg: #1f2b40;
-    --tw-item-border: #3a5684;
-    --tw-item-ink: #a9c4f1;
-    --tw-group-bg: #2a2440;
-    --tw-group-border: #54478a;
-    --tw-group-ink: #c4b5ef;
-    --tw-group-point: #9a85cf;
-    --tw-key: #e0b25b;
+  .tw-timeline[data-theme='auto'],
+  .tw-overview[data-theme='auto'],
+  .tw-modal-backdrop[data-theme='auto'] {
+    --tw-bg: #0d1117;
+    --tw-surface: #161b22;
+    --tw-ink: #e6edf3;
+    --tw-muted: #9198a1;
+    --tw-line: #30363d;
+    --tw-grid: #1b2028;
+    --tw-grid-major: #2a3038;
+    --tw-accent: #4493f8;
+    --tw-accent-soft: #12263f;
+    --tw-live: #f85149;
+    --tw-item-bg: #0f2440;
+    --tw-item-border: #1f4c85;
+    --tw-item-ink: #79c0ff;
+    --tw-group-bg: #231a3a;
+    --tw-group-border: #4f3a7f;
+    --tw-group-ink: #d2a8ff;
+    --tw-point: #4493f8;
+    --tw-group-point: #ab7df8;
+    --tw-key: #f78166;
+    --tw-focus: #4493f8;
     --tw-highlight-neutral: rgb(142 151 166 / 0.1);
     --tw-highlight-neutral-edge: #444c59;
     --tw-highlight-neutral-tag: #262b33;
@@ -122,23 +146,26 @@
 .tw-timeline[data-theme='dark'],
 .tw-overview[data-theme='dark'],
 .tw-modal-backdrop[data-theme='dark'] {
-  --tw-bg: #15181d;
-  --tw-surface: #1b1f26;
-  --tw-ink: #e6e9ef;
-  --tw-muted: #8e97a6;
-  --tw-line: #2a303a;
-  --tw-grid: #20252d;
-  --tw-grid-major: #303744;
-  --tw-accent: #7b9cf5;
-  --tw-accent-soft: #232c45;
-  --tw-item-bg: #1f2b40;
-  --tw-item-border: #3a5684;
-  --tw-item-ink: #a9c4f1;
-  --tw-group-bg: #2a2440;
-  --tw-group-border: #54478a;
-  --tw-group-ink: #c4b5ef;
-  --tw-group-point: #9a85cf;
-  --tw-key: #e0b25b;
+  --tw-bg: #0d1117;
+  --tw-surface: #161b22;
+  --tw-ink: #e6edf3;
+  --tw-muted: #9198a1;
+  --tw-line: #30363d;
+  --tw-grid: #1b2028;
+  --tw-grid-major: #2a3038;
+  --tw-accent: #4493f8;
+  --tw-accent-soft: #12263f;
+  --tw-live: #f85149;
+  --tw-item-bg: #0f2440;
+  --tw-item-border: #1f4c85;
+  --tw-item-ink: #79c0ff;
+  --tw-group-bg: #231a3a;
+  --tw-group-border: #4f3a7f;
+  --tw-group-ink: #d2a8ff;
+  --tw-point: #4493f8;
+  --tw-group-point: #ab7df8;
+  --tw-key: #f78166;
+  --tw-focus: #4493f8;
   --tw-highlight-neutral: rgb(142 151 166 / 0.1);
   --tw-highlight-neutral-edge: #444c59;
   --tw-highlight-neutral-tag: #262b33;
@@ -874,7 +901,7 @@
 /*
  * The --tw-* variables must also be defined on .tw-overview (it may be rendered
  * outside .tw-timeline): add `.tw-overview` to the selectors that declare them
- * (light, `prefers-color-scheme: dark` and `[data-theme='dark']`).
+ * (light by default, `[data-theme='dark']`, and `[data-theme='auto']` on a dark system).
  */
 
 .tw-overview {
