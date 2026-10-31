@@ -115,7 +115,7 @@ Pendant l'attente, `snapshot.time` reste la position confirmée et `snapshot.pen
 
 Pour attendre des données couvrant la cible : `await controller.waitForData(request.target, request.signal)`.
 
-`controller.on('time', ({ time, previous, cause }) => …)` notifie chaque confirmation.
+`controller.on('time', ({ time, previous, cause }) => …)` notifie chaque confirmation ; `on('error', …)` chaque échec de préparation et `on('dataError', …)` chaque échec ou lot invalide d'une source par fenêtre. Chaque appel retourne une fonction de désabonnement.
 
 ## Commandes
 
@@ -131,7 +131,10 @@ Pour attendre des données couvrant la cible : `await controller.waitForData(req
 | `setLiveTime(t)`, `extendDomain(fin, liveTime?)` | Frontière du direct (jamais en recul) et extension de période |
 | `setViewport(plage)`, `zoomBy(facteur, ancre?)`, `panBy(durée)` | Fenêtre visible |
 | `expand(id)`, `collapse(id)`, `toggle(id)`, `setExpanded(ids)`, `expandAll()`, `collapseAll()` | Dépliage |
-| `setFollowPlayback(booléen)`, `setReducedMotion(booléen)` | Suivi de la fenêtre, animations |
+| `setFollowPlayback(booléen)`, `setReducedMotion(booléen)`, `setRewindDuration(ms)` | Suivi de la fenêtre, animations |
+| `setRows(lignes)`, `setKeys(clés)`, `setItems(éléments)`, `setSource(source)`, `refresh()` | Remplacement des collections ou de la source |
+| `setPrepareTime(fonction)`, `setScheduler(ordonnanceur)` | Changement du contrat de préparation ou de la source d'impulsions |
+| `isActive()`, `isDisposed()` | État du cycle de vie |
 | `start()`, `setActive(booléen)`, `dispose()` | Cycle de vie |
 
 L'état observable est `controller.getSnapshot()`, un objet immuable stable entre deux changements, avec `controller.subscribe(listener)`. En React, `useTimelineSnapshot(controller)` s'y abonne.
@@ -145,10 +148,11 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 ## React
 
 - `useTimelineController(options)` crée une instance stable. Les options sont lues une fois, sauf `prepareTime` qui appelle toujours la dernière fonction fournie. Le hook démarre le contrôleur, suspend la progression quand la page est masquée et suit `prefers-reduced-motion` sauf si `reducedMotion` est donné.
-- `useTimelineHost(controller)` fait le même raccordement pour une instance créée par l'application avec `createTimelineController`.
-- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`.
+- `useTimelineHost(controller, { respectReducedMotion? })` raccorde une instance créée par l'application avec `createTimelineController` : démarrage et suspension quand la page est masquée. Contrairement au hook précédent, il ne remplace pas l'ordonnanceur (passer `scheduler: createAnimationFrameScheduler()` à la création) et ne suit `prefers-reduced-motion` qu'avec `respectReducedMotion: true`.
+- Aucun des deux hooks n'appelle `dispose()` au démontage : ils suspendent la progression (`setActive(false)`), ce qui reste compatible avec StrictMode et `<Activity>`. Le propriétaire d'une instance partagée appelle `dispose()` lui-même.
+- `Timeline` : `height`, `laneHeight`, `labelWidth`, `locale`, `labels`, `formatTime`, `formatTick`, `renderRowLabel`, `renderItem`, `getItemClassName`, `getItemAriaLabel`, `onItemClick`, `selectedItemId`, `tooltip`, `detail`, `toolbar`, `showZoomControls`, `rowsHeader`, `initialTrackWidth` (largeur avant la première mesure), `className`, `style`.
 - `getItemAriaLabel(item)` remplace le nom accessible des éléments (par défaut : libellé, ou « Groupe de N » pour un groupe sans libellé, puis l'heure). Avec un `renderItem` qui affiche du texte, le nom doit contenir ce texte visible (WCAG 2.5.3, « Étiquette dans le nom »). Sans cette prop, le comportement par défaut est conservé.
-- `PlaybackControls` : `speeds` (par défaut `0,25×` à `8×`), `showLive`, `showLoop`, `showKeys`, `formatSpeed`.
+- `PlaybackControls` : `speeds` (par défaut `0,25×` à `8×`), `showLive` (faux par défaut), `showLoop` et `showKeys` (vrais par défaut), `showReadout`, `locale`, `labels`, `formatTime`, `formatSpeed`, `className`.
 - `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` est recopié sur la fenêtre.
 - `frenchLabels` et `defaultLabels` fournissent les textes ; chaque entrée est remplaçable.
 
@@ -160,6 +164,8 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 | Glisser le fond | Déplacement de la fenêtre (sans saut au relâchement) |
 | Glisser la poignée du curseur | Saut vers la dernière position pointée |
 | Ctrl/⌘ + molette | Zoom autour du pointeur |
+| Pincement à deux doigts | Zoom autour des doigts |
+| Clic sur un repère de clé | Saut vers cette clé |
 | Maj + molette, défilement horizontal | Déplacement horizontal |
 | Clic sur un élément | `onItemClick` ; le temps ne bouge pas |
 
@@ -175,11 +181,11 @@ L'axe est un curseur accessible (`role="slider"`) :
 
 Les losanges des clés sont posés au-dessus de l'axe, hors du curseur ; ils restent cliquables (zone de 24 px) mais ne sont pas des arrêts de tabulation : Page préc. / Page suiv. y mènent, ce que rappelle une description associée au curseur (`labels.cursorHelp`).
 
-Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la ligne (← →) ou passent à la ligne voisine (↑ ↓) ; Entrée active l'élément. Un élément hors de la fenêtre est révélé avant de recevoir le focus.
+Les éléments forment un seul arrêt de tabulation. Les flèches parcourent la ligne (← →) ou passent à la ligne voisine (↑ ↓), Début et Fin vont aux extrémités de la ligne ; Entrée ou Espace active l'élément. Un élément hors de la fenêtre est révélé avant de recevoir le focus.
 
 ## Styles
 
-Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et `data-theme="light"` ou `"dark"` sur le conteneur force un thème. Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
+Importer `time-weave/styles.css`. Les couleurs sont des variables `--tw-*` sur `.tw-timeline` ; un thème sombre suit `prefers-color-scheme`, et `data-theme="light"` ou `"dark"` posé sur l'élément `.tw-timeline` lui-même force un thème (par exemple via un `ref` ou une règle CSS de l'application). Les classes `tw-item`, `tw-item--point`, `tw-item--span`, `tw-item--group`, `tw-item--selected` et `tw-item--active` permettent d'adapter l'affichage ; `getItemClassName` ajoute des classes par élément.
 
 ## Choix d'implémentation à valider
 
