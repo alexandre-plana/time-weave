@@ -172,6 +172,14 @@ Par défaut, `liveTime` suit la fin de période ; dès que l'application fournit
 - `DetailModal` : fenêtre de détail simple, utilisable indépendamment, rendue dans `document.body` (portail). `inertRoot` désigne l'élément rendu `inert` pendant l'ouverture (`Timeline` y passe son cadre) ; son `data-theme` (ou celui de l'ancêtre le plus proche) est recopié sur la fenêtre, sauf si `theme` (`'light'` ou `'dark'`) est donné.
 - `frenchLabels` et `defaultLabels` fournissent les textes ; chaque entrée est remplaçable.
 
+## Bandes de mise en évidence
+
+```tsx
+<Timeline controller={controller} highlights={[{ id: 'maint', start, end, label: 'Maintenance', tone: 'warning' }]} />
+```
+
+Les bandes colorent une période sur toutes les lignes (incident, maintenance, heures ouvrées). Tons : `neutral`, `info`, `success`, `warning`, `danger` (variables `--tw-highlight-*`), et `className` facultatif. Décoratives, elles ne captent pas le pointeur ; le libellé des bandes contenant le temps confirmé est ajouté à la valeur annoncée du curseur. Une bande invalide est ignorée avec un avertissement en développement.
+
 ## Interactions et clavier
 
 | Geste | Effet |

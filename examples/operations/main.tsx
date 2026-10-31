@@ -213,148 +213,148 @@ function App() {
     <>
       <TopBar current="operations" root="../" />
       <main className="page">
-      <RepoHeader
-        slug="operations"
-        tag="Exemple 01"
-        title="Journée d’opérations — Station Nord"
-        lead="211 lignes, communications regroupées par l’application selon le zoom, préparation asynchrone et flux simulé."
-        pills={[
-          ['calendaire', 'blue'],
-          ['direct', 'red'],
-          ['fenêtré', 'purple'],
-          ['prepareTime', 'green'],
-        ]}
-        aside={<span className="badge">{store.size.toLocaleString('fr-FR')} communications en mémoire</span>}
-      />
-
-      <div className="layout">
-        <Box icon="🛰️" title="Chronologie" meta={<span className="counter">211 lignes</span>} className="tl-box">
-        <Timeline
-          controller={controller}
-          height={620}
-          labelWidth={210}
-          locale="fr-FR"
-          labels={frenchLabels}
-          rowsHeader="Structure"
-          toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" showLive speeds={[1, 10, 60, 300, 1200]} />}
-          renderRowLabel={renderRowLabel}
-          getItemClassName={itemClass}
-          onItemClick={onItemClick}
-          selectedItemId={selected?.id ?? null}
+        <RepoHeader
+          slug="operations"
+          tag="Exemple 01"
+          title="Journée d’opérations — Station Nord"
+          lead="211 lignes, communications regroupées par l’application selon le zoom, préparation asynchrone et flux simulé."
+          pills={[
+            ['calendaire', 'blue'],
+            ['direct', 'red'],
+            ['fenêtré', 'purple'],
+            ['prepareTime', 'green'],
+          ]}
+          aside={<span className="badge">{store.size.toLocaleString('fr-FR')} communications en mémoire</span>}
         />
-        </Box>
 
-        <aside>
-          <section className="panel" aria-live="off">
-            <h2>
-              <span aria-hidden="true">🧭</span> État de l’application
-            </h2>
-            {appState ? (
-              <dl className="facts">
-                <dt>Instant confirmé</dt>
-                <dd>{clock(appState.time)}</dd>
-                <dt>Cause</dt>
-                <dd>{appState.cause}</dd>
-                <dt>Connecteurs actifs</dt>
-                <dd>{appState.active} / 200</dd>
-                <dt>Incident</dt>
-                <dd>{appState.incident ?? '—'}</dd>
-              </dl>
-            ) : (
-              <p className="lead">Synchronisation…</p>
-            )}
-            <ul className="log" aria-label="Dernières communications">
-              {appState?.recent.map((c) => (
-                <li key={c.id}>
-                  {clock(c.at)} {c.connector} → {c.value}
-                  {c.alarm ? ' ⚠' : ''}
-                </li>
-              ))}
-            </ul>
-          </section>
+        <div className="layout">
+          <Box icon="🛰️" title="Chronologie" meta={<span className="counter">211 lignes</span>} className="tl-box">
+            <Timeline
+              controller={controller}
+              height={620}
+              labelWidth={210}
+              locale="fr-FR"
+              labels={frenchLabels}
+              rowsHeader="Structure"
+              toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" showLive speeds={[1, 10, 60, 300, 1200]} />}
+              renderRowLabel={renderRowLabel}
+              getItemClassName={itemClass}
+              onItemClick={onItemClick}
+              selectedItemId={selected?.id ?? null}
+            />
+          </Box>
 
-          <section className="panel">
-            <h2>
-              <span aria-hidden="true">🔍</span> Inspecteur
-            </h2>
-            {selected ? (
-              <>
+          <aside>
+            <section className="panel" aria-live="off">
+              <h2>
+                <span aria-hidden="true">🧭</span> État de l’application
+              </h2>
+              {appState ? (
                 <dl className="facts">
-                  <dt>Élément</dt>
-                  <dd>{selected.label ?? selected.id}</dd>
-                  <dt>Type</dt>
-                  <dd>{selected.meta?.kind}</dd>
-                  {selected.group && (
-                    <>
-                      <dt>Regroupe</dt>
-                      <dd>{selected.group.count}</dd>
-                    </>
-                  )}
-                  <dt>Début</dt>
-                  <dd>{selectedTime !== null ? format(selectedTime) : ''}</dd>
+                  <dt>Instant confirmé</dt>
+                  <dd>{clock(appState.time)}</dd>
+                  <dt>Cause</dt>
+                  <dd>{appState.cause}</dd>
+                  <dt>Connecteurs actifs</dt>
+                  <dd>{appState.active} / 200</dd>
+                  <dt>Incident</dt>
+                  <dd>{appState.incident ?? '—'}</dd>
                 </dl>
-                <p>
-                  <button
-                    type="button"
-                    className="tw-button tw-button--text"
-                    onClick={() => {
-                      if (selectedTime === null) return;
-                      if (selectedTime < controller.getSnapshot().time) controller.rewindTo(selectedTime);
-                      else controller.seek(selectedTime);
-                    }}
-                  >
-                    Aller à cet instant
-                  </button>
-                </p>
-              </>
-            ) : (
-              <p className="lead">Cliquer sur un élément. Le clic ne déplace pas le temps.</p>
-            )}
-          </section>
-
-          <section className="panel">
-            <h2>
-              <span aria-hidden="true">⚙️</span> Simulation
-            </h2>
-            <label className="field" htmlFor="ops-prepare-delay">
-              Préparation de l’application
-              <select id="ops-prepare-delay" value={prepareDelay} onChange={(event) => setPrepareDelay(Number(event.target.value))}>
-                {DELAYS.map((delay) => (
-                  <option key={delay} value={delay}>
-                    {delay} ms
-                  </option>
+              ) : (
+                <p className="lead">Synchronisation…</p>
+              )}
+              <ul className="log" aria-label="Dernières communications">
+                {appState?.recent.map((c) => (
+                  <li key={c.id}>
+                    {clock(c.at)} {c.connector} → {c.value}
+                    {c.alarm ? ' ⚠' : ''}
+                  </li>
                 ))}
-              </select>
-            </label>
-            <label className="field" htmlFor="ops-load-delay">
-              Chargement des fenêtres
-              <select id="ops-load-delay" value={loadDelay} onChange={(event) => setLoadDelay(Number(event.target.value))}>
-                {DELAYS.map((delay) => (
-                  <option key={delay} value={delay}>
-                    {delay} ms
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field" htmlFor="ops-stream">
-              Flux simulé (5 msg / 50 ms)
-              <input id="ops-stream" type="checkbox" checked={stream} onChange={(event) => setStream(event.target.checked)} />
-            </label>
-            <ControllerFacts controller={controller} />
-          </section>
+              </ul>
+            </section>
 
-          <section className="panel">
-            <h2>
-              <span aria-hidden="true">📜</span> Journal des confirmations
-            </h2>
-            <ul className="log">
-              {log.map((entry, index) => (
-                <li key={index}>{entry}</li>
-              ))}
-            </ul>
-          </section>
-        </aside>
-      </div>
+            <section className="panel">
+              <h2>
+                <span aria-hidden="true">🔍</span> Inspecteur
+              </h2>
+              {selected ? (
+                <>
+                  <dl className="facts">
+                    <dt>Élément</dt>
+                    <dd>{selected.label ?? selected.id}</dd>
+                    <dt>Type</dt>
+                    <dd>{selected.meta?.kind}</dd>
+                    {selected.group && (
+                      <>
+                        <dt>Regroupe</dt>
+                        <dd>{selected.group.count}</dd>
+                      </>
+                    )}
+                    <dt>Début</dt>
+                    <dd>{selectedTime !== null ? format(selectedTime) : ''}</dd>
+                  </dl>
+                  <p>
+                    <button
+                      type="button"
+                      className="tw-button tw-button--text"
+                      onClick={() => {
+                        if (selectedTime === null) return;
+                        if (selectedTime < controller.getSnapshot().time) controller.rewindTo(selectedTime);
+                        else controller.seek(selectedTime);
+                      }}
+                    >
+                      Aller à cet instant
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <p className="lead">Cliquer sur un élément. Le clic ne déplace pas le temps.</p>
+              )}
+            </section>
+
+            <section className="panel">
+              <h2>
+                <span aria-hidden="true">⚙️</span> Simulation
+              </h2>
+              <label className="field" htmlFor="ops-prepare-delay">
+                Préparation de l’application
+                <select id="ops-prepare-delay" value={prepareDelay} onChange={(event) => setPrepareDelay(Number(event.target.value))}>
+                  {DELAYS.map((delay) => (
+                    <option key={delay} value={delay}>
+                      {delay} ms
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field" htmlFor="ops-load-delay">
+                Chargement des fenêtres
+                <select id="ops-load-delay" value={loadDelay} onChange={(event) => setLoadDelay(Number(event.target.value))}>
+                  {DELAYS.map((delay) => (
+                    <option key={delay} value={delay}>
+                      {delay} ms
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field" htmlFor="ops-stream">
+                Flux simulé (5 msg / 50 ms)
+                <input id="ops-stream" type="checkbox" checked={stream} onChange={(event) => setStream(event.target.checked)} />
+              </label>
+              <ControllerFacts controller={controller} />
+            </section>
+
+            <section className="panel">
+              <h2>
+                <span aria-hidden="true">📜</span> Journal des confirmations
+              </h2>
+              <ul className="log">
+                {log.map((entry, index) => (
+                  <li key={index}>{entry}</li>
+                ))}
+              </ul>
+            </section>
+          </aside>
+        </div>
       </main>
     </>
   );

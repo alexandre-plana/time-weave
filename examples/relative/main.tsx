@@ -137,104 +137,104 @@ function App() {
     <>
       <TopBar current="relative" root="../" />
       <main className="page">
-      <RepoHeader
-        slug="relative"
-        tag="Exemple 03"
-        title="Banc d’essai — séquence de mise à feu"
-        lead="Mode relatif : temps en millisecondes depuis le déclenchement, pré-déclenchement négatif, lecture au ralenti."
-        pills={[
-          ['relatif', 'green'],
-          ['milliseconde', 'blue'],
-          ['boucle', 'purple'],
-          ['ralenti', 'yellow'],
-        ]}
-        aside={<span className="badge rel-clock">{readout(snapshot.time)}</span>}
-      />
-      <div className="layout">
-        <Box icon="⏱️" title="Chronologie" meta={<span className="counter">T−2 s → T+12 s</span>} className="tl-box">
-        <Timeline
-          controller={controller}
-          height={460}
-          labelWidth={190}
-          locale="fr-FR"
-          labels={frenchLabels}
-          rowsHeader="Équipements"
-          formatTime={formatTime}
-          toolbar={
-            <PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" showLoop speeds={[0.1, 0.25, 0.5, 1, 2]} formatTime={formatTime} />
-          }
-          getItemClassName={(item) => `rel--${item.meta?.kind ?? 'event'}`}
-          onItemClick={(item) => setSelected(item)}
-          selectedItemId={selected?.id ?? null}
+        <RepoHeader
+          slug="relative"
+          tag="Exemple 03"
+          title="Banc d’essai — séquence de mise à feu"
+          lead="Mode relatif : temps en millisecondes depuis le déclenchement, pré-déclenchement négatif, lecture au ralenti."
+          pills={[
+            ['relatif', 'green'],
+            ['milliseconde', 'blue'],
+            ['boucle', 'purple'],
+            ['ralenti', 'yellow'],
+          ]}
+          aside={<span className="badge rel-clock">{readout(snapshot.time)}</span>}
         />
-        </Box>
-        <aside>
-          <section className="panel" aria-live="off">
-            <h2>
-              <span aria-hidden="true">📈</span> Mesures à l’instant confirmé
-            </h2>
-            {reading ? (
-              <>
-                <dl className="facts">
-                  <dt>Instant</dt>
-                  <dd>{formatRelative(reading.time)}</dd>
-                  <dt>Phase</dt>
-                  <dd>{reading.phase}</dd>
-                  <dt>Cause</dt>
-                  <dd>{reading.cause}</dd>
-                </dl>
-                <ul className="rel-gauges">
-                  {reading.sensors.map((sensor) => (
-                    <li key={sensor.label}>
-                      <span>{sensor.label}</span>
-                      <strong>
-                        {sensor.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sensor.unit}
-                      </strong>
-                      <meter min={0} max={sensor.max} value={sensor.value} aria-label={sensor.label} />
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <p className="lead">Synchronisation…</p>
-            )}
-          </section>
-          <section className="panel">
-            <h2>
-              <span aria-hidden="true">🔍</span> Inspecteur
-            </h2>
-            {selected && selectedTime !== null ? (
-              <>
-                <dl className="facts">
-                  <dt>Élément</dt>
-                  <dd>{selected.label}</dd>
-                  <dt>Début</dt>
-                  <dd>{formatRelative(selectedTime)}</dd>
-                  {'end' in selected && (
-                    <>
-                      <dt>Durée</dt>
-                      <dd>{formatRelative(selected.end - selected.start)}</dd>
-                    </>
-                  )}
-                  {selected.group && (
-                    <>
-                      <dt>Échantillons</dt>
-                      <dd>{selected.group.count}</dd>
-                    </>
-                  )}
-                </dl>
-                <p>
-                  <button type="button" className="tw-button tw-button--text" onClick={() => controller.seek(selectedTime)}>
-                    Aller à cet instant
-                  </button>
-                </p>
-              </>
-            ) : (
-              <p className="lead">Cliquer sur un élément pour l’inspecter.</p>
-            )}
-          </section>
-        </aside>
-      </div>
+        <div className="layout">
+          <Box icon="⏱️" title="Chronologie" meta={<span className="counter">T−2 s → T+12 s</span>} className="tl-box">
+            <Timeline
+              controller={controller}
+              height={460}
+              labelWidth={190}
+              locale="fr-FR"
+              labels={frenchLabels}
+              rowsHeader="Équipements"
+              formatTime={formatTime}
+              toolbar={
+                <PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" showLoop speeds={[0.1, 0.25, 0.5, 1, 2]} formatTime={formatTime} />
+              }
+              getItemClassName={(item) => `rel--${item.meta?.kind ?? 'event'}`}
+              onItemClick={(item) => setSelected(item)}
+              selectedItemId={selected?.id ?? null}
+            />
+          </Box>
+          <aside>
+            <section className="panel" aria-live="off">
+              <h2>
+                <span aria-hidden="true">📈</span> Mesures à l’instant confirmé
+              </h2>
+              {reading ? (
+                <>
+                  <dl className="facts">
+                    <dt>Instant</dt>
+                    <dd>{formatRelative(reading.time)}</dd>
+                    <dt>Phase</dt>
+                    <dd>{reading.phase}</dd>
+                    <dt>Cause</dt>
+                    <dd>{reading.cause}</dd>
+                  </dl>
+                  <ul className="rel-gauges">
+                    {reading.sensors.map((sensor) => (
+                      <li key={sensor.label}>
+                        <span>{sensor.label}</span>
+                        <strong>
+                          {sensor.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sensor.unit}
+                        </strong>
+                        <meter min={0} max={sensor.max} value={sensor.value} aria-label={sensor.label} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="lead">Synchronisation…</p>
+              )}
+            </section>
+            <section className="panel">
+              <h2>
+                <span aria-hidden="true">🔍</span> Inspecteur
+              </h2>
+              {selected && selectedTime !== null ? (
+                <>
+                  <dl className="facts">
+                    <dt>Élément</dt>
+                    <dd>{selected.label}</dd>
+                    <dt>Début</dt>
+                    <dd>{formatRelative(selectedTime)}</dd>
+                    {'end' in selected && (
+                      <>
+                        <dt>Durée</dt>
+                        <dd>{formatRelative(selected.end - selected.start)}</dd>
+                      </>
+                    )}
+                    {selected.group && (
+                      <>
+                        <dt>Échantillons</dt>
+                        <dd>{selected.group.count}</dd>
+                      </>
+                    )}
+                  </dl>
+                  <p>
+                    <button type="button" className="tw-button tw-button--text" onClick={() => controller.seek(selectedTime)}>
+                      Aller à cet instant
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <p className="lead">Cliquer sur un élément pour l’inspecter.</p>
+              )}
+            </section>
+          </aside>
+        </div>
       </main>
     </>
   );

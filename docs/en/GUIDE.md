@@ -415,6 +415,14 @@ export const french = (
 export const custom = <Timeline controller={controller} labels={{ rows: 'Sensors', group: (count) => `${count} messages` }} />;
 ```
 
+## Highlight bands
+
+```tsx
+<Timeline controller={controller} highlights={[{ id: 'maint', start, end, label: 'Maintenance', tone: 'warning' }]} />
+```
+
+Bands tint a period across all rows (incident, maintenance, business hours). Tones: `neutral`, `info`, `success`, `warning`, `danger` (`--tw-highlight-*` variables), plus an optional `className`. They are decorative and never capture the pointer; labels of the bands containing the confirmed time are appended to the cursor's announced value. Invalid bands are skipped with a development warning.
+
 ## Interactions and keyboard
 
 | Gesture | Effect |

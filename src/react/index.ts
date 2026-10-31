@@ -1,6 +1,6 @@
 export * from '../core/index.js';
 export { Timeline } from './Timeline.js';
-export type { TimelineProps, ItemActionContext, ItemRenderContext } from './Timeline.js';
+export type { TimelineProps, ItemActionContext, ItemRenderContext, TimelineHighlight, TimelineHighlightTone } from './Timeline.js';
 export { PlaybackControls, DEFAULT_SPEEDS } from './PlaybackControls.js';
 export type { PlaybackControlsProps } from './PlaybackControls.js';
 export { DetailModal } from './DetailModal.js';

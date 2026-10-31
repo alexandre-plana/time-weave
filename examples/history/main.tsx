@@ -128,56 +128,56 @@ function App() {
     <>
       <TopBar current="history" root="../" />
       <main className="page">
-      <RepoHeader
-        slug="history"
-        tag="Exemple 02"
-        title="Soixante-quinze ans d’une entreprise"
-        lead="Le même moteur sur plusieurs décennies : périodes, jalons, contenu personnalisé et fenêtre de détail."
-        pills={[
-          ['calendaire', 'blue'],
-          ['décennies', 'purple'],
-          ['renderItem', 'yellow'],
-          ['dialogue', 'gray'],
-        ]}
-        aside={<span className="badge">{currentYear}</span>}
-      />
-      <div className="layout">
-        <Box icon="🏛️" title="Chronologie" meta={<span className="counter">1950 → 2027</span>} className="tl-box">
-        <Timeline
-          controller={controller}
-          height={540}
-          locale="fr-FR"
-          labels={frenchLabels}
-          rowsHeader="Thèmes"
-          toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" speeds={[365 * 24 * 3600 * 1000 / 4]} formatSpeed={() => '4 ans/s'} formatTime={longDate} />}
-          formatTime={longDate}
-          renderItem={renderItem}
-          renderRowLabel={renderRowLabel}
-          getItemClassName={(item) => `hist--${item.meta?.category ?? 'milestone'}`}
-          detail={(item) => (
-            <div className="hist-story">
-              <p>{item.meta?.story}</p>
-              <p className="lead">
-                {isSpan(item) ? `${yearOf(item.start)} – ${yearOf(item.end)}` : longDate(item.at)}
-              </p>
-            </div>
-          )}
+        <RepoHeader
+          slug="history"
+          tag="Exemple 02"
+          title="Soixante-quinze ans d’une entreprise"
+          lead="Le même moteur sur plusieurs décennies : périodes, jalons, contenu personnalisé et fenêtre de détail."
+          pills={[
+            ['calendaire', 'blue'],
+            ['décennies', 'purple'],
+            ['renderItem', 'yellow'],
+            ['dialogue', 'gray'],
+          ]}
+          aside={<span className="badge">{currentYear}</span>}
         />
-        </Box>
-        <aside className="panel hist-story" aria-live="polite">
-          <h2>
-            <span aria-hidden="true">📖</span> Chapitre en cours
-          </h2>
-          {chapter ? (
-            <>
-              <strong>{chapter.label}</strong>
-              {chapter.meta?.story}
-            </>
-          ) : (
-            <p className="lead">Avant la fondation.</p>
-          )}
-        </aside>
-      </div>
+        <div className="layout">
+          <Box icon="🏛️" title="Chronologie" meta={<span className="counter">1950 → 2027</span>} className="tl-box">
+            <Timeline
+              controller={controller}
+              height={540}
+              locale="fr-FR"
+              labels={frenchLabels}
+              rowsHeader="Thèmes"
+              toolbar={<PlaybackControls controller={controller} labels={frenchLabels} locale="fr-FR" speeds={[365 * 24 * 3600 * 1000 / 4]} formatSpeed={() => '4 ans/s'} formatTime={longDate} />}
+              formatTime={longDate}
+              renderItem={renderItem}
+              renderRowLabel={renderRowLabel}
+              getItemClassName={(item) => `hist--${item.meta?.category ?? 'milestone'}`}
+              detail={(item) => (
+                <div className="hist-story">
+                  <p>{item.meta?.story}</p>
+                  <p className="lead">
+                    {isSpan(item) ? `${yearOf(item.start)} – ${yearOf(item.end)}` : longDate(item.at)}
+                  </p>
+                </div>
+              )}
+            />
+          </Box>
+          <aside className="panel hist-story" aria-live="polite">
+            <h2>
+              <span aria-hidden="true">📖</span> Chapitre en cours
+            </h2>
+            {chapter ? (
+              <>
+                <strong>{chapter.label}</strong>
+                {chapter.meta?.story}
+              </>
+            ) : (
+              <p className="lead">Avant la fondation.</p>
+            )}
+          </aside>
+        </div>
       </main>
     </>
   );

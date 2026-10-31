@@ -28,6 +28,8 @@ function makeController(extra: Partial<Parameters<typeof createTimelineControlle
     domain: { start: 0, end: 10_000 },
     viewport: { start: 2000, end: 4000 },
     minViewportDuration: 1000,
+    // The cursor (0) is outside the viewport: following would move the view.
+    followPlayback: false,
     rows,
     source: items,
     keys: [{ id: 'k', at: 6000 }],
@@ -172,8 +174,12 @@ describe('TimelineOverview', () => {
     const { controller } = makeController();
     const { container } = render(<TimelineOverview controller={controller} />);
     expect(container.querySelector('.tw-overview-live')).toBeNull();
-    act(() => controller.setLiveTime(8000));
-    expect(container.querySelector('.tw-overview-live')).toBeTruthy();
+    cleanup();
+    const live = makeController({ domain: { start: 0, end: 10_000 }, liveTime: 5000 }).controller;
+    const { container: second } = render(<TimelineOverview controller={live} />);
+    expect((second.querySelector('.tw-overview-live') as HTMLElement).style.transform).toBe('translateX(400px)');
+    act(() => live.setLiveTime(6000));
+    expect((second.querySelector('.tw-overview-live') as HTMLElement).style.transform).toBe('translateX(480px)');
   });
 
   it('can hide the density histogram', () => {
