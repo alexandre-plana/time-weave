@@ -263,6 +263,15 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
 
   private source: ItemSource<ItemMeta>;
   private items: readonly TimelineItem<ItemMeta>[] = [];
+  /**
+   * id -> position in `itemIndexFor` (see `ItemIndex`), used by `update()` on a static source to
+   * apply small changes without re-indexing or revalidating the whole
+   * collection. It is only trusted while `itemIndexFor === this.items`; any
+   * other assignment of `items` (setItems, setSource, row pruning, ...)
+   * invalidates it implicitly and it is rebuilt lazily on the next update.
+   */
+  private itemIndex: ItemIndex | null = null;
+  private itemIndexFor: readonly TimelineItem<ItemMeta>[] | null = null;
   private coverage: TimeRange | null = null;
   private dataError: unknown = null;
 
@@ -813,11 +822,19 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
     if (rows) issues.push(...validateRows(rows));
     if (keys) issues.push(...validateKeys(keys, this.mode));
     let items: TimelineItem<ItemMeta>[] | null = null;
+    let commitIndex: (() => void) | null = null;
     if (changes.items && issues.length === 0) {
-      const rowIds = rows ? new Set(rows.map((row) => row.id)) : this.rowTree.nodes;
-      const base = rows ? this.items.filter((item) => rowIds.has(item.rowId)) : this.items;
-      items = applyChanges(base, changes.items.upsert, changes.items.remove);
-      issues.push(...validateItems(items, rowIds, this.mode));
+      if (rows) {
+        // Rows change too: existing items may lose their row, so validate everything.
+        const rowIds = new Set(rows.map((row) => row.id));
+        const base = this.items.filter((item) => rowIds.has(item.rowId));
+        items = applyChanges(base, changes.items.upsert, changes.items.remove);
+        issues.push(...validateItems(items, rowIds, this.mode));
+      } else {
+        const plan = this.planItemChanges(changes.items);
+        if (plan.issues.length) issues.push(...plan.issues);
+        else ({ items, commit: commitIndex } = plan);
+      }
     }
     throwIfIssues(issues);
     if (this.disposed) return;
@@ -827,9 +844,87 @@ export class TimelineController<RowMeta = unknown, ItemMeta = unknown, KeyMeta =
       if (items) {
         this.items = items;
         this.source = { kind: 'static', items };
+        commitIndex?.();
       }
       this.changed();
     });
+  }
+
+  /**
+   * Incremental counterpart of `applyChanges` + `validateItems` for a static
+   * collection whose rows do not change. The current items are valid (every
+   * assignment of `items` is validated), so only the upserted entries are
+   * checked, in the order the full validation would visit them, which yields
+   * the same issues. Ids are located through `itemIndex`; nothing is mutated
+   * until `commit`, so a rejected change has no effect. The new array is
+   * still an O(n) copy (snapshots expose immutable arrays), but that copy is
+   * a plain slice/segment copy, far cheaper than re-indexing every id.
+   */
+  private planItemChanges(changes: CollectionChanges<TimelineItem<ItemMeta>>):
+    | { issues: ValidationIssue[]; items: null; commit: null }
+    | { issues: []; items: TimelineItem<ItemMeta>[]; commit: () => void } {
+    const current = this.items;
+    const index = this.indexItems(current);
+    const updates = new Map<string, TimelineItem<ItemMeta>>();
+    for (const entry of changes.upsert ?? []) updates.set(entry.id, entry);
+    const replaced: number[] = [];
+    const added: TimelineItem<ItemMeta>[] = [];
+    for (const [id, entry] of updates) {
+      const at = index.position(id);
+      if (at === undefined) added.push(entry);
+      else replaced.push(at);
+    }
+    replaced.sort((a, b) => a - b);
+    const checked = replaced.map((at) => updates.get(current[at]!.id)!).concat(added);
+    const issues = validateItems(checked, this.rowTree.nodes, this.mode);
+    if (issues.length) return { issues, items: null, commit: null };
+
+    const removedAt: number[] = [];
+    const removedIds = new Set<string>();
+    for (const id of changes.remove ?? []) {
+      if (updates.has(id) || removedIds.has(id)) continue;
+      const at = index.position(id);
+      if (at === undefined) continue;
+      removedIds.add(id);
+      removedAt.push(at);
+    }
+
+    let next: TimelineItem<ItemMeta>[];
+    if (removedAt.length === 0) {
+      next = current.slice();
+      for (const at of replaced) next[at] = updates.get(current[at]!.id)!;
+    } else {
+      removedAt.sort((a, b) => a - b);
+      next = new Array<TimelineItem<ItemMeta>>(current.length - removedAt.length);
+      let write = 0;
+      let read = 0;
+      for (const skip of removedAt) {
+        while (read < skip) next[write++] = current[read++]!;
+        read++;
+      }
+      while (read < current.length) next[write++] = current[read++]!;
+      for (const at of replaced) {
+        // Shift by the number of removals before `at`.
+        let shift = 0;
+        while (shift < removedAt.length && removedAt[shift]! < at) shift++;
+        next[at - shift] = updates.get(current[at]!.id)!;
+      }
+    }
+    for (const entry of added) next.push(entry);
+
+    const commit = () => {
+      index.commit(removedIds, added, next);
+      this.itemIndexFor = next;
+    };
+    return { issues: [], items: next, commit };
+  }
+
+  private indexItems(items: readonly TimelineItem<ItemMeta>[]): ItemIndex {
+    if (this.itemIndex && this.itemIndexFor === items) return this.itemIndex;
+    const index = new ItemIndex(items);
+    this.itemIndex = index;
+    this.itemIndexFor = items;
+    return index;
   }
 
   /** Replaces the item source. A new provider starts a new request generation. */
@@ -1374,4 +1469,59 @@ export function createTimelineController<RowMeta = unknown, ItemMeta = unknown, 
   options: TimelineControllerOptions<RowMeta, ItemMeta, KeyMeta>,
 ): TimelineController<RowMeta, ItemMeta, KeyMeta> {
   return new TimelineController(options);
+}
+
+/** First index in the sorted `values` whose value is >= `target`. */
+function lowerBound(values: readonly number[], target: number): number {
+  let lo = 0;
+  let hi = values.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (values[mid]! < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Locates items by id in O(log d) without re-indexing on every removal.
+ *
+ * Each item gets a slot, increasing in array order: replacements keep their
+ * slot, appended items take fresh slots, removed slots are kept in the sorted
+ * `dead` list. An item's position is its slot minus the number of dead slots
+ * before it. When dead slots pile up the index is compacted (O(n), amortized
+ * over at least n/8 removals).
+ */
+class ItemIndex {
+  private readonly slots = new Map<string, number>();
+  private dead: number[] = [];
+  private nextSlot = 0;
+
+  constructor(items: readonly { readonly id: string }[]) {
+    this.reset(items);
+  }
+
+  position(id: string): number | undefined {
+    const slot = this.slots.get(id);
+    if (slot === undefined) return undefined;
+    return this.dead.length === 0 ? slot : slot - lowerBound(this.dead, slot);
+  }
+
+  /** Records a change already validated and applied to produce `next`. */
+  commit(removed: Iterable<string>, added: readonly { readonly id: string }[], next: readonly { readonly id: string }[]): void {
+    for (const id of removed) {
+      const slot = this.slots.get(id)!;
+      this.slots.delete(id);
+      this.dead.splice(lowerBound(this.dead, slot), 0, slot);
+    }
+    for (const entry of added) this.slots.set(entry.id, this.nextSlot++);
+    if (this.dead.length > Math.max(64, next.length >>> 3)) this.reset(next);
+  }
+
+  private reset(items: readonly { readonly id: string }[]): void {
+    this.slots.clear();
+    for (let i = 0; i < items.length; i++) this.slots.set(items[i]!.id, i);
+    this.dead = [];
+    this.nextSlot = items.length;
+  }
 }

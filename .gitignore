@@ -4,3 +4,4 @@ examples/dist/
 *.tgz
 .DS_Store
 coverage/
+tests/__scratch/
