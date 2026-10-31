@@ -92,6 +92,12 @@ const ZOOM_STEP = 1.6;
 const ANNOUNCE_DELAY = 400;
 /** Estimated advance of one character of a 10 px monospace tick label. */
 const TICK_CHAR_WIDTH = 6.2;
+/** Spans narrower than this (in px) show no text label, only a group count that fits. */
+const MIN_LABEL_WIDTH = 28;
+/** Estimated advance of one character of the 9 px monospace group count. */
+const COUNT_CHAR_WIDTH = 5.6;
+/** Horizontal padding and border of the group count badge, plus a small margin. */
+const COUNT_CHROME = 12;
 
 function useElementWidth(fallback: number): [(element: HTMLElement | null) => void, number] {
   const [width, setWidth] = useState(fallback);
@@ -147,10 +153,90 @@ function quantizedScale(msPerPixel: number): number {
   return Math.pow(2, Math.round(Math.log2(msPerPixel) * 8) / 8);
 }
 
-function sortItems<M>(items: readonly TimelineItem<M>[]): TimelineItem<M>[] {
-  return items
-    .slice()
-    .sort((a, b) => itemStart(a) - itemStart(b) || itemEnd(a) - itemEnd(b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+const EMPTY_ITEMS: readonly TimelineItem<never>[] = [];
+const EMPTY_LANES: ReadonlyMap<string, number> = new Map();
+
+/**
+ * Sorted items of one row, kept between snapshots. A refresh usually returns the
+ * same items as new objects: an equivalent row reuses its order, lanes and layout.
+ */
+interface RowItemsEntry<ItemMeta> {
+  /** Items of the row in the order received. */
+  readonly input: readonly TimelineItem<ItemMeta>[];
+  /** `sorted[k] === input[order[k]]` (or an equivalent earlier object). */
+  readonly order: readonly number[];
+  /** Items by start, end then id. */
+  readonly sorted: readonly TimelineItem<ItemMeta>[];
+  readonly starts: readonly number[];
+  /** Changes only when the ids or times of the row change. */
+  readonly geometry: object;
+  /** `sorted` holds the very objects of `input`, not equivalent earlier ones. */
+  readonly exact: boolean;
+}
+
+/** Same id, kind and times: the order and lanes do not change. */
+function sameGeometry(a: TimelineItem<unknown>, b: TimelineItem<unknown>): boolean {
+  if (a === b) return true;
+  if (a.id !== b.id) return false;
+  if (isSpan(a)) return isSpan(b) && a.start === b.start && a.end === b.end;
+  return !isSpan(b) && a.at === b.at;
+}
+
+/** Same geometry, label and group size: the default rendering does not change. */
+function sameRendering(a: TimelineItem<unknown>, b: TimelineItem<unknown>): boolean {
+  return a === b || (sameGeometry(a, b) && a.label === b.label && a.group?.count === b.group?.count);
+}
+
+function sortRow<M>(input: readonly TimelineItem<M>[]): RowItemsEntry<M> {
+  const starts = input.map(itemStart);
+  const ends = input.map(itemEnd);
+  const order = input.map((_, index) => index);
+  order.sort((a, b) => {
+    const idA = input[a]!.id;
+    const idB = input[b]!.id;
+    return starts[a]! - starts[b]! || ends[a]! - ends[b]! || (idA < idB ? -1 : idA > idB ? 1 : 0);
+  });
+  return {
+    input,
+    order,
+    sorted: order.map((index) => input[index]!),
+    starts: order.map((index) => starts[index]!),
+    geometry: {},
+    exact: true,
+  };
+}
+
+/**
+ * Sorts a row, reusing the previous entry when the items are equivalent
+ * (compared in received order). `strict` requires the same objects to reuse
+ * them for rendering, because custom renderers may read any field; the order
+ * and lanes are still reused when only non-geometric fields change.
+ */
+function updateRow<M>(previous: RowItemsEntry<M> | undefined, input: readonly TimelineItem<M>[], strict: boolean): RowItemsEntry<M> {
+  if (!previous || previous.input.length !== input.length) return sortRow(input);
+  const before = previous.input;
+  let identical = true;
+  let rendering = true;
+  for (let i = 0; i < input.length; i++) {
+    const a = before[i]!;
+    const b = input[i]!;
+    if (a === b) continue;
+    if (!sameGeometry(a, b)) return sortRow(input);
+    identical = false;
+    if (!sameRendering(a, b)) rendering = false;
+  }
+  const exact = previous.exact && identical;
+  // Equivalent rendering: keep the previous objects so memoised rows skip rendering.
+  if (exact || (rendering && !strict)) return { ...previous, input, exact };
+  return { ...previous, input, sorted: previous.order.map((index) => input[index]!), exact: true };
+}
+
+function sameVisibleRow<M>(a: VisibleRow<M>, b: VisibleRow<M>): boolean {
+  return a === b || (a.row === b.row && a.depth === b.depth && a.hasChildren === b.hasChildren && a.expanded === b.expanded);
+}
+
+function countFits(count: number, width: number): boolean {
+  return String(count).length * COUNT_CHAR_WIDTH + COUNT_CHROME <= width;
 }
 
 /**
@@ -239,38 +325,58 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
   );
 
   // ------------------------------------------------------------------ layout
+  // Each cache keeps only the rows of the latest computation; equivalent rows
+  // keep their sorted array, lanes and layout object (see `updateRow`).
+  const strictItems = Boolean(renderItem || getItemClassName || getItemAriaLabel);
+  const rowItemsCache = useRef(new Map<string, RowItemsEntry<ItemMeta>>());
   const itemsByRow = useMemo(() => {
-    const grouped = groupItemsByRow(snapshot.items);
-    const sorted = new Map<string, TimelineItem<ItemMeta>[]>();
-    for (const [rowId, list] of grouped) sorted.set(rowId, sortItems(list));
-    return sorted;
-  }, [snapshot.items]);
+    const previous = rowItemsCache.current;
+    const next = new Map<string, RowItemsEntry<ItemMeta>>();
+    for (const [rowId, list] of groupItemsByRow(snapshot.items)) next.set(rowId, updateRow(previous.get(rowId), list, strictItems));
+    rowItemsCache.current = next;
+    return next;
+  }, [snapshot.items, strictItems]);
 
   const laneScale = quantizedScale(msPerPixel);
+  const laneStore = useRef(new Map<string, { geometry: object; scale: number; layout: ReturnType<typeof assignLanes> }>());
   const laneCache = useMemo(() => {
-    const cache = new Map<string, ReturnType<typeof assignLanes>>();
-    for (const [rowId, list] of itemsByRow) cache.set(rowId, assignLanes(list, (POINT_SIZE + 4) * laneScale));
-    return cache;
+    const previous = laneStore.current;
+    const next = new Map<string, { geometry: object; scale: number; layout: ReturnType<typeof assignLanes> }>();
+    for (const [rowId, entry] of itemsByRow) {
+      const cached = previous.get(rowId);
+      next.set(
+        rowId,
+        cached && cached.geometry === entry.geometry && cached.scale === laneScale
+          ? cached
+          : { geometry: entry.geometry, scale: laneScale, layout: assignLanes(entry.sorted, (POINT_SIZE + 4) * laneScale, { presorted: true }) },
+      );
+    }
+    laneStore.current = next;
+    return next;
   }, [itemsByRow, laneScale]);
 
+  const layoutStore = useRef(new Map<string, RowLayout<RowMeta, ItemMeta>>());
   const rowLayouts = useMemo(() => {
+    const previous = layoutStore.current;
+    const next = new Map<string, RowLayout<RowMeta, ItemMeta>>();
     let top = 0;
     const result: RowLayout<RowMeta, ItemMeta>[] = [];
     for (const visible of snapshot.visibleRows) {
-      const items = itemsByRow.get(visible.row.id) ?? [];
-      const lanes = laneCache.get(visible.row.id);
-      const laneCount = lanes?.laneCount ?? 1;
-      const rowHeight = laneCount * laneHeight + ROW_PADDING * 2;
-      result.push({
-        visible,
-        items,
-        starts: items.map(itemStart),
-        lanes: lanes?.lanes ?? new Map(),
-        top,
-        height: rowHeight,
-      });
+      const entry = itemsByRow.get(visible.row.id);
+      const items = entry?.sorted ?? (EMPTY_ITEMS as readonly TimelineItem<ItemMeta>[]);
+      const lanes = laneCache.get(visible.row.id)?.layout;
+      const laneMap = lanes?.lanes ?? EMPTY_LANES;
+      const rowHeight = (lanes?.laneCount ?? 1) * laneHeight + ROW_PADDING * 2;
+      const old = previous.get(visible.row.id);
+      const layout: RowLayout<RowMeta, ItemMeta> =
+        old && old.items === items && old.lanes === laneMap && old.top === top && old.height === rowHeight && sameVisibleRow(old.visible, visible)
+          ? old
+          : { visible, items, starts: entry?.starts ?? [], lanes: laneMap, top, height: rowHeight };
+      next.set(visible.row.id, layout);
+      result.push(layout);
       top += rowHeight;
     }
+    layoutStore.current = next;
     return { rows: result, total: top };
   }, [snapshot.visibleRows, itemsByRow, laneCache, laneHeight]);
 
@@ -587,7 +693,9 @@ export function Timeline<RowMeta = unknown, ItemMeta = unknown, KeyMeta = unknow
     if (index !== undefined) revealRow(index);
   };
 
-  const activateItem = (item: TimelineItem<ItemMeta>, row: VisibleRow<RowMeta>, event: ReactMouseEvent | ReactKeyboardEvent): void => {
+  const activateItem = (rendered: TimelineItem<ItemMeta>, row: VisibleRow<RowMeta>, event: ReactMouseEvent | ReactKeyboardEvent): void => {
+    // A reused row may hold an equivalent earlier object: hand out the current one.
+    const item = itemIndex.get(rendered.id)?.item ?? rendered;
     revealItem(item);
     if (props.selectedItemId === undefined) setInternalSelection(item.id);
     setFocusedId(item.id);
@@ -1103,6 +1211,8 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
             .filter(Boolean)
             .join(' ');
           const context: ItemRenderContext<RowMeta> = { row: visible, width, selected, active: isActive };
+          // Too narrow for text: no clipped label, only a group count that fits.
+          const compact = span && width < MIN_LABEL_WIDTH;
           return (
             <button
               key={item.id}
@@ -1123,6 +1233,10 @@ function RowViewImpl<RowMeta, ItemMeta>(props: RowViewProps<RowMeta, ItemMeta>):
             >
               {props.renderItem ? (
                 props.renderItem(item, context)
+              ) : compact ? (
+                item.group && countFits(item.group.count, width) ? (
+                  <span className="tw-item-count tw-item-count--compact">{item.group.count}</span>
+                ) : null
               ) : span ? (
                 <span className="tw-item-label">
                   {item.label}

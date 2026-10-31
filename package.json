@@ -26,11 +26,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p examples/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "check:core": "node scripts/check-core-isolation.mjs",
     "dev:examples": "vite --config examples/vite.config.ts",
     "build:examples": "vite build --config examples/vite.config.ts",
     "check:package": "node scripts/check-package.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run build:examples",
+    "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run build:examples && npm run test:e2e",
     "prepack": "npm run build",
     "test:coverage": "vitest run --coverage --coverage.include='src/**'"
   },
@@ -39,6 +40,7 @@
     "react-dom": "^18.3.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.6",
