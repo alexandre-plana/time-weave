@@ -169,7 +169,7 @@ const camera = (code: string, label: string, x: number, y: number, heading: numb
 };
 
 export const cameras: readonly Camera[] = [
-  camera('C1', 'Portail', 118, 338, 150, 70, 150),
+  camera('C1', 'Portail', 150, 314, 152, 64, 175),
   camera('C2', 'Parking P1', 368, 214, 150, 76, 210),
   camera('C3', 'Clôture nord', 512, 56, 2, 46, 340),
   camera('C4', 'Porte A3', 612, 318, -32, 70, 190),
@@ -343,7 +343,7 @@ export function presenceStart(poi: Poi, time: number): number {
   return time;
 }
 
-const POST: [number, number] = [96, 372];
+const POST: [number, number] = [77, 340];
 const PARK_VS: [number, number] = [128, 404];
 const PAD: [number, number] = [232, 148];
 
@@ -692,8 +692,8 @@ function computeRecordings(): Map<string, Recording[]> {
       if (poi) {
         let t = d.at;
         while (t < SIM_END && isPresent(poi, t)) {
-          positionAt(poi.track, t, pos);
-          if (!inView(cam, pos[0]!, pos[1]!)) break;
+          const seg = positionAt(poi.track, t, pos);
+          if (!inView(cam, pos[0]!, pos[1]!) || poi.track.speeds[seg]! < 0.3) break;
           t += SAMPLE;
         }
         end = Math.max(end, t + 30 * SECOND);
@@ -784,8 +784,8 @@ export const highlights: NonNullable<TimelineProps['highlights']> = incidents.ma
   tone: incident.kind === 'signal' ? ('warning' as const) : ('danger' as const),
 }));
 
-const BURST_GAP = 90 * SECOND;
-const BURST_MIN = 4;
+const BURST_GAP = 2 * MINUTE;
+const BURST_MIN = 2;
 
 /**
  * Items known at `until` (the live frontier): later items are left out and
@@ -810,18 +810,18 @@ export function buildItems(until: number): TimelineItem<ItemInfo>[] {
       if (j - i >= BURST_MIN) {
         const last = list[j - 1]!;
         items.push({
-          id: `burst-${cam.code}-${first.at}`,
+          id: `burst-${cam.code}-${i}`,
           rowId: cam.id,
           start: first.at,
           end: Math.max(clip(last.at + 20 * SECOND), first.at + SECOND),
-          label: 'Rafale de détections',
+          label: j - i >= 6 ? 'Rafale de détections' : 'Détections',
           group: { count: j - i },
           meta: { kind: 'burst', camera: cam.id },
         });
       } else {
         for (let k = i; k < j; k++) {
           const d = list[k]!;
-          items.push({ id: `mot-${cam.code}-${d.at}`, rowId: cam.id, at: d.at, label: d.label, meta: { kind: 'motion', camera: cam.id, poi: d.poi ?? undefined } });
+          items.push({ id: `mot-${cam.code}-${k}`, rowId: cam.id, at: d.at, label: d.label, meta: { kind: 'motion', camera: cam.id, poi: d.poi ?? undefined } });
         }
       }
       i = j;

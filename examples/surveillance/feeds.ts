@@ -1,4 +1,7 @@
 import { QUAY_EDGE, WORLD, buildings, cameras, clock, containers, cranes, fence, pois, roads, tanks, zones } from './data';
+
+/** Mobiles are drawn larger than life so they read on small feeds. */
+const SILHOUETTE = 2.2;
 import type { Camera, SiteState } from './data';
 
 /*
@@ -8,6 +11,7 @@ import type { Camera, SiteState } from './data';
  */
 
 let worldRaster: HTMLCanvasElement | null = null;
+let worldPixels: Uint8ClampedArray | null = null;
 
 /** Night, monochrome raster of the site plan (1 px = 1 m), built once. */
 function world(): HTMLCanvasElement {
@@ -15,7 +19,7 @@ function world(): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = WORLD.width;
   canvas.height = WORLD.height;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   ctx.fillStyle = '#2c2c2c';
   ctx.fillRect(0, 0, WORLD.width, WORLD.height);
   // Soil texture.
@@ -128,7 +132,8 @@ function background(cam: Camera, width: number, height: number): HTMLCanvasEleme
   const cached = backgrounds.get(key);
   if (cached) return cached;
   const src = world();
-  const srcData = src.getContext('2d')!.getImageData(0, 0, src.width, src.height).data;
+  worldPixels ??= src.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, src.width, src.height).data;
+  const srcData = worldPixels;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -164,8 +169,93 @@ function background(cam: Camera, width: number, height: number): HTMLCanvasEleme
     }
   }
   ctx.putImageData(image, 0, 0);
+  drawVolumes(ctx, cam, o);
   backgrounds.set(key, canvas);
   return canvas;
+}
+
+interface Face {
+  readonly pts: [number, number][];
+  readonly lum: number;
+  readonly dist: number;
+  readonly lit: boolean;
+}
+
+/** Extruded buildings and container stacks, painted far to near over the ground. */
+function drawVolumes(ctx: CanvasRenderingContext2D, cam: Camera, o: Optics): void {
+  const faces: Face[] = [];
+  const add = (x: number, y: number, w: number, h: number, height: number, base: number, lit: boolean) => {
+    const corners: [number, number][] = [
+      [x, y],
+      [x + w, y],
+      [x + w, y + h],
+      [x, y + h],
+    ];
+    const normals: [number, number][] = [
+      [0, -1],
+      [1, 0],
+      [0, 1],
+      [-1, 0],
+    ];
+    for (let i = 0; i < 4; i++) {
+      const a = corners[i]!;
+      const b = corners[(i + 1) % 4]!;
+      const n = normals[i]!;
+      const mx = (a[0] + b[0]) / 2;
+      const my = (a[1] + b[1]) / 2;
+      // Back-face culling.
+      if ((cam.x - mx) * n[0] + (cam.y - my) * n[1] <= 0) continue;
+      const local: [number, number, number][] = [
+        [a[0], a[1], 0],
+        [b[0], b[1], 0],
+        [b[0], b[1], height],
+        [a[0], a[1], height],
+      ].map(([px, py, pz]) => {
+        const dx = px! - cam.x;
+        const dy = py! - cam.y;
+        return [dx * cam.cos + dy * cam.sin, -dx * cam.sin + dy * cam.cos, pz!];
+      });
+      const pts: [number, number][] = [];
+      for (const [f, l, h] of clipNear(local, o)) {
+        const p = project(o, f, l, h);
+        if (p) pts.push(p);
+      }
+      if (pts.length < 3) continue;
+      const dist = Math.hypot(mx - cam.x, my - cam.y);
+      if (dist > cam.range * 1.6) continue;
+      const facing = Math.abs(n[0] * cam.sin - n[1] * cam.cos);
+      const fog = Math.min(1, Math.max(0, (dist - cam.range * 0.65) / (cam.range * 0.9)));
+      faces.push({ pts, lum: (base + 34 * facing) * (1 - fog) + 22 * fog, dist, lit: lit && fog < 0.7 });
+    }
+  };
+  for (const b of buildings) add(b.x, b.y, b.w, b.h, b.kind === 'post' ? 3.5 : 11, 62, true);
+  for (const c of containers) add(c.x, c.y, c.w, c.h, 5.2, 70, false);
+  for (const t of tanks) add(t.x - t.r * 0.8, t.y - t.r * 0.8, t.r * 1.6, t.r * 1.6, 9, 80, false);
+  faces.sort((a, b) => b.dist - a.dist);
+  for (const face of faces) {
+    const l = Math.round(face.lum);
+    ctx.fillStyle = `rgb(${Math.round(l * 0.78)},${Math.round(l * 0.96)},${Math.round(l * 0.9)})`;
+    ctx.beginPath();
+    face.pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = `rgba(0,0,0,0.35)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (face.lit) {
+      // Wall lamps along the top edge.
+      const [p0, p1, p2, p3] = face.pts as [[number, number], [number, number], [number, number], [number, number]];
+      ctx.fillStyle = 'rgba(220,255,235,0.85)';
+      for (let u = 0.15; u < 0.9; u += 0.35) {
+        const x = p3[0] + (p2[0] - p3[0]) * u;
+        const top = p3[1] + (p2[1] - p3[1]) * u;
+        const bottom = p0[1] + (p1[1] - p0[1]) * u;
+        const y = top + (bottom - top) * 0.25;
+        const r = Math.max(0.8, (bottom - top) * 0.035);
+        ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+    }
+  }
 }
 
 let noiseTile: HTMLCanvasElement | null = null;
@@ -259,12 +349,12 @@ export function drawFeed(ctx: CanvasRenderingContext2D, c: number, state: SiteSt
     if (forward < 3 || forward > cam.range * 1.15) continue;
     const footX = project(o, forward, lateral, 0);
     if (footX === null) continue;
-    const [sx, syGround] = footX;
+    const sx = footX[0];
     if (sx < -40 * scale || sx > width + 40 * scale) continue;
     const kind = poi.kind;
     const altitude = poi.altitude;
     const dims = kind === 'patrol' || kind === 'intruder' ? [0.6, 1.8] : kind === 'truck' ? [2.6, 3.8] : kind === 'drone' ? [0.9, 0.4] : [1.9, 1.5];
-    const top = project(o, forward, lateral, altitude + dims[1]!);
+    const top = project(o, forward, lateral, altitude + dims[1]! * SILHOUETTE);
     const base = altitude ? project(o, forward, lateral, altitude) : footX;
     if (!top || !base) continue;
     const h = Math.max(3 * scale, base[1] - top[1]);
@@ -298,7 +388,6 @@ export function drawFeed(ctx: CanvasRenderingContext2D, c: number, state: SiteSt
       ctx.textBaseline = 'bottom';
       ctx.fillText(poi.code, sx - w / 2 - pad, y0 - pad - 1);
     }
-    void syGround;
   }
 
   // Sensor noise and scanlines.
@@ -349,10 +438,30 @@ function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number
   ctx.fillText(text, x, y);
 }
 
+const NEAR = 1;
+
+/** Clips a polygon in camera space (forward, lateral, height) to the near plane. */
+function clipNear(poly: [number, number, number][], o: Optics): [number, number, number][] {
+  const depth = (v: [number, number, number]) => v[0] * o.cos - (v[2] - o.hc) * o.sin - NEAR;
+  const out: [number, number, number][] = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % poly.length]!;
+    const da = depth(a);
+    const db = depth(b);
+    if (da >= 0) out.push(a);
+    if (da >= 0 !== db >= 0) {
+      const t = da / (da - db);
+      out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+    }
+  }
+  return out;
+}
+
 function project(o: Optics, forward: number, lateral: number, height: number): [number, number] | null {
   const up = height - o.hc;
   const z = forward * o.cos - up * o.sin;
-  if (z <= 0.5) return null;
+  if (z <= 0.2) return null;
   const down = -forward * o.sin - up * o.cos;
   return [o.cx + (o.f * lateral) / z, o.cy + (o.f * down) / z];
 }

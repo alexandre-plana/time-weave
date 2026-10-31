@@ -41,6 +41,8 @@ export class SceneView {
   readonly headingEls: (SVGGElement | null)[] = pois.map(() => null);
   readonly trailEls: (SVGPolylineElement | null)[] = pois.map(() => null);
   readonly coneEls: (SVGGElement | null)[] = cameras.map(() => null);
+  /** Camera glyphs, kept at a constant screen size. */
+  readonly camGlyphEls: (SVGGElement | null)[] = cameras.map(() => null);
   readonly tileEls: (HTMLElement | null)[] = cameras.map(() => null);
   private readonly feeds = new Set<FeedEntry>();
   private readonly sinks = new Set<Sink>();
@@ -50,6 +52,8 @@ export class SceneView {
   private frame = 0;
   private readonly pos = new Float64Array(2);
   reducedMotion = false;
+  /** Set by the map: centres the view on a point of the site. */
+  centerOn: ((x: number, y: number) => void) | null = null;
 
   /** Called by `prepareTime`: computes the application state for the target. */
   prepare(time: number): void {
@@ -113,7 +117,10 @@ export class SceneView {
     this.view.tx = tx;
     this.view.ty = ty;
     this.world?.setAttribute('transform', `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) scale(${k.toFixed(4)})`);
+    const glyph = `scale(${(1 / k).toFixed(4)})`;
+    for (const el of this.camGlyphEls) el?.setAttribute('transform', glyph);
     this.renderMobiles();
+    this.schedule();
   }
 
   schedule(): void {
