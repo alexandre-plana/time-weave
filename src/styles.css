@@ -1,0 +1,649 @@
+/* Time Weave — default styles. Override the --tw-* variables or the tw-* classes. */
+
+.tw-timeline {
+  --tw-bg: #ffffff;
+  --tw-surface: #f9fafb;
+  --tw-ink: #222832;
+  --tw-muted: #7b8391;
+  --tw-line: #e6e9ee;
+  --tw-grid: #eef0f4;
+  --tw-grid-major: #dde1e8;
+  --tw-accent: #4772e9;
+  --tw-accent-soft: #edf2ff;
+  --tw-live: #d9483b;
+  --tw-item-bg: #edf4ff;
+  --tw-item-border: #b9cff0;
+  --tw-item-ink: #2f5d9b;
+  --tw-group-bg: #f1edf9;
+  --tw-group-border: #cdbfe9;
+  --tw-group-ink: #6a54a3;
+  --tw-key: #b08027;
+  --tw-focus: #4772e9;
+  --tw-font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --tw-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  --tw-axis-height: 40px;
+  --tw-label-width: 220px;
+  --tw-radius: 6px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  background: var(--tw-bg);
+  color: var(--tw-ink);
+  border: 1px solid var(--tw-line);
+  border-radius: 10px;
+  font: 12px/1.4 var(--tw-font);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tw-timeline *,
+.tw-timeline *::before,
+.tw-timeline *::after {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tw-timeline:not([data-theme='light']) {
+    --tw-bg: #15181d;
+    --tw-surface: #1b1f26;
+    --tw-ink: #e6e9ef;
+    --tw-muted: #8e97a6;
+    --tw-line: #2a303a;
+    --tw-grid: #20252d;
+    --tw-grid-major: #303744;
+    --tw-accent: #7b9cf5;
+    --tw-accent-soft: #232c45;
+    --tw-item-bg: #1f2b40;
+    --tw-item-border: #3a5684;
+    --tw-item-ink: #a9c4f1;
+    --tw-group-bg: #2a2440;
+    --tw-group-border: #54478a;
+    --tw-group-ink: #c4b5ef;
+    --tw-key: #e0b25b;
+  }
+}
+
+.tw-timeline[data-theme='dark'] {
+  --tw-bg: #15181d;
+  --tw-surface: #1b1f26;
+  --tw-ink: #e6e9ef;
+  --tw-muted: #8e97a6;
+  --tw-line: #2a303a;
+  --tw-grid: #20252d;
+  --tw-grid-major: #303744;
+  --tw-accent: #7b9cf5;
+  --tw-accent-soft: #232c45;
+  --tw-item-bg: #1f2b40;
+  --tw-item-border: #3a5684;
+  --tw-item-ink: #a9c4f1;
+  --tw-group-bg: #2a2440;
+  --tw-group-border: #54478a;
+  --tw-group-ink: #c4b5ef;
+  --tw-key: #e0b25b;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.tw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--tw-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tw-button:hover {
+  background: var(--tw-surface);
+}
+
+.tw-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tw-button[aria-pressed='true'] {
+  background: var(--tw-accent-soft);
+  color: var(--tw-accent);
+}
+
+.tw-button--primary {
+  background: var(--tw-ink);
+  color: var(--tw-bg);
+}
+
+.tw-button--primary:hover {
+  background: var(--tw-ink);
+  opacity: 0.88;
+}
+
+.tw-button--text {
+  color: var(--tw-muted);
+  font-size: 11px;
+}
+
+.tw-button--live.tw-button--on {
+  background: color-mix(in srgb, var(--tw-live) 14%, transparent);
+  color: var(--tw-live);
+}
+
+.tw-button:focus-visible,
+.tw-axis:focus-visible,
+.tw-item:focus-visible,
+.tw-toggle:focus-visible,
+.tw-speed select:focus-visible {
+  outline: 2px solid var(--tw-focus);
+  outline-offset: 1px;
+}
+
+.tw-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------------------------------------------------------------- toolbar and controls */
+
+.tw-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--tw-line);
+  flex-wrap: wrap;
+}
+
+.tw-toolbar-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tw-zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tw-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tw-speed select {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--tw-line);
+  border-radius: var(--tw-radius);
+  background: var(--tw-bg);
+  color: inherit;
+  font: inherit;
+}
+
+.tw-readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  font: 11px var(--tw-mono);
+  color: var(--tw-muted);
+}
+
+.tw-readout[data-status='preparing'] .tw-readout-time,
+.tw-readout[data-status='initializing'] .tw-readout-time {
+  color: var(--tw-accent);
+}
+
+.tw-readout[data-status='error'] .tw-readout-time {
+  color: var(--tw-live);
+}
+
+/* ---------------------------------------------------------------- header and axis */
+
+.tw-header {
+  display: flex;
+  height: var(--tw-axis-height);
+  border-bottom: 1px solid var(--tw-line);
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  flex: none;
+}
+
+.tw-corner {
+  flex: none;
+  width: var(--tw-label-width);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--tw-line);
+  color: var(--tw-muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tw-axis {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.tw-axis-svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.tw-tick line {
+  stroke: var(--tw-grid-major);
+}
+
+.tw-tick text {
+  fill: var(--tw-muted);
+  font: 10px var(--tw-mono);
+}
+
+.tw-tick--major text {
+  fill: var(--tw-ink);
+  font-weight: 500;
+}
+
+.tw-coverage {
+  fill: var(--tw-accent);
+  opacity: 0.25;
+}
+
+.tw-loading {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tw-accent), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: tw-loading 1.1s linear infinite;
+}
+
+@keyframes tw-loading {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+.tw-key {
+  position: absolute;
+  bottom: 4px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  padding: 0;
+  border: 0;
+  border-radius: 1px;
+  background: var(--tw-key);
+  transform: rotate(45deg);
+  cursor: pointer;
+}
+
+.tw-cursor-handle {
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  width: 14px;
+  margin-left: -7px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.tw-cursor-handle::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  bottom: 0;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px 2px 4px 4px;
+  background: var(--tw-accent);
+}
+
+/* ---------------------------------------------------------------- body and rows */
+
+.tw-body-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.tw-body {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+}
+
+.tw-rows {
+  position: relative;
+}
+
+.tw-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  border-bottom: 1px solid var(--tw-grid);
+}
+
+.tw-row-label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: none;
+  width: var(--tw-label-width);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding-top: 5px;
+  padding-right: 10px;
+  background: var(--tw-bg);
+  border-right: 1px solid var(--tw-line);
+  overflow: hidden;
+}
+
+.tw-row--depth-0 .tw-row-label {
+  font-weight: 550;
+}
+
+.tw-row-text {
+  min-width: 0;
+  padding-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tw-toggle,
+.tw-toggle-spacer {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+.tw-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--tw-muted);
+  cursor: pointer;
+}
+
+.tw-toggle:hover {
+  background: var(--tw-surface);
+}
+
+.tw-chevron {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+
+.tw-toggle[aria-expanded='true'] .tw-chevron {
+  transform: rotate(45deg);
+}
+
+.tw-row-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* ---------------------------------------------------------------- grid and overlay */
+
+.tw-grid,
+.tw-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--tw-label-width);
+  right: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tw-grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tw-grid);
+}
+
+.tw-grid-line--major {
+  background: var(--tw-grid-major);
+}
+
+.tw-overlay {
+  z-index: 3;
+}
+
+.tw-cursor-line,
+.tw-pending-line,
+.tw-live-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+}
+
+.tw-cursor-line {
+  border-left: 2px solid var(--tw-accent);
+  margin-left: -1px;
+}
+
+.tw-pending-line {
+  border-left: 1px dashed var(--tw-accent);
+  opacity: 0.7;
+}
+
+.tw-live-line {
+  border-left: 1px dashed var(--tw-live);
+}
+
+/* ---------------------------------------------------------------- items */
+
+.tw-item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--tw-item-border);
+  border-radius: 4px;
+  background: var(--tw-item-bg);
+  color: var(--tw-item-ink);
+  font: 500 10px/1 var(--tw-font);
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tw-item--point {
+  border-radius: 50%;
+  justify-content: center;
+  background: var(--tw-item-border);
+}
+
+.tw-item--group {
+  background: var(--tw-group-bg);
+  border-color: var(--tw-group-border);
+  color: var(--tw-group-ink);
+}
+
+.tw-item--point.tw-item--group {
+  border-radius: 3px;
+  background: var(--tw-group-border);
+}
+
+.tw-item--active {
+  box-shadow: 0 0 0 1px var(--tw-accent);
+}
+
+.tw-item--selected {
+  border-color: var(--tw-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tw-accent) 35%, transparent);
+}
+
+.tw-item-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tw-item-count {
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font: 9px var(--tw-mono);
+}
+
+.tw-item-count--point {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- tooltip and dialog */
+
+.tw-tooltip {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 280px;
+  padding: 7px 10px;
+  border-radius: var(--tw-radius);
+  background: #232a35;
+  color: #f3f5f8;
+  font-size: 11px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+}
+
+.tw-tooltip span {
+  color: #b9c1cf;
+  font: 10px var(--tw-mono);
+}
+
+.tw-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(15 18 24 / 0.4);
+}
+
+.tw-modal {
+  width: min(440px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: 10px;
+  background: var(--tw-bg, #fff);
+  color: var(--tw-ink, #222832);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+  font: 12px/1.5 var(--tw-font, sans-serif);
+}
+
+.tw-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 6px;
+}
+
+.tw-modal-header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tw-modal-body {
+  padding: 6px 16px 16px;
+}
+
+.tw-detail-fields {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.tw-detail-fields dt {
+  color: var(--tw-muted, #7b8391);
+}
+
+.tw-detail-fields dd {
+  margin: 0;
+  font-family: var(--tw-mono, monospace);
+}
+
+.tw-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-loading {
+    animation: none;
+    background: var(--tw-accent);
+    opacity: 0.4;
+  }
+
+  .tw-chevron {
+    transition: none;
+  }
+}

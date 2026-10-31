@@ -1,0 +1,87 @@
+import { useEffect, useId, useRef } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
+import { defaultLabels } from './labels.js';
+import type { TimelineLabels } from './labels.js';
+
+export interface DetailModalProps {
+  title: ReactNode;
+  children?: ReactNode;
+  onClose: () => void;
+  /** Element focused again when the dialog closes. Defaults to the element focused at opening. */
+  returnFocus?: HTMLElement | null;
+  labels?: Partial<TimelineLabels>;
+  className?: string;
+}
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Simple optional dialog: moves focus inside, keeps Tab within it, closes on
+ * Escape and returns focus to its trigger (or a still-present fallback).
+ */
+export function DetailModal(props: DetailModalProps): ReactNode {
+  const { title, children, onClose, className } = props;
+  const labels = { ...defaultLabels, ...props.labels };
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = useId();
+  const returnTo = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    returnTo.current = props.returnFocus ?? (document.activeElement as HTMLElement | null);
+    const dialog = dialogRef.current;
+    const first = dialog?.querySelector<HTMLElement>(FOCUSABLE);
+    (first ?? dialog)?.focus();
+    return () => {
+      const target = returnTo.current;
+      if (target && target.isConnected) target.focus();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      onCloseRef.current();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div className="tw-modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <div
+        ref={dialogRef}
+        className={['tw-modal', className].filter(Boolean).join(' ')}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={onKeyDown}
+      >
+        <div className="tw-modal-header">
+          <h2 id={titleId}>{title}</h2>
+          <button type="button" className="tw-button" onClick={onClose} aria-label={labels.close}>
+            ×
+          </button>
+        </div>
+        <div className="tw-modal-body">{children}</div>
+      </div>
+    </div>
+  );
+}

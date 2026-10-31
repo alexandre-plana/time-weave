@@ -1,0 +1,12 @@
+export * from '../core/index.js';
+export { Timeline } from './Timeline.js';
+export type { TimelineProps, ItemActionContext, ItemRenderContext } from './Timeline.js';
+export { PlaybackControls, DEFAULT_SPEEDS } from './PlaybackControls.js';
+export type { PlaybackControlsProps } from './PlaybackControls.js';
+export { DetailModal } from './DetailModal.js';
+export type { DetailModalProps } from './DetailModal.js';
+export { useTimelineController, useTimelineHost, useTimelineSnapshot } from './useTimelineController.js';
+export type { UseTimelineControllerOptions, TimelineHostOptions } from './useTimelineController.js';
+export { createAnimationFrameScheduler } from './browserScheduler.js';
+export { defaultLabels, frenchLabels } from './labels.js';
+export type { TimelineLabels } from './labels.js';
