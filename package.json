@@ -28,7 +28,10 @@
     "test:watch": "vitest",
     "check:core": "node scripts/check-core-isolation.mjs",
     "dev:examples": "vite --config examples/vite.config.ts",
-    "build:examples": "vite build --config examples/vite.config.ts"
+    "build:examples": "vite build --config examples/vite.config.ts",
+    "check:package": "node scripts/check-package.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run check:core && npm run check:package && npm run build:examples",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0",
@@ -47,5 +50,16 @@
     "typescript": "~5.9",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "timeline",
+    "react",
+    "playback",
+    "gantt",
+    "time",
+    "typescript"
+  ]
 }
